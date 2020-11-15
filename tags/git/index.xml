@@ -19,7 +19,7 @@ GIT_CURL_VERBOSE=1 git clone https://github.com/fshilver/settings.git Cloning in
     </item>
     
     <item>
-      <title>Git Tag Cheetsheet</title>
+      <title>Git Tag Cheetsheat</title>
       <link>https://fshilver.github.io/git-tag/</link>
       <pubDate>Sat, 14 Nov 2020 16:39:51 +0900</pubDate>
       
@@ -28,7 +28,7 @@ GIT_CURL_VERBOSE=1 git clone https://github.com/fshilver/settings.git Cloning in
     </item>
     
     <item>
-      <title>Git Submodule Cheetsheet</title>
+      <title>Git Submodule Cheatsheet</title>
       <link>https://fshilver.github.io/git-submodule/</link>
       <pubDate>Sat, 14 Nov 2020 16:27:53 +0900</pubDate>
       
