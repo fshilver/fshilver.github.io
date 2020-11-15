@@ -6,7 +6,18 @@
     <description>Recent content in Posts on Computer Science Tech Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ko-kr</language>
-    <lastBuildDate>Sun, 15 Nov 2020 00:32:39 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 15 Nov 2020 00:42:09 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Github Clone Ssl Connection Error Centos6</title>
+      <link>https://fshilver.github.io/github-clone-ssl-connection-error-centos6/</link>
+      <pubDate>Sun, 15 Nov 2020 00:42:09 +0900</pubDate>
+      
+      <guid>https://fshilver.github.io/github-clone-ssl-connection-error-centos6/</guid>
+      <description>Issue git clone SSL connect error (NSS error -12190)   git fatal: HTTP request failed
+git clone https://github.com/vim/vim.git Initialized empty Git repository in /root/vim/.git/ error: while accessing https://github.com/vim/vim.git/info/refs fatal: HTTP request failed   git fatl: unable to access : SSL connect error
+GIT_CURL_VERBOSE=1 git clone https://github.com/fshilver/settings.git Cloning into &amp;#39;settings&amp;#39;... * Couldn&amp;#39;t find host github.com in the .netrc file; using defaults * About to connect() to github.com port 443 (#0) * Trying 192.</description>
+    </item>
+    
     <item>
       <title>Svn Ssl Error Centos6</title>
       <link>https://fshilver.github.io/svn-ssl-error-centos6/</link>
@@ -19,7 +30,7 @@ vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source b
     </item>
     
     <item>
-      <title>Git Tag</title>
+      <title>Git Tag Cheetsheet</title>
       <link>https://fshilver.github.io/git-tag/</link>
       <pubDate>Sat, 14 Nov 2020 16:39:51 +0900</pubDate>
       
@@ -28,12 +39,12 @@ vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source b
     </item>
     
     <item>
-      <title>Git Submodule</title>
+      <title>Git Submodule Cheetsheet</title>
       <link>https://fshilver.github.io/git-submodule/</link>
       <pubDate>Sat, 14 Nov 2020 16:27:53 +0900</pubDate>
       
       <guid>https://fshilver.github.io/git-submodule/</guid>
-      <description>Installation # submodule 확인 ~$ git submodule # submodule 추가 ~$ git submodule add &amp;lt;저장소주소&amp;gt; &amp;lt;서브모듈경로&amp;gt; ## submodule download ~$ git submodule init ~$ git submodule update Update ~$ cd project # git repository ~$ cd sub1 # submodule 경로라고</description>
+      <description>Installation # check submodule ~$ git submodule # add submodule ~$ git submodule add &amp;lt;remote repository&amp;gt; &amp;lt;local dir&amp;gt; ## submodule download ~$ git submodule init ~$ git submodule update Update # before git 1.8 ~$ cd project # git repository ~$ cd sub1 # assume sub1 is submodule ~$ git pull # get latest sub1 ~$ cd .. ~$ git add sub1 ~$ git commit -m &amp;#39;update submodule&amp;#39; # after git 1.</description>
     </item>
     
     <item>

@@ -13,7 +13,7 @@
 <meta property="og:description" content="Live to learn" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://fshilver.github.io/" />
-<meta property="og:updated_time" content="2020-11-15T00:40:40+09:00" />
+<meta property="og:updated_time" content="2020-11-15T23:07:04+09:00" />
 
     <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Computer Science Tech Blog"/>
@@ -74,6 +74,9 @@ if (!doNotTrack) {
 <main>
 
 
+
+
+
 <div class="container">
     <section class="section">
         <div class="columns">
@@ -85,14 +88,25 @@ if (!doNotTrack) {
                             <article class="media">
                                 <div class="media-content">
                                     <div class="content">
+                                        <p class="title is-4"><a href="/github-clone-ssl-connection-error-centos6/">Github Clone Ssl Connection Error Centos6</a></p>
+                                        <p class="subtitle is-size-6 has-text-grey-light">
+                                            Published at November 15, 2020 &middot;
+                                            <i class="far fa-clock"></i>&nbsp;1 min read
+                                        </p>
+                                        <p>How to solve ssl connection error during git clone on CentOS 6</p>
+                                    </div>
+                                </div>
+                            </article>
+                        
+                            <article class="media">
+                                <div class="media-content">
+                                    <div class="content">
                                         <p class="title is-4"><a href="/svn-ssl-error-centos6/">Svn Ssl Error Centos6</a></p>
                                         <p class="subtitle is-size-6 has-text-grey-light">
                                             Published at November 15, 2020 &middot;
                                             <i class="far fa-clock"></i>&nbsp;1 min read
                                         </p>
-                                        <p>Issue   svn command SSL error with https svn server
-svn list https://10.10.10.10/svn/blurblur svn: OPTIONS of &#39;https://10.10.10.10/svn/blurblur&#39;: SSL handshake failed: SSL error: Key usage violation in certificate has been detected. (https://10.10.10.10)   Environment  CentOS 6.4  Solution  change the neon package&rsquo;s compile option, rebuild and re-install    set the repository to download source rpm
-vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source baseurl=http://vault.centos.org/6.4/os/Source/ gpgcheck=1 gpgkey=http://vault.centos.org//RPM-GPG-KEY-CentOS-6 priority=1 enabled=1 [updates-source] name=CentOS-6....</p>
+                                        <p>How to solve ssl error during svn command on CentOS 6</p>
                                     </div>
                                 </div>
                             </article>
@@ -100,12 +114,12 @@ vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source b
                             <article class="media">
                                 <div class="media-content">
                                     <div class="content">
-                                        <p class="title is-4"><a href="/git-tag/">Git Tag</a></p>
+                                        <p class="title is-4"><a href="/git-tag/">Git Tag Cheetsheet</a></p>
                                         <p class="subtitle is-size-6 has-text-grey-light">
                                             Published at November 14, 2020 &middot;
                                             <i class="far fa-clock"></i>&nbsp;1 min read
                                         </p>
-                                        <p>add tag # add tag to latest commit ~$ git tag v1.5.1.2 # add tag to specific commit ~$ git tag v1.5.1.2 446e2c10555ccbaa5cd4006b250d7d2135dbc2b0  remove tag # local ~$ git tag -d 1.7.2 # remote ~$ git push origin :tags/1.7.2  overwrite tag # local ~$ git tag -f 1.8.0 ~$ git tag -f 1.8.0 &lt;commit id&gt; # remote ~$ git push -f --tags  push tag to origin # push specific tag # git push &lt;remote name&gt; &lt;tag&gt; ~$ git push origin 1....</p>
+                                        <p>Learn how to use git tag command line with examples</p>
                                     </div>
                                 </div>
                             </article>
@@ -113,12 +127,12 @@ vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source b
                             <article class="media">
                                 <div class="media-content">
                                     <div class="content">
-                                        <p class="title is-4"><a href="/git-submodule/">Git Submodule</a></p>
+                                        <p class="title is-4"><a href="/git-submodule/">Git Submodule Cheetsheet</a></p>
                                         <p class="subtitle is-size-6 has-text-grey-light">
                                             Published at November 14, 2020 &middot;
                                             <i class="far fa-clock"></i>&nbsp;1 min read
                                         </p>
-                                        <p>Installation # submodule 확인 ~$ git submodule # submodule 추가 ~$ git submodule add &lt;저장소주소&gt; &lt;서브모듈경로&gt; ## submodule download ~$ git submodule init ~$ git submodule update Update ~$ cd project # git repository ~$ cd sub1 # submodule 경로라고...</p>
+                                        <p>Learn how to use git submodule command line with examples</p>
                                     </div>
                                 </div>
                             </article>
@@ -131,7 +145,7 @@ vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source b
                                             Published at November 14, 2020 &middot;
                                             <i class="far fa-clock"></i>&nbsp;1 min read
                                         </p>
-                                        <p>설치 Official Guide : https://gohugo.io/getting-started/installing/ Mac # 설치 brew install hugo 기본 사용법 # 사이트 생성 hugo new site quickstart cd quickstart # 테마 설치 git init git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke echo &#39;theme = &#34;ananke&#34;&#39; &gt;&gt; config.toml # 글 생성 hugo new posts/hello-wolrd.md # 미리보기 # hugo new 명령으로 글 생성...</p>
+                                        <p>Getting started Hugo</p>
                                     </div>
                                 </div>
                             </article>
@@ -145,9 +159,13 @@ vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source b
         <h1 class="title is-5">Tags</h1>
         <div class="tags">
         
+            <span class="tag"><a href="https://fshilver.github.io/tags/centos6">centos6</a></span>
+        
             <span class="tag"><a href="https://fshilver.github.io/tags/git">git</a></span>
         
             <span class="tag"><a href="https://fshilver.github.io/tags/hugo">hugo</a></span>
+        
+            <span class="tag"><a href="https://fshilver.github.io/tags/svn">svn</a></span>
         
         </div>          
     </div>
@@ -156,13 +174,16 @@ vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source b
     <div class="card-content">
         <h1 class="title is-5">Recent posts</h1>
         
+            <h1><a href="https://fshilver.github.io/github-clone-ssl-connection-error-centos6/">Github Clone Ssl Connection Error Centos6</a></h1>
+            <time class="has-text-grey-light is-size-7">15 November 2020</time>
+        
             <h1><a href="https://fshilver.github.io/svn-ssl-error-centos6/">Svn Ssl Error Centos6</a></h1>
             <time class="has-text-grey-light is-size-7">15 November 2020</time>
         
-            <h1><a href="https://fshilver.github.io/git-tag/">Git Tag</a></h1>
+            <h1><a href="https://fshilver.github.io/git-tag/">Git Tag Cheetsheet</a></h1>
             <time class="has-text-grey-light is-size-7">14 November 2020</time>
         
-            <h1><a href="https://fshilver.github.io/git-submodule/">Git Submodule</a></h1>
+            <h1><a href="https://fshilver.github.io/git-submodule/">Git Submodule Cheetsheet</a></h1>
             <time class="has-text-grey-light is-size-7">14 November 2020</time>
         
             <h1><a href="https://fshilver.github.io/hugo-basic/">Hugo Basic</a></h1>
@@ -175,7 +196,7 @@ vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source b
     <div class="card-content">
         <h1 class="title is-5">Archives</h1>
         
-            <a href="https://fshilver.github.io/archives/2020">2020</a> (4)<br>
+            <a href="https://fshilver.github.io/archives/2020">2020</a> (5)<br>
         
     </div>
 </div>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>centos6 on Computer Science Tech Blog</title>
+    <link>https://fshilver.github.io/tags/centos6/</link>
+    <description>Recent content in centos6 on Computer Science Tech Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>ko-kr</language>
+    <lastBuildDate>Sun, 15 Nov 2020 00:42:09 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/tags/centos6/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Github Clone Ssl Connection Error Centos6</title>
+      <link>https://fshilver.github.io/github-clone-ssl-connection-error-centos6/</link>
+      <pubDate>Sun, 15 Nov 2020 00:42:09 +0900</pubDate>
+      
+      <guid>https://fshilver.github.io/github-clone-ssl-connection-error-centos6/</guid>
+      <description>Issue git clone SSL connect error (NSS error -12190)   git fatal: HTTP request failed
+git clone https://github.com/vim/vim.git Initialized empty Git repository in /root/vim/.git/ error: while accessing https://github.com/vim/vim.git/info/refs fatal: HTTP request failed   git fatl: unable to access : SSL connect error
+GIT_CURL_VERBOSE=1 git clone https://github.com/fshilver/settings.git Cloning into &amp;#39;settings&amp;#39;... * Couldn&amp;#39;t find host github.com in the .netrc file; using defaults * About to connect() to github.com port 443 (#0) * Trying 192.</description>
+    </item>
+    
+    <item>
+      <title>Svn Ssl Error Centos6</title>
+      <link>https://fshilver.github.io/svn-ssl-error-centos6/</link>
+      <pubDate>Sun, 15 Nov 2020 00:32:39 +0900</pubDate>
+      
+      <guid>https://fshilver.github.io/svn-ssl-error-centos6/</guid>
+      <description>Issue   svn command SSL error with https svn server
+svn list https://10.10.10.10/svn/blurblur svn: OPTIONS of &amp;#39;https://10.10.10.10/svn/blurblur&amp;#39;: SSL handshake failed: SSL error: Key usage violation in certificate has been detected. (https://10.10.10.10)   Environment  CentOS 6.4  Solution  change the neon package&amp;rsquo;s compile option, rebuild and re-install    set the repository to download source rpm
+vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source baseurl=http://vault.centos.org/6.4/os/Source/ gpgcheck=1 gpgkey=http://vault.centos.org//RPM-GPG-KEY-CentOS-6 priority=1 enabled=1 [updates-source] name=CentOS-6.</description>
+    </item>
+    
+  </channel>
+</rss>

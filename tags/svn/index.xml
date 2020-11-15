@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>svn on Computer Science Tech Blog</title>
+    <link>https://fshilver.github.io/tags/svn/</link>
+    <description>Recent content in svn on Computer Science Tech Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>ko-kr</language>
+    <lastBuildDate>Sun, 15 Nov 2020 00:32:39 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/tags/svn/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Svn Ssl Error Centos6</title>
+      <link>https://fshilver.github.io/svn-ssl-error-centos6/</link>
+      <pubDate>Sun, 15 Nov 2020 00:32:39 +0900</pubDate>
+      
+      <guid>https://fshilver.github.io/svn-ssl-error-centos6/</guid>
+      <description>Issue   svn command SSL error with https svn server
+svn list https://10.10.10.10/svn/blurblur svn: OPTIONS of &amp;#39;https://10.10.10.10/svn/blurblur&amp;#39;: SSL handshake failed: SSL error: Key usage violation in certificate has been detected. (https://10.10.10.10)   Environment  CentOS 6.4  Solution  change the neon package&amp;rsquo;s compile option, rebuild and re-install    set the repository to download source rpm
+vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source baseurl=http://vault.centos.org/6.4/os/Source/ gpgcheck=1 gpgkey=http://vault.centos.org//RPM-GPG-KEY-CentOS-6 priority=1 enabled=1 [updates-source] name=CentOS-6.</description>
+    </item>
+    
+  </channel>
+</rss>

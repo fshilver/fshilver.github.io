@@ -8,7 +8,7 @@
     <language>ko-kr</language>
     <lastBuildDate>Sat, 14 Nov 2020 16:39:51 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/categories/howto/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Git Tag</title>
+      <title>Git Tag Cheetsheet</title>
       <link>https://fshilver.github.io/git-tag/</link>
       <pubDate>Sat, 14 Nov 2020 16:39:51 +0900</pubDate>
       
@@ -17,12 +17,12 @@
     </item>
     
     <item>
-      <title>Git Submodule</title>
+      <title>Git Submodule Cheetsheet</title>
       <link>https://fshilver.github.io/git-submodule/</link>
       <pubDate>Sat, 14 Nov 2020 16:27:53 +0900</pubDate>
       
       <guid>https://fshilver.github.io/git-submodule/</guid>
-      <description>Installation # submodule 확인 ~$ git submodule # submodule 추가 ~$ git submodule add &amp;lt;저장소주소&amp;gt; &amp;lt;서브모듈경로&amp;gt; ## submodule download ~$ git submodule init ~$ git submodule update Update ~$ cd project # git repository ~$ cd sub1 # submodule 경로라고</description>
+      <description>Installation # check submodule ~$ git submodule # add submodule ~$ git submodule add &amp;lt;remote repository&amp;gt; &amp;lt;local dir&amp;gt; ## submodule download ~$ git submodule init ~$ git submodule update Update # before git 1.8 ~$ cd project # git repository ~$ cd sub1 # assume sub1 is submodule ~$ git pull # get latest sub1 ~$ cd .. ~$ git add sub1 ~$ git commit -m &amp;#39;update submodule&amp;#39; # after git 1.</description>
     </item>
     
     <item>
