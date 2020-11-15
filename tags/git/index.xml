@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>git on Computer Science Tech Blog</title>
+    <link>https://fshilver.github.com/tags/git/</link>
+    <description>Recent content in git on Computer Science Tech Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>ko-kr</language>
+    <lastBuildDate>Sat, 14 Nov 2020 16:39:51 +0900</lastBuildDate><atom:link href="https://fshilver.github.com/tags/git/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Git Tag</title>
+      <link>https://fshilver.github.com/git-tag/</link>
+      <pubDate>Sat, 14 Nov 2020 16:39:51 +0900</pubDate>
+      
+      <guid>https://fshilver.github.com/git-tag/</guid>
+      <description>add tag # add tag to latest commit ~$ git tag v1.5.1.2 # add tag to specific commit ~$ git tag v1.5.1.2 446e2c10555ccbaa5cd4006b250d7d2135dbc2b0  remove tag # local ~$ git tag -d 1.7.2 # remote ~$ git push origin :tags/1.7.2  overwrite tag # local ~$ git tag -f 1.8.0 ~$ git tag -f 1.8.0 &amp;lt;commit id&amp;gt; # remote ~$ git push -f --tags  push tag to origin # push specific tag # git push &amp;lt;remote name&amp;gt; &amp;lt;tag&amp;gt; ~$ git push origin 1.</description>
+    </item>
+    
+    <item>
+      <title>Git Submodule</title>
+      <link>https://fshilver.github.com/git-submodule/</link>
+      <pubDate>Sat, 14 Nov 2020 16:27:53 +0900</pubDate>
+      
+      <guid>https://fshilver.github.com/git-submodule/</guid>
+      <description>Installation # submodule 확인 ~$ git submodule # submodule 추가 ~$ git submodule add &amp;lt;저장소주소&amp;gt; &amp;lt;서브모듈경로&amp;gt; ## submodule download ~$ git submodule init ~$ git submodule update Update ~$ cd project # git repository ~$ cd sub1 # submodule 경로라고</description>
+    </item>
+    
+  </channel>
+</rss>

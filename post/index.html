@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko-kr"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posts | Computer Science Tech Blog</title>
+    <meta name="description" content="Live to learn">
+    <link rel="canonical" href="https://fshilver.github.com/post/">
+    <link rel="stylesheet" href="/css/bulma.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+    <meta property="og:title" content="Posts" />
+<meta property="og:description" content="Live to learn" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://fshilver.github.com/post/" />
+<meta property="og:updated_time" content="2020-11-15T00:40:40+09:00" />
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Posts"/>
+<meta name="twitter:description" content="Live to learn"/>
+
+    
+        
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-112829438-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+    
+</head>
+<body><header>
+    <nav class="navbar" role="navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="/" title="home" class="navbar-item">
+                    <span class="logo"><h1>Computer Science Tech Blog</h1></span>
+                </a>
+                
+                    <a href="https://github.com/fshilver" title="Github" class="navbar-item is-hidden-desktop">
+                        <span class="icon"><i class='fab fa-github'></i></span>
+                    </a>
+                
+                <a role="button" aria-label="menu" aria-expanded="false" class="navbar-burger">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    
+                        <a href="/categories/" class="navbar-item">Category</a>
+                    
+                        <a href="/tags/" class="navbar-item">Tag</a>
+                    
+                </div>
+                <div class="navbar-end">
+                    
+                        <a href="https://github.com/fshilver" class="navbar-item is-hidden-touch" title="Github">
+                            <span class="icon"><i class='fab fa-github'></i></span>
+                        </a>
+                    
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+<main>
+
+
+
+<div class="container">
+    <section class="section">
+        <div class="columns">
+            <div class="column is-9">
+                <div class="tile is-child box">
+                    <div class="content">
+                        <h2>Posts</h2>
+                        <hr>
+                        
+                            <article class="media">
+                                <div class="media-content">
+                                    <div class="content">
+                                        <p class="title is-4"><a href="/svn-ssl-error-centos6/">Svn Ssl Error Centos6</a></p>
+                                        <p class="subtitle is-size-6 has-text-grey-light">
+                                            Published at November 15, 2020 &middot;
+                                            <i class="far fa-clock"></i>&nbsp;1 min read
+                                        </p>
+                                        <p>Issue   svn command SSL error with https svn server
+svn list https://10.10.10.10/svn/blurblur svn: OPTIONS of &#39;https://10.10.10.10/svn/blurblur&#39;: SSL handshake failed: SSL error: Key usage violation in certificate has been detected. (https://10.10.10.10)   Environment  CentOS 6.4  Solution  change the neon package&rsquo;s compile option, rebuild and re-install    set the repository to download source rpm
+vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source baseurl=http://vault.centos.org/6.4/os/Source/ gpgcheck=1 gpgkey=http://vault.centos.org//RPM-GPG-KEY-CentOS-6 priority=1 enabled=1 [updates-source] name=CentOS-6....</p>
+                                    </div>
+                                </div>
+                            </article>
+                            <br>
+                        
+                            <article class="media">
+                                <div class="media-content">
+                                    <div class="content">
+                                        <p class="title is-4"><a href="/git-tag/">Git Tag</a></p>
+                                        <p class="subtitle is-size-6 has-text-grey-light">
+                                            Published at November 14, 2020 &middot;
+                                            <i class="far fa-clock"></i>&nbsp;1 min read
+                                        </p>
+                                        <p>add tag # add tag to latest commit ~$ git tag v1.5.1.2 # add tag to specific commit ~$ git tag v1.5.1.2 446e2c10555ccbaa5cd4006b250d7d2135dbc2b0  remove tag # local ~$ git tag -d 1.7.2 # remote ~$ git push origin :tags/1.7.2  overwrite tag # local ~$ git tag -f 1.8.0 ~$ git tag -f 1.8.0 &lt;commit id&gt; # remote ~$ git push -f --tags  push tag to origin # push specific tag # git push &lt;remote name&gt; &lt;tag&gt; ~$ git push origin 1....</p>
+                                    </div>
+                                </div>
+                            </article>
+                            <br>
+                        
+                            <article class="media">
+                                <div class="media-content">
+                                    <div class="content">
+                                        <p class="title is-4"><a href="/git-submodule/">Git Submodule</a></p>
+                                        <p class="subtitle is-size-6 has-text-grey-light">
+                                            Published at November 14, 2020 &middot;
+                                            <i class="far fa-clock"></i>&nbsp;1 min read
+                                        </p>
+                                        <p>Installation # submodule 확인 ~$ git submodule # submodule 추가 ~$ git submodule add &lt;저장소주소&gt; &lt;서브모듈경로&gt; ## submodule download ~$ git submodule init ~$ git submodule update Update ~$ cd project # git repository ~$ cd sub1 # submodule 경로라고...</p>
+                                    </div>
+                                </div>
+                            </article>
+                            <br>
+                        
+                            <article class="media">
+                                <div class="media-content">
+                                    <div class="content">
+                                        <p class="title is-4"><a href="/hugo-basic/">Hugo Basic</a></p>
+                                        <p class="subtitle is-size-6 has-text-grey-light">
+                                            Published at November 14, 2020 &middot;
+                                            <i class="far fa-clock"></i>&nbsp;1 min read
+                                        </p>
+                                        <p>설치 Official Guide : https://gohugo.io/getting-started/installing/ Mac # 설치 brew install hugo 기본 사용법 # 사이트 생성 hugo new site quickstart cd quickstart # 테마 설치 git init git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke echo &#39;theme = &#34;ananke&#34;&#39; &gt;&gt; config.toml # 글 생성 hugo new posts/hello-wolrd.md # 미리보기 # hugo new 명령으로 글 생성...</p>
+                                    </div>
+                                </div>
+                            </article>
+                            <br>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="column is-3">
+                <div class="card">
+    <div class="card-content">
+        <h1 class="title is-5">Tags</h1>
+        <div class="tags">
+        
+            <span class="tag"><a href="https://fshilver.github.com/tags/git">git</a></span>
+        
+            <span class="tag"><a href="https://fshilver.github.com/tags/hugo">hugo</a></span>
+        
+        </div>          
+    </div>
+</div><br>
+                <div class="card">
+    <div class="card-content">
+        <h1 class="title is-5">Recent posts</h1>
+        
+            <h1><a href="https://fshilver.github.com/svn-ssl-error-centos6/">Svn Ssl Error Centos6</a></h1>
+            <time class="has-text-grey-light is-size-7">15 November 2020</time>
+        
+            <h1><a href="https://fshilver.github.com/git-tag/">Git Tag</a></h1>
+            <time class="has-text-grey-light is-size-7">14 November 2020</time>
+        
+            <h1><a href="https://fshilver.github.com/git-submodule/">Git Submodule</a></h1>
+            <time class="has-text-grey-light is-size-7">14 November 2020</time>
+        
+            <h1><a href="https://fshilver.github.com/hugo-basic/">Hugo Basic</a></h1>
+            <time class="has-text-grey-light is-size-7">14 November 2020</time>
+        
+    </div>
+</div>
+    <br>
+            </div>
+        </div>
+    </section>
+</div>
+
+
+        </main><footer class="footer has-background-grey-darker has-text-white">
+    <div class="container">
+        <div class="is-vcentered has-text-centered">
+            
+                    <a href="/about/" class="footer-text">About me</a>
+            
+            <br><br>
+            <p> Copyright &copy; Computer Science Tech Blog 2020 - Theme by Heesung Yang</a> </p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

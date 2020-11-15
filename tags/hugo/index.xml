@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>hugo on Computer Science Tech Blog</title>
+    <link>https://fshilver.github.com/tags/hugo/</link>
+    <description>Recent content in hugo on Computer Science Tech Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>ko-kr</language>
+    <lastBuildDate>Sat, 14 Nov 2020 13:49:31 +0900</lastBuildDate><atom:link href="https://fshilver.github.com/tags/hugo/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hugo Basic</title>
+      <link>https://fshilver.github.com/hugo-basic/</link>
+      <pubDate>Sat, 14 Nov 2020 13:49:31 +0900</pubDate>
+      
+      <guid>https://fshilver.github.com/hugo-basic/</guid>
+      <description>설치 Official Guide : https://gohugo.io/getting-started/installing/ Mac # 설치 brew install hugo 기본 사용법 # 사이트 생성 hugo new site quickstart cd quickstart # 테마 설치 git init git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke echo &amp;#39;theme = &amp;#34;ananke&amp;#34;&amp;#39; &amp;gt;&amp;gt; config.toml # 글 생성 hugo new posts/hello-wolrd.md # 미리보기 # hugo new 명령으로 글 생성</description>
+    </item>
+    
+  </channel>
+</rss>
