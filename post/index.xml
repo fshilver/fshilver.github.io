@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Computer Science Tech Blog</title>
-    <link>https://fshilver.github.com/post/</link>
+    <link>https://fshilver.github.io/post/</link>
     <description>Recent content in Posts on Computer Science Tech Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ko-kr</language>
-    <lastBuildDate>Sun, 15 Nov 2020 00:32:39 +0900</lastBuildDate><atom:link href="https://fshilver.github.com/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 15 Nov 2020 00:32:39 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Svn Ssl Error Centos6</title>
-      <link>https://fshilver.github.com/svn-ssl-error-centos6/</link>
+      <link>https://fshilver.github.io/svn-ssl-error-centos6/</link>
       <pubDate>Sun, 15 Nov 2020 00:32:39 +0900</pubDate>
       
-      <guid>https://fshilver.github.com/svn-ssl-error-centos6/</guid>
+      <guid>https://fshilver.github.io/svn-ssl-error-centos6/</guid>
       <description>Issue   svn command SSL error with https svn server
 svn list https://10.10.10.10/svn/blurblur svn: OPTIONS of &amp;#39;https://10.10.10.10/svn/blurblur&amp;#39;: SSL handshake failed: SSL error: Key usage violation in certificate has been detected. (https://10.10.10.10)   Environment  CentOS 6.4  Solution  change the neon package&amp;rsquo;s compile option, rebuild and re-install    set the repository to download source rpm
 vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source baseurl=http://vault.centos.org/6.4/os/Source/ gpgcheck=1 gpgkey=http://vault.centos.org//RPM-GPG-KEY-CentOS-6 priority=1 enabled=1 [updates-source] name=CentOS-6.</description>
@@ -20,28 +20,28 @@ vi /etc/yum.repo.d/source-rpm.repo [base-source] name=CentOS-6.4 - Base source b
     
     <item>
       <title>Git Tag</title>
-      <link>https://fshilver.github.com/git-tag/</link>
+      <link>https://fshilver.github.io/git-tag/</link>
       <pubDate>Sat, 14 Nov 2020 16:39:51 +0900</pubDate>
       
-      <guid>https://fshilver.github.com/git-tag/</guid>
+      <guid>https://fshilver.github.io/git-tag/</guid>
       <description>add tag # add tag to latest commit ~$ git tag v1.5.1.2 # add tag to specific commit ~$ git tag v1.5.1.2 446e2c10555ccbaa5cd4006b250d7d2135dbc2b0  remove tag # local ~$ git tag -d 1.7.2 # remote ~$ git push origin :tags/1.7.2  overwrite tag # local ~$ git tag -f 1.8.0 ~$ git tag -f 1.8.0 &amp;lt;commit id&amp;gt; # remote ~$ git push -f --tags  push tag to origin # push specific tag # git push &amp;lt;remote name&amp;gt; &amp;lt;tag&amp;gt; ~$ git push origin 1.</description>
     </item>
     
     <item>
       <title>Git Submodule</title>
-      <link>https://fshilver.github.com/git-submodule/</link>
+      <link>https://fshilver.github.io/git-submodule/</link>
       <pubDate>Sat, 14 Nov 2020 16:27:53 +0900</pubDate>
       
-      <guid>https://fshilver.github.com/git-submodule/</guid>
+      <guid>https://fshilver.github.io/git-submodule/</guid>
       <description>Installation # submodule 확인 ~$ git submodule # submodule 추가 ~$ git submodule add &amp;lt;저장소주소&amp;gt; &amp;lt;서브모듈경로&amp;gt; ## submodule download ~$ git submodule init ~$ git submodule update Update ~$ cd project # git repository ~$ cd sub1 # submodule 경로라고</description>
     </item>
     
     <item>
       <title>Hugo Basic</title>
-      <link>https://fshilver.github.com/hugo-basic/</link>
+      <link>https://fshilver.github.io/hugo-basic/</link>
       <pubDate>Sat, 14 Nov 2020 13:49:31 +0900</pubDate>
       
-      <guid>https://fshilver.github.com/hugo-basic/</guid>
+      <guid>https://fshilver.github.io/hugo-basic/</guid>
       <description>설치 Official Guide : https://gohugo.io/getting-started/installing/ Mac # 설치 brew install hugo 기본 사용법 # 사이트 생성 hugo new site quickstart cd quickstart # 테마 설치 git init git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke echo &amp;#39;theme = &amp;#34;ananke&amp;#34;&amp;#39; &amp;gt;&amp;gt; config.toml # 글 생성 hugo new posts/hello-wolrd.md # 미리보기 # hugo new 명령으로 글 생성</description>
     </item>
     
