@@ -6,7 +6,16 @@
     <description>Recent content in git on Computer Science Tech Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ko-kr</language>
-    <lastBuildDate>Sun, 15 Nov 2020 00:42:09 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/tags/git/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 15 Nov 2020 23:18:21 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/tags/git/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Git Commit Cheatsheet</title>
+      <link>https://fshilver.github.io/git-commit/</link>
+      <pubDate>Sun, 15 Nov 2020 23:18:21 +0900</pubDate>
+      
+      <guid>https://fshilver.github.io/git-commit/</guid>
+      <description>Cancel commit # 최종 커밋을 취소. 워킹트리는 보존됨. (커밋은 했으나 push하지 않은 경우 사용) # cancel last commit. keep changes ~$ git reset HEAD^ # 마지막 2개의 커밋을 취소. 워킹트리는 보존</description>
+    </item>
+    
     <item>
       <title>Github Clone Ssl Connection Error Centos6</title>
       <link>https://fshilver.github.io/github-clone-ssl-connection-error-centos6/</link>
@@ -19,7 +28,7 @@ GIT_CURL_VERBOSE=1 git clone https://github.com/fshilver/settings.git Cloning in
     </item>
     
     <item>
-      <title>Git Tag Cheetsheat</title>
+      <title>Git Tag Cheatsheet</title>
       <link>https://fshilver.github.io/git-tag/</link>
       <pubDate>Sat, 14 Nov 2020 16:39:51 +0900</pubDate>
       
