@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Svn Ssl Error Centos6 | LTL</title>
+    <meta name="description" content="How to solve ssl error during svn command on CentOS 6">
+    <link rel="canonical" href="https://fshilver.github.io/post/troubleshoot/svn-ssl-error-centos6/">
+    <link rel="stylesheet" href="/css/bulma.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+    <meta property="og:title" content="Svn Ssl Error Centos6" />
+<meta property="og:description" content="How to solve ssl error during svn command on CentOS 6" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://fshilver.github.io/post/troubleshoot/svn-ssl-error-centos6/" />
+<meta property="article:published_time" content="2020-11-15T00:32:39+09:00" />
+<meta property="article:modified_time" content="2020-11-15T23:07:04+09:00" />
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Svn Ssl Error Centos6"/>
+<meta name="twitter:description" content="How to solve ssl error during svn command on CentOS 6"/>
+
+    
+        
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-112829438-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+    
+</head>
+<body><header>
+    <nav class="navbar" role="navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="/" title="home" class="navbar-item">
+                    <span class="logo"><h1>LTL</h1></span>
+                </a>
+                
+                    <a href="https://github.com/fshilver" title="Github" class="navbar-item is-hidden-desktop">
+                        <span class="icon"><i class='fab fa-github'></i></span>
+                    </a>
+                
+                <a role="button" aria-label="menu" aria-expanded="false" class="navbar-burger">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    
+                        <a href="/categories/" class="navbar-item">Category</a>
+                    
+                        <a href="/series" class="navbar-item">Series</a>
+                    
+                        <a href="/tags/" class="navbar-item">Tag</a>
+                    
+                </div>
+                <div class="navbar-end">
+                    
+                        <a href="https://github.com/fshilver" class="navbar-item is-hidden-touch" title="Github">
+                            <span class="icon"><i class='fab fa-github'></i></span>
+                        </a>
+                    
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+<main>
+
+
+
+<div class="container">
+    <section class="section">
+        <div class="columns">
+            <div class="column is-9">
+                <article class="box">
+                    <h1 class="title is-1">Svn Ssl Error Centos6</h1>
+                    <div class="title subtitle heading is-6">
+                        <div class="columns is-vcentered">
+                            <div class="column">
+                                <div class="columns is-vcentered is-mobile">
+    
+                                    
+                                    <div class="column">
+                                        <p>Heesung Yang</p>
+                                        <p><time>November 15, 2020</time> | 1  minute </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <a href="/categories/troubleshoot">troubleshoot</a>
+                            </div>
+                        </div>
+    
+                    </div>
+                    
+    
+                    <div class="content">
+                        <h2 id="issue">Issue</h2>
+<ul>
+<li>
+<p>svn command SSL error with https svn server</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">svn list https://10.10.10.10/svn/blurblur
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-plaintext" data-lang="plaintext">svn: OPTIONS of &#39;https://10.10.10.10/svn/blurblur&#39;: SSL handshake failed: SSL error: Key usage violation in certificate has been detected. (https://10.10.10.10)
+</code></pre></div></li>
+</ul>
+<h2 id="environment">Environment</h2>
+<ul>
+<li>CentOS 6.4</li>
+</ul>
+<h2 id="solution">Solution</h2>
+<ul>
+<li>change the <code>neon</code> package&rsquo;s compile option, rebuild and re-install</li>
+</ul>
+<ol>
+<li>
+<p>set the repository to download source rpm</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">vi /etc/yum.repo.d/source-rpm.repo
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ini" data-lang="ini"><span style="color:#66d9ef">[base-source]</span>
+<span style="color:#a6e22e">name</span><span style="color:#f92672">=</span><span style="color:#e6db74">CentOS-6.4 - Base source</span>
+<span style="color:#a6e22e">baseurl</span><span style="color:#f92672">=</span><span style="color:#e6db74">http://vault.centos.org/6.4/os/Source/</span>
+<span style="color:#a6e22e">gpgcheck</span><span style="color:#f92672">=</span><span style="color:#e6db74">1</span>
+<span style="color:#a6e22e">gpgkey</span><span style="color:#f92672">=</span><span style="color:#e6db74">http://vault.centos.org//RPM-GPG-KEY-CentOS-6</span>
+<span style="color:#a6e22e">priority</span><span style="color:#f92672">=</span><span style="color:#e6db74">1</span>
+<span style="color:#a6e22e">enabled</span><span style="color:#f92672">=</span><span style="color:#e6db74">1</span>
+
+<span style="color:#66d9ef">[updates-source]</span>
+<span style="color:#a6e22e">name</span><span style="color:#f92672">=</span><span style="color:#e6db74">CentOS-6.4 - Updates Source</span>
+<span style="color:#a6e22e">baseurl</span><span style="color:#f92672">=</span><span style="color:#e6db74">http://vault.centos.org/6.4/updates/Source/</span>
+<span style="color:#a6e22e">gpgcheck</span><span style="color:#f92672">=</span><span style="color:#e6db74">1</span>
+<span style="color:#a6e22e">gpgkey</span><span style="color:#f92672">=</span><span style="color:#e6db74">http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-6</span>
+<span style="color:#a6e22e">priority</span><span style="color:#f92672">=</span><span style="color:#e6db74">1</span>
+<span style="color:#a6e22e">enabled</span><span style="color:#f92672">=</span><span style="color:#e6db74">1</span>
+</code></pre></div></li>
+<li>
+<p>install <code>yum-utils</code> for <code>yumdownloader</code> command and install <code>libproxy-devel</code>, <code>pakchois-devel</code> for <code>neon</code> compile</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">yum install -y yum-utils libproxy-devel pakchois-devel
+</code></pre></div></li>
+<li>
+<p>install <code>neon</code> source rpm</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">yumdownloader --source neon
+rpm -ivh neon-0.29.3-3.el6_4.src.rpm
+</code></pre></div></li>
+<li>
+<p>change the compile option ( <code>with-ssl=gnu-tls</code> -&gt; <code>with-ssl</code>)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cd ~/rpmbuild/
+vi ~/rpmbuild/SPECS/neon.spec
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-plaintext" data-lang="plaintext">%configure --with-expat --enable-shared --disable-static \
+        --enable-warnings --with-ca-bundle=%{cabundle} \
+        --with-ssl --enable-threadsafe-ssl=posix \
+        --with-libproxy
+</code></pre></div></li>
+<li>
+<p>build rpm and re-install</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">rpmbuild -ba ~/rpmbuild/SPECS/neon.spec
+rpm -e neon --nodeps
+rpm -ivh ~/rpmbuild/RPMS/x86_64/neon-0.29.3-3.el6.x86_64.rpm
+</code></pre></div></li>
+</ol>
+
+                    </div>
+                    <section class="section">
+                        <div class="columns is-mobile">
+                            <div class="column has-text-left">
+                                
+                                <p>Previous post</p>
+                                <a href="/post/git-tag/">Git Tag Cheatsheet</a>
+                                
+                            </div>
+                            <div class="column has-text-right">
+                                
+                                <p>Next post</p>
+                                <a href="/post/troubleshoot/github-clone-ssl-connection-error-centos6/">Github Clone Ssl Connection Error Centos6</a>
+                                
+                            </div>
+                        </div>
+                    </section>
+                </article>
+
+            </div>
+            <div class="column is-3">
+                
+
+
+                <div class="card mb-3">
+    <div class="card-content">
+        <h1 class="title is-5">Tags</h1>
+        <div class="tags">
+        
+            <span class="tag"><a href="https://fshilver.github.io/tags/centos6">centos6</a></span>
+        
+            <span class="tag"><a href="https://fshilver.github.io/tags/git">git</a></span>
+        
+            <span class="tag"><a href="https://fshilver.github.io/tags/hugo">hugo</a></span>
+        
+            <span class="tag"><a href="https://fshilver.github.io/tags/svn">svn</a></span>
+        
+        </div>          
+    </div>
+</div>
+
+                
+  
+
+
+
+<div class="card mb-3">
+    <div class="card-content">
+        <h1 class="title is-5">Related posts</h1>
+      
+      
+            <h1><a href="https://fshilver.github.io/post/troubleshoot/github-clone-ssl-connection-error-centos6/">Github Clone Ssl Connection Error Centos6</a></h1>
+            <time class="has-text-grey-light is-size-7">15 November 2020</time>
+      
+    </div>
+</div>
+
+
+                <div class="card mb-3">
+    <div class="card-content">
+        <h1 class="title is-5">Recent posts</h1>
+        
+            <h1><a href="https://fshilver.github.io/post/git-commit/">Git Commit Cheatsheet</a></h1>
+            <time class="has-text-grey-light is-size-7">15 November 2020</time>
+        
+            <h1><a href="https://fshilver.github.io/post/troubleshoot/github-clone-ssl-connection-error-centos6/">Github Clone Ssl Connection Error Centos6</a></h1>
+            <time class="has-text-grey-light is-size-7">15 November 2020</time>
+        
+            <h1><a href="https://fshilver.github.io/post/troubleshoot/svn-ssl-error-centos6/">Svn Ssl Error Centos6</a></h1>
+            <time class="has-text-grey-light is-size-7">15 November 2020</time>
+        
+            <h1><a href="https://fshilver.github.io/post/git-tag/">Git Tag Cheatsheet</a></h1>
+            <time class="has-text-grey-light is-size-7">14 November 2020</time>
+        
+            <h1><a href="https://fshilver.github.io/post/git-submodule/">Git Submodule Cheatsheet</a></h1>
+            <time class="has-text-grey-light is-size-7">14 November 2020</time>
+        
+    </div>
+</div>
+
+            </div>
+        </div>
+    </section>
+</div>
+
+
+        </main><footer class="footer has-background-grey-darker has-text-white">
+    <div class="container">
+        <div class="is-vcentered has-text-centered">
+            
+                    <a href="/about/" class="footer-text">About me</a>
+            
+            <br><br>
+            <p> Copyright &copy; LTL 2021 - Theme by Heesung Yang</a> </p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

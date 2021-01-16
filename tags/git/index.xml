@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>git on Computer Science Tech Blog</title>
+    <title>git on LTL</title>
     <link>https://fshilver.github.io/tags/git/</link>
-    <description>Recent content in git on Computer Science Tech Blog</description>
+    <description>Recent content in git on LTL</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>ko-kr</language>
+    <language>ko</language>
     <lastBuildDate>Sun, 15 Nov 2020 23:18:21 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/tags/git/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Git Commit Cheatsheet</title>
-      <link>https://fshilver.github.io/git-commit/</link>
+      <link>https://fshilver.github.io/post/git-commit/</link>
       <pubDate>Sun, 15 Nov 2020 23:18:21 +0900</pubDate>
       
-      <guid>https://fshilver.github.io/git-commit/</guid>
+      <guid>https://fshilver.github.io/post/git-commit/</guid>
       <description>Cancel commit # 최종 커밋을 취소. 워킹트리는 보존됨. (커밋은 했으나 push하지 않은 경우 사용) # cancel last commit. keep changes ~$ git reset HEAD^ # 마지막 2개의 커밋을 취소. 워킹트리는 보존</description>
     </item>
     
     <item>
       <title>Github Clone Ssl Connection Error Centos6</title>
-      <link>https://fshilver.github.io/github-clone-ssl-connection-error-centos6/</link>
+      <link>https://fshilver.github.io/post/troubleshoot/github-clone-ssl-connection-error-centos6/</link>
       <pubDate>Sun, 15 Nov 2020 00:42:09 +0900</pubDate>
       
-      <guid>https://fshilver.github.io/github-clone-ssl-connection-error-centos6/</guid>
+      <guid>https://fshilver.github.io/post/troubleshoot/github-clone-ssl-connection-error-centos6/</guid>
       <description>Issue git clone SSL connect error (NSS error -12190)   git fatal: HTTP request failed
 git clone https://github.com/vim/vim.git Initialized empty Git repository in /root/vim/.git/ error: while accessing https://github.com/vim/vim.git/info/refs fatal: HTTP request failed   git fatl: unable to access : SSL connect error
 GIT_CURL_VERBOSE=1 git clone https://github.com/fshilver/settings.git Cloning into &amp;#39;settings&amp;#39;... * Couldn&amp;#39;t find host github.com in the .netrc file; using defaults * About to connect() to github.com port 443 (#0) * Trying 192.</description>
@@ -29,19 +29,19 @@ GIT_CURL_VERBOSE=1 git clone https://github.com/fshilver/settings.git Cloning in
     
     <item>
       <title>Git Tag Cheatsheet</title>
-      <link>https://fshilver.github.io/git-tag/</link>
+      <link>https://fshilver.github.io/post/git-tag/</link>
       <pubDate>Sat, 14 Nov 2020 16:39:51 +0900</pubDate>
       
-      <guid>https://fshilver.github.io/git-tag/</guid>
+      <guid>https://fshilver.github.io/post/git-tag/</guid>
       <description>add tag # add tag to latest commit ~$ git tag v1.5.1.2 # add tag to specific commit ~$ git tag v1.5.1.2 446e2c10555ccbaa5cd4006b250d7d2135dbc2b0  remove tag # local ~$ git tag -d 1.7.2 # remote ~$ git push origin :tags/1.7.2  overwrite tag # local ~$ git tag -f 1.8.0 ~$ git tag -f 1.8.0 &amp;lt;commit id&amp;gt; # remote ~$ git push -f --tags  push tag to origin # push specific tag # git push &amp;lt;remote name&amp;gt; &amp;lt;tag&amp;gt; ~$ git push origin 1.</description>
     </item>
     
     <item>
       <title>Git Submodule Cheatsheet</title>
-      <link>https://fshilver.github.io/git-submodule/</link>
+      <link>https://fshilver.github.io/post/git-submodule/</link>
       <pubDate>Sat, 14 Nov 2020 16:27:53 +0900</pubDate>
       
-      <guid>https://fshilver.github.io/git-submodule/</guid>
+      <guid>https://fshilver.github.io/post/git-submodule/</guid>
       <description>Installation # check submodule ~$ git submodule # add submodule ~$ git submodule add &amp;lt;remote repository&amp;gt; &amp;lt;local dir&amp;gt; ## submodule download ~$ git submodule init ~$ git submodule update Update # before git 1.8 ~$ cd project # git repository ~$ cd sub1 # assume sub1 is submodule ~$ git pull # get latest sub1 ~$ cd .. ~$ git add sub1 ~$ git commit -m &amp;#39;update submodule&amp;#39; # after git 1.</description>
     </item>
     

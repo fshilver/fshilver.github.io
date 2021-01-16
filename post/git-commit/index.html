@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Commit Cheatsheet | LTL</title>
+    <meta name="description" content="Learn how to use git commit command line with examples">
+    <link rel="canonical" href="https://fshilver.github.io/post/git-commit/">
+    <link rel="stylesheet" href="/css/bulma.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+    <meta property="og:title" content="Git Commit Cheatsheet" />
+<meta property="og:description" content="Learn how to use git commit command line with examples" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://fshilver.github.io/post/git-commit/" />
+<meta property="article:published_time" content="2020-11-15T23:18:21+09:00" />
+<meta property="article:modified_time" content="2020-11-17T23:56:58+09:00" />
+
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Git Commit Cheatsheet"/>
+<meta name="twitter:description" content="Learn how to use git commit command line with examples"/>
+
+    
+        
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-112829438-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+    
+</head>
+<body><header>
+    <nav class="navbar" role="navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="/" title="home" class="navbar-item">
+                    <span class="logo"><h1>LTL</h1></span>
+                </a>
+                
+                    <a href="https://github.com/fshilver" title="Github" class="navbar-item is-hidden-desktop">
+                        <span class="icon"><i class='fab fa-github'></i></span>
+                    </a>
+                
+                <a role="button" aria-label="menu" aria-expanded="false" class="navbar-burger">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    
+                        <a href="/categories/" class="navbar-item">Category</a>
+                    
+                        <a href="/series" class="navbar-item">Series</a>
+                    
+                        <a href="/tags/" class="navbar-item">Tag</a>
+                    
+                </div>
+                <div class="navbar-end">
+                    
+                        <a href="https://github.com/fshilver" class="navbar-item is-hidden-touch" title="Github">
+                            <span class="icon"><i class='fab fa-github'></i></span>
+                        </a>
+                    
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+<main>
+
+
+
+<div class="container">
+    <section class="section">
+        <div class="columns">
+            <div class="column is-9">
+                <article class="box">
+                    <h1 class="title is-1">Git Commit Cheatsheet</h1>
+                    <div class="title subtitle heading is-6">
+                        <div class="columns is-vcentered">
+                            <div class="column">
+                                <div class="columns is-vcentered is-mobile">
+    
+                                    
+                                    <div class="column">
+                                        <p>Heesung Yang</p>
+                                        <p><time>November 15, 2020</time> | 2  minutes </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <a href="/categories/howto">howto</a>
+                            </div>
+                        </div>
+    
+                    </div>
+                    
+    
+                    <div class="content">
+                        <h2 id="cancel-commit">Cancel commit</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># 최종 커밋을 취소. 워킹트리는 보존됨. (커밋은 했으나 push하지 않은 경우 사용)</span>
+<span style="color:#75715e"># cancel last commit. keep changes</span>
+~$ git reset HEAD^
+
+<span style="color:#75715e"># 마지막 2개의 커밋을 취소. 워킹트리는 보존됨.</span>
+<span style="color:#75715e"># cancel last 2 commits. keep changes</span>
+~$ git reset HEAD~2
+
+<span style="color:#75715e"># 마지막 2개의 커밋을 취소. index 및 워킹트리 모두 원복됨.</span>
+<span style="color:#75715e"># remove last 2 commits with working tree</span>
+~$ git reset --hard HEAD~2
+
+<span style="color:#75715e"># 머지한 것을 이미 커밋했을 때, 그 커밋을 취소. (잘못된 머지를 이미 커밋한 경우 유용)</span>
+<span style="color:#75715e"># cancel merged commit</span>
+~$ git reset --hard ORIG_HEAD
+
+<span style="color:#75715e"># HEAD에서 변경한 내역을 취소하는 새로운 커밋 발행(undo commit). (커밋을 이미 push 해버린 경우 유용)</span>
+<span style="color:#75715e"># undo commit as new commit</span>
+~$ git revert HEAD
+
+<span style="color:#75715e"># 마지막 commit 메시지 수정</span>
+<span style="color:#75715e"># change last commit message</span>
+~$ git commit --amend
+
+<span style="color:#75715e"># commit 시 diff 내용 출력</span>
+<span style="color:#75715e"># show diff when commit</span>
+~$ git commit -v
+
+<span style="color:#75715e"># commit 합치기</span>
+<span style="color:#75715e"># 마지막 2개의 commit 을 하나로 합치기 위한 창이 뜸</span>
+<span style="color:#75715e">#</span>
+<span style="color:#75715e">#   pick 509d675 Add svn-ssl-error-centos</span>
+<span style="color:#75715e">#   pick 3312e8c change kor to eng</span>
+<span style="color:#75715e">#</span>
+<span style="color:#75715e"># 두 번째 라인의 `pick` 을 `squash` 로 변경하고 저장하면 commit msg 수정하는 단계로 넘어가고 commit msg 수정 후 저장하면 완료</span>
+<span style="color:#75715e"># squash last 2 commits</span>
+~$ git rebase -i HEAD~2
+
+<span style="color:#75715e"># commit 나누기</span>
+<span style="color:#75715e"># 마지막 2개의 commit 중 나누고 싶은 commit 을 `edit` 로 변경</span>
+<span style="color:#75715e">#</span>
+<span style="color:#75715e">#   pick 509d675 Add svn-ssl-error-centos</span>
+<span style="color:#75715e">#   edit 3312e8c change kor to eng   &lt;&lt;&lt; edit 로 변경</span>
+<span style="color:#75715e">#</span>
+<span style="color:#75715e"># `git reset HEAD^` 명령어로 unstage 시킴</span>
+<span style="color:#75715e"># commit 하고 싶은 내용만 골라서 add 후 commit -&gt; commit 1개 생성</span>
+<span style="color:#75715e"># 위 과정 반복</span>
+<span style="color:#75715e"># commit 완료 후 `git rebase --continue` 명령어로 종료</span>
+<span style="color:#75715e"># split commits</span>
+~$ git rebase -i HEAD~2
+</code></pre></div><h2 id="cherry-pick">Cherry-pick</h2>
+<ul>
+<li>feature/a 브랜치의 일부 commit 만 master 에 적용</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># checkout to feature/a</span>
+~$ git checkout feature/a
+~$ git log
+f0607f24c104b01b9dd2b603bf3c4aa25f90386a commit meesage <span style="color:#ae81ff">2</span> <span style="color:#75715e"># &lt;- what I want to cherry-pick</span>
+10d84f621e027a59b0c27a255f891aa4c078b06c commit message <span style="color:#ae81ff">1</span>
+
+~$ git checkout master
+~$ git cherry-pick f0607f24c104b01b9dd2b603bf3c4aa25f90386a
+</code></pre></div><h2 id="change-author">Change author</h2>
+<ul>
+<li>Reference : <a href="https://makandracards.com/makandra/1717-git-change-author-of-a-commit">https://makandracards.com/makandra/1717-git-change-author-of-a-commit</a></li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># rebase 모드 진입, 수정하고자 하는 commit의 pick 부분을 edit로 변경</span>
+git rebase -i origin/master
+
+<span style="color:#75715e"># 매 commit 마다 변경 후 continue. 반복</span>
+git commit --amend --author<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Heesung Yang &lt;someone@example.com&gt;&#34;</span>
+git rebase --continue
+</code></pre></div>
+                    </div>
+                    <section class="section">
+                        <div class="columns is-mobile">
+                            <div class="column has-text-left">
+                                
+                                <p>Previous post</p>
+                                <a href="/post/troubleshoot/github-clone-ssl-connection-error-centos6/">Github Clone Ssl Connection Error Centos6</a>
+                                
+                            </div>
+                            <div class="column has-text-right">
+                                
+                            </div>
+                        </div>
+                    </section>
+                </article>
+
+            </div>
+            <div class="column is-3">
+                
+
+
+                <div class="card mb-3">
+    <div class="card-content">
+        <h1 class="title is-5">Tags</h1>
+        <div class="tags">
+        
+            <span class="tag"><a href="https://fshilver.github.io/tags/centos6">centos6</a></span>
+        
+            <span class="tag"><a href="https://fshilver.github.io/tags/git">git</a></span>
+        
+            <span class="tag"><a href="https://fshilver.github.io/tags/hugo">hugo</a></span>
+        
+            <span class="tag"><a href="https://fshilver.github.io/tags/svn">svn</a></span>
+        
+        </div>          
+    </div>
+</div>
+
+                
+  
+
+
+
+<div class="card mb-3">
+    <div class="card-content">
+        <h1 class="title is-5">Related posts</h1>
+      
+      
+            <h1><a href="https://fshilver.github.io/post/troubleshoot/github-clone-ssl-connection-error-centos6/">Github Clone Ssl Connection Error Centos6</a></h1>
+            <time class="has-text-grey-light is-size-7">15 November 2020</time>
+      
+            <h1><a href="https://fshilver.github.io/post/git-tag/">Git Tag Cheatsheet</a></h1>
+            <time class="has-text-grey-light is-size-7">14 November 2020</time>
+      
+            <h1><a href="https://fshilver.github.io/post/git-submodule/">Git Submodule Cheatsheet</a></h1>
+            <time class="has-text-grey-light is-size-7">14 November 2020</time>
+      
+    </div>
+</div>
+
+
+                <div class="card mb-3">
+    <div class="card-content">
+        <h1 class="title is-5">Recent posts</h1>
+        
+            <h1><a href="https://fshilver.github.io/post/git-commit/">Git Commit Cheatsheet</a></h1>
+            <time class="has-text-grey-light is-size-7">15 November 2020</time>
+        
+            <h1><a href="https://fshilver.github.io/post/troubleshoot/github-clone-ssl-connection-error-centos6/">Github Clone Ssl Connection Error Centos6</a></h1>
+            <time class="has-text-grey-light is-size-7">15 November 2020</time>
+        
+            <h1><a href="https://fshilver.github.io/post/troubleshoot/svn-ssl-error-centos6/">Svn Ssl Error Centos6</a></h1>
+            <time class="has-text-grey-light is-size-7">15 November 2020</time>
+        
+            <h1><a href="https://fshilver.github.io/post/git-tag/">Git Tag Cheatsheet</a></h1>
+            <time class="has-text-grey-light is-size-7">14 November 2020</time>
+        
+            <h1><a href="https://fshilver.github.io/post/git-submodule/">Git Submodule Cheatsheet</a></h1>
+            <time class="has-text-grey-light is-size-7">14 November 2020</time>
+        
+    </div>
+</div>
+
+            </div>
+        </div>
+    </section>
+</div>
+
+
+        </main><footer class="footer has-background-grey-darker has-text-white">
+    <div class="container">
+        <div class="is-vcentered has-text-centered">
+            
+                    <a href="/about/" class="footer-text">About me</a>
+            
+            <br><br>
+            <p> Copyright &copy; LTL 2021 - Theme by Heesung Yang</a> </p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
