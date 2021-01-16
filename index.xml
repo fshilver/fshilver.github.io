@@ -6,7 +6,16 @@
     <description>Recent content on LTL</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ko</language>
-    <lastBuildDate>Sun, 15 Nov 2020 23:18:21 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 16 Jan 2021 20:34:11 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>02. 이미지 첨부를 위한 폴더 구조</title>
+      <link>https://fshilver.github.io/post/series/hugo/02-page-bundles/</link>
+      <pubDate>Sat, 16 Jan 2021 20:34:11 +0900</pubDate>
+      
+      <guid>https://fshilver.github.io/post/series/hugo/02-page-bundles/</guid>
+      <description>이미지 첨부하기 지난 번 작성한 글에 이미지를 첨부하고 싶다. 이미지 파일명은 sample.png라고 하자. 근데&amp;hellip; 어디에 이미지 파일을 복사해</description>
+    </item>
+    
     <item>
       <title>Git Commit Cheatsheet</title>
       <link>https://fshilver.github.io/post/git-commit/</link>

@@ -6,7 +6,16 @@
     <description>Recent content in Tags on LTL</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ko</language>
-    <lastBuildDate>Sun, 15 Nov 2020 23:18:21 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 16 Jan 2021 20:34:11 +0900</lastBuildDate><atom:link href="https://fshilver.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>hugo</title>
+      <link>https://fshilver.github.io/tags/hugo/</link>
+      <pubDate>Sat, 16 Jan 2021 20:34:11 +0900</pubDate>
+      
+      <guid>https://fshilver.github.io/tags/hugo/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>git</title>
       <link>https://fshilver.github.io/tags/git/</link>
@@ -31,15 +40,6 @@
       <pubDate>Sun, 15 Nov 2020 00:32:39 +0900</pubDate>
       
       <guid>https://fshilver.github.io/tags/svn/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>hugo</title>
-      <link>https://fshilver.github.io/tags/hugo/</link>
-      <pubDate>Sat, 14 Nov 2020 13:49:31 +0900</pubDate>
-      
-      <guid>https://fshilver.github.io/tags/hugo/</guid>
       <description></description>
     </item>
     
