@@ -1,0 +1,266 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>자주 쓰는 - git branch 명령어 | 메모장</title>
+<meta name=description content="자주 쓰는 git branch 명령어를 알아보자.">
+<link rel=canonical href=https://hsyang.net/posts/git-branch/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="자주 쓰는 - git branch 명령어">
+<meta property="og:description" content="자주 쓰는 git branch 명령어를 알아보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/git-branch/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-11-29T23:22:06+09:00">
+<meta property="article:modified_time" content="2021-11-29T23:48:24+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="자주 쓰는 - git branch 명령어">
+<meta name=twitter:description content="자주 쓰는 git branch 명령어를 알아보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<div class="navbar-item has-dropdown is-hoverable">
+<a class=navbar-link>Language</a>
+<div class=navbar-dropdown>
+<a class=navbar-item rel=alternate href=/en/posts/git-branch/ hreflang=en lang=en>en</a>
+</div>
+</div>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>November 29, 2021</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">자주 쓰는 - git branch 명령어</h1>
+<div class="content mt-6">
+<h2 id=생성>생성</h2>
+<ul>
+<li>
+<p>현재 commit에서 branch 생성</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git checkout -b &lt;new branch&gt;
+
+<span style=color:#75715e># 예제</span>
+<span style=color:#75715e># branch 이름 : my-branch</span>
+~$ git checkout -b my-branch
+</code></pre></div></li>
+<li>
+<p>특정 tag에서 branch 생성</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git checkout -b &lt;new branch&gt; &lt;tag&gt;
+
+<span style=color:#75715e># 예제</span>
+<span style=color:#75715e># branch 이름 : my-branch</span>
+<span style=color:#75715e># tag : 1.1.0</span>
+~$ git checkout -b my-branch 1.1.0
+</code></pre></div></li>
+<li>
+<p>원격지 branch 가져오기</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git checkout -b &lt;로컬 branch 이름&gt; &lt;원격지 branch 이름&gt;
+
+<span style=color:#75715e># 예제</span>
+<span style=color:#75715e># 로컬 branch 이름 : local-my-branch</span>
+<span style=color:#75715e># 원격지 branch 이름 : origin/my-branch</span>
+~$ git checkout -b local-my-branch origin/my-branch
+</code></pre></div></li>
+<li>
+<p>원격지 branch 가져오기 (동일한 branch 이름 사용)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git checkout -t &lt;원격지 branch 이름&gt;
+
+<span style=color:#75715e># 예제</span>
+<span style=color:#75715e># 원격지 이름 : origin</span>
+<span style=color:#75715e># 원격지 branch 이름 : my-branch</span>
+~$ git checkout -t origin/my-branch
+</code></pre></div></li>
+</ul>
+<h2 id=조회>조회</h2>
+<ul>
+<li>
+<p>로컬 branch 목록 조회</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git branch
+</code></pre></div></li>
+<li>
+<p>원격지 branch 목록 조회</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git branch -r
+</code></pre></div></li>
+<li>
+<p>로컬/원격지 branch 목록 조회</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git branch -a
+</code></pre></div></li>
+</ul>
+<h2 id=수정>수정</h2>
+<ul>
+<li>
+<p>branch 원격지 전송</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git push &lt;원격지 이름&gt; &lt;로컬 branch 이름&gt;:&lt;원격지 branch 이름&gt;
+
+<span style=color:#75715e># 예제</span>
+<span style=color:#75715e># 원격지 이름 : origin</span>
+<span style=color:#75715e># 로컬 branch 이름 : local-my-branch</span>
+<span style=color:#75715e># 원격지 branch 이름 : my-branch</span>
+~$ git push origin local-my-branch:my-branch
+</code></pre></div></li>
+<li>
+<p>branch 원격지 전송 (동일한 branch 이름 사용)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git push &lt;원격지 이름&gt; &lt;로컬 branch 이름&gt;
+
+<span style=color:#75715e># 예제</span>
+<span style=color:#75715e># 원격지 이름 : origin</span>
+<span style=color:#75715e># 로컬 branch 이름 : my-branch</span>
+~$ git push origin my-branch
+</code></pre></div></li>
+</ul>
+<h2 id=삭제>삭제</h2>
+<ul>
+<li>
+<p>로컬 branch 삭제</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git branch -d &lt;branch 이름&gt;
+
+<span style=color:#75715e># 예제</span>
+<span style=color:#75715e># 로컬 branch 이름 : my-branch</span>
+~$ git branch -d my-branch
+</code></pre></div></li>
+<li>
+<p>원격지 branch 삭제</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git push &lt;원격지 이름&gt; :&lt;branch 이름&gt;
+
+<span style=color:#75715e># 예제</span>
+<span style=color:#75715e># 원격지 이름 : origin</span>
+<span style=color:#75715e># 원격지 branch 이름 : my-branch</span>
+~$ git push origin :my-branch
+</code></pre></div></li>
+</ul>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/dicom-windowing/>DICOM 영상에서 Window Center와 Window Width는 대체 왜 쓰는걸까?</a>
+</div>
+<div class="column has-text-right">
+<p>Next post</p>
+<a href=/posts/docker-ps-format/>Docker ps 내용 바꾸기</a>
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#생성>생성</a></li>
+<li><a href=#조회>조회</a></li>
+<li><a href=#수정>수정</a></li>
+<li><a href=#삭제>삭제</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/git-commit/>자주 쓰는 - git commit 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">15 November 2020</time>
+<h1><a href=https://hsyang.net/posts/git-tag/>자주 쓰는 - git tag 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">14 November 2020</time>
+<h1><a href=https://hsyang.net/posts/git-submodule/>자주 쓰는 - git submodule 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">14 November 2020</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>자주 쓰는 - git branch 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2021 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>

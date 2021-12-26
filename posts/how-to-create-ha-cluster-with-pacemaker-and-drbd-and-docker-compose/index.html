@@ -1,0 +1,761 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose) | 메모장</title>
+<meta name=description content="Pacemaker와 DRBD를 이용하여 Linux HA 클러스터를 구성하는 방법을 알아보자. docker-compose로 실행하는 application을 이중화 해보자.">
+<link rel=canonical href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)">
+<meta property="og:description" content="Pacemaker와 DRBD를 이용하여 Linux HA 클러스터를 구성하는 방법을 알아보자. docker-compose로 실행하는 application을 이중화 해보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-12-21T01:04:35+09:00">
+<meta property="article:modified_time" content="2021-12-21T01:28:00+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)">
+<meta name=twitter:description content="Pacemaker와 DRBD를 이용하여 Linux HA 클러스터를 구성하는 방법을 알아보자. docker-compose로 실행하는 application을 이중화 해보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>December 21, 2021</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</h1>
+<div class="content mt-6">
+<p>이 글에서는 docker-compose로 실행하는 application을 Active/Standy HA 클러스터로 구성하는 방법에 대해 설명한다.</p>
+<h2 id=환경-구성-목표>환경 구성 목표</h2>
+<ul>
+<li>OS : CentOS 7</li>
+<li>두 대의 서버를 Active/Standby 구성
+<ul>
+<li>이를 위해 <code>Pacemaker</code> 구성</li>
+</ul>
+</li>
+<li><code>docker-compose</code> 구성은 전형적인 web application 구조로 되어 있음
+<ul>
+<li>nginx container</li>
+<li>database container</li>
+<li>app container</li>
+</ul>
+</li>
+<li>database container 데이터는 양쪽 서버가 동일해야 함
+<ul>
+<li>이를 위해 <code>DBMS</code>가 지원하는 replication 솔루션을 사용할 수 있음</li>
+<li>그러나 <code>DBMS</code>마다 설정 방법이 다름</li>
+<li><code>DBMS</code> 종류와 상관없이 replication 구성을 하기 위해 <code>DRBD</code> 구성</li>
+</ul>
+</li>
+</ul>
+<h2 id=drbd-구성>DRBD 구성</h2>
+<blockquote>
+<p>Reference : <a href=https://linbit.com/drbd-user-guide/users-guide-drbd-8-4/>https://linbit.com/drbd-user-guide/users-guide-drbd-8-4/</a></p>
+</blockquote>
+<p>DRBD 구성을 하려면 사용하지 않는 파티션이 필요하다. 이 글에서는 <code>/dev/sdb</code> 에 새로운 파티션을 생성해보겠다.</p>
+<h3 id=설치>설치</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+~$ sudo yum install -y https://www.elrepo.org/elrepo-release-7.el7.elrepo.noarch.rpm
+~$ sudo yum install -y kmod-drbd84 drbd84-utils
+</code></pre></div><h3 id=drbd용-파티션-생성>DRBD용 파티션 생성</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo fdisk /dev/sdb <span style=color:#e6db74>&lt;&lt;EOF
+</span><span style=color:#e6db74>n
+</span><span style=color:#e6db74>p
+</span><span style=color:#e6db74>
+</span><span style=color:#e6db74>
+</span><span style=color:#e6db74>
+</span><span style=color:#e6db74>w
+</span><span style=color:#e6db74>EOF</span>
+~$ sudo fdisk -l
+...
+
+Disk /dev/sdb: 10.7 GB, <span style=color:#ae81ff>10737418240</span> bytes, <span style=color:#ae81ff>20971520</span> sectors
+Units <span style=color:#f92672>=</span> sectors of <span style=color:#ae81ff>1</span> * 512 <span style=color:#f92672>=</span> <span style=color:#ae81ff>512</span> bytes
+Sector size <span style=color:#f92672>(</span>logical/physical<span style=color:#f92672>)</span>: <span style=color:#ae81ff>512</span> bytes / <span style=color:#ae81ff>512</span> bytes
+I/O size <span style=color:#f92672>(</span>minimum/optimal<span style=color:#f92672>)</span>: <span style=color:#ae81ff>512</span> bytes / <span style=color:#ae81ff>512</span> bytes
+Disk label type: dos
+Disk identifier: 0x6ee68984
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdb1            <span style=color:#ae81ff>2048</span>    <span style=color:#ae81ff>20971519</span>    <span style=color:#ae81ff>10484736</span>   <span style=color:#ae81ff>83</span>  Linux              <span style=color:#f92672>&lt;&lt;&lt;</span>&lt;&lt; Partition is created !!!
+</code></pre></div><h3 id=global-설정>Global 설정</h3>
+<ul>
+<li>
+<p><code>/etc/drbd.d/global_common.conf</code></p>
+<pre><code class=language-conf data-lang=conf>global {
+        usage-count no;
+        udev-always-use-vnr;
+}
+common {
+        handlers {
+        }
+        startup {
+        }
+        options {
+        }
+        disk {
+                disk-barrier yes;
+                disk-flushes yes;
+        }
+        net {
+                protocol C;
+                sndbuf-size 512k;
+        }
+}
+</code></pre></li>
+</ul>
+<h4 id=global>global</h4>
+<ul>
+<li>usage-count
+<ul>
+<li>DRBD 프로젝트에서 설치 횟수 통계를 목적으로 수집하기 위한 설정</li>
+<li>이 사이트에서 통계 확인 가능 (<a href=http://usage.drbd.org/index.html>http://usage.drbd.org/index.html</a>)</li>
+<li>default 값은 <code>ask</code></li>
+<li><code>yes</code>로 설정할 경우, <code>DRBD</code> 버전 업데이트 시 자동으로 통계 정보 전달</li>
+</ul>
+</li>
+<li>udev-always-use-vnr
+<ul>
+<li>vnr : volume number</li>
+<li>udev -> drbdadm 에 장치와 관련된 symbolic link 목록 요청 시 이 옵션 존재 여부에 따라 응답 값이 달라짐</li>
+<li>하위 호환성을 위해 default 값은 off. 그렇지만 enable 권장</li>
+<li>이 옵션 존재 시 항상 아래와 같은 naming convention으로 device file 생성됨
+<ul>
+<li>/dev/drbd/by-res/{resource name}/0</li>
+<li>/dev/drbd/by-res/{resource name}/1</li>
+</ul>
+</li>
+<li>옵션 없을 시 단일 볼륨인 경우 아래와 같이 생성되고 vnr이 0인 하나의 volume 이라 가정하고 아래와 같이
+<ul>
+<li>/dev/drbd/by-res/{resource name}</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id=common>common</h4>
+<ul>
+<li>disk
+<ul>
+<li>disk-barrier</li>
+<li>disk-flushed</li>
+</ul>
+</li>
+<li>net
+<ul>
+<li>protocol
+<ul>
+<li>A
+<ul>
+<li>비동기 복제</li>
+<li>이 설정은 주로 DR(Disaster Recovery) 구성 시 사용
+<ul>
+<li>DR 구성은 보통 서버의 거리가 매우 멀기 때문에 네트워크 전송 속도가 빠르지 않음</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>B
+<ul>
+<li>반동기화 복제</li>
+<li>로컬 디스크에 쓰기 작업이 끝나고, 복제를 위한 데이터 패킷이 복제 대상 서버에 도착하는 순간 완료로 간주(복제 대상 서버의 디스크 쓰기 작업은 확인 안함)</li>
+<li>강제 failover 시 데이터 손실이 발생하지 않지만, 두 서버가 동시에 정전되는 경우 가장 최근의 데이터 쓰기 내용이 손실될 수 있음</li>
+</ul>
+</li>
+<li>C
+<ul>
+<li>동기화 복제</li>
+<li>보통 같은 데이터 센터에 위치한 서버(거리가 매우 짧음)에 사용하며 대부분 DRBD 구성 시 이 옵션을 사용</li>
+<li>로컬 디스크와 복제 대상 서버의 디스크에 쓰기 작업이 끝난 경우 완료로 간주</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>sndbuf-size
+<ul>
+<li>물리적으로 매우 가깝게 네트워크가 구성된 경우, network buffer 크기를 키워서 전송 속도를 높일 수 있음</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id=resource-생성>Resource 생성</h3>
+<h4 id=설정-파일>설정 파일</h4>
+<p><code>/etc/drbd.d/</code> 폴더 하위에 <code>${RESOURCE_NAME}.res</code> 으로 파일을 생성한다. (예: <code>/etc/drbd.d/mydisk.res</code>)</p>
+<pre><code class=language-conf data-lang=conf>resource mydisk {                  # mydisk 라는 이름의 리소스 생성
+    device /dev/drbd0;             # DRBD 디바이스 파일
+    disk   /dev/sdb1;              # DRBD 구성에 사용할 파티션
+    meta-disk internal;
+
+    on node-01 {                    # 첫번째 노드의 호스트이름. hostname 이라는 명령어로 확인 가능
+        address  10.120.1.117:7789; # 첫번째 노드의 IP:포트
+    }
+    on node-02 {                    # 두번째 노드의 호스트이름. hostname 이라는 명령어로 확인 가능
+        address  10.120.1.118:7789; # 두번째 노드의 IP:포트
+    }
+}
+</code></pre><p>위 설정을 아래와 같이 각 노드별로 설정할 수도 있다.</p>
+<pre><code class=language-conf data-lang=conf>resource mydisk {
+
+    on node-01 {
+        device /dev/drbd0;
+        disk   /dev/sdb1;
+        meta-disk internal;
+        address  10.120.1.117:7789;
+    }
+    on node-02 {
+        device /dev/drbd0;
+        disk   /dev/sdb1;
+        meta-disk internal;
+        address  10.120.1.118:7789;
+    }
+}
+</code></pre><h4 id=생성>생성</h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># drbdadm create-md ${RESOURCE_NAME}</span>
+~$ sudo drbdadm create-md mydisk
+initializing activity log
+initializing bitmap <span style=color:#f92672>(</span><span style=color:#ae81ff>640</span> KB<span style=color:#f92672>)</span> to all zero
+Writing meta data...
+New drbd meta data block successfully created.
+
+<span style=color:#75715e># drbdadm up ${RESOURCE_NAME}</span>
+~$ sudo drbdadm up mydisk
+</code></pre></div><h4 id=상태-확인>상태 확인</h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo lsblk
+NAME      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda         8:0    <span style=color:#ae81ff>0</span>   50G  <span style=color:#ae81ff>0</span> disk
+├─sda1      8:1    <span style=color:#ae81ff>0</span>    1G  <span style=color:#ae81ff>0</span> part /boot/efi
+├─sda2      8:2    <span style=color:#ae81ff>0</span>    1G  <span style=color:#ae81ff>0</span> part /boot
+└─sda3      8:3    <span style=color:#ae81ff>0</span>   48G  <span style=color:#ae81ff>0</span> part /
+sdb         8:16   <span style=color:#ae81ff>0</span>   20G  <span style=color:#ae81ff>0</span> disk
+└─sdb1      8:17   <span style=color:#ae81ff>0</span>   20G  <span style=color:#ae81ff>0</span> part
+  └─drbd0 147:0    <span style=color:#ae81ff>0</span>   20G  <span style=color:#ae81ff>1</span> disk              <span style=color:#75715e># check this !</span>
+sr0        11:0    <span style=color:#ae81ff>1</span>  1.3G  <span style=color:#ae81ff>0</span> rom
+
+~$ drbdadm status mydisk
+mydisk role:Secondary
+  disk:Inconsistent
+  peer role:Secondary
+    replication:Established peer-disk:Inconsistent
+</code></pre></div><h4 id=최초-동기화>최초 동기화</h4>
+<p>노드 1번에서만 실행.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo drbdadm primary mydisk --force
+~$ sudo drbdadm status mydisk
+mydisk role:Primary
+  disk:UpToDate
+  peer role:Secondary
+    replication:SyncSource peer-disk:Inconsistent <span style=color:#66d9ef>done</span>:0.25
+</code></pre></div><h3 id=복제-테스트>복제 테스트</h3>
+<ol>
+<li>
+<p>노드 1번에서 drbd0 디바이스를 마운트한 후 파일을 생성한다. 그리고 다시 언마운트한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#f92672>[</span>hsyang@node-01<span style=color:#f92672>]</span> ~$ sudo mkfs.xfs /dev/drbd0
+<span style=color:#f92672>[</span>hsyang@node-01<span style=color:#f92672>]</span> ~$ sudo mkdir /data
+<span style=color:#f92672>[</span>hsyang@node-01<span style=color:#f92672>]</span> ~$ sudo mount /dev/drbd0 /data/
+<span style=color:#f92672>[</span>hsyang@node-01<span style=color:#f92672>]</span> ~$ sudo touch /data/testfile
+<span style=color:#f92672>[</span>hsyang@node-01<span style=color:#f92672>]</span> ~$ sudo umount /data
+<span style=color:#f92672>[</span>hsyang@node-01<span style=color:#f92672>]</span> ~$ sudo rmdir /data
+</code></pre></div></li>
+<li>
+<p>노드 1번 demote</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#f92672>[</span>hsyang@node-01<span style=color:#f92672>]</span> ~$ sudo drbdadm secondary mydisk
+
+<span style=color:#f92672>[</span>hsyang@node-01<span style=color:#f92672>]</span> ~$ drbdadm status
+mydisk role:Secondary
+disk:UpToDate
+peer role:Primary
+    replication:Established peer-disk:UpToDate
+</code></pre></div></li>
+<li>
+<p>노드 2번 promote</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#f92672>[</span>hsyang@node-02<span style=color:#f92672>]</span> ~$ sudo drbdadm primary mydisk
+<span style=color:#f92672>[</span>hsyang@node-02<span style=color:#f92672>]</span> ~$ sudo mkdir /data
+<span style=color:#f92672>[</span>hsyang@node-02<span style=color:#f92672>]</span> ~$ sudo mount /dev/drbd0 /data
+
+<span style=color:#75715e># 노드 1번에서 생성했던 테스트파일이 존재하는지 확인</span>
+<span style=color:#f92672>[</span>hsyang@node-02<span style=color:#f92672>]</span> ~$ ls /data
+testfile
+
+<span style=color:#75715e># 테스트 종료 후 원복</span>
+<span style=color:#f92672>[</span>hsyang@node-02<span style=color:#f92672>]</span> ~$ sudo rm /data/testfile
+<span style=color:#f92672>[</span>hsyang@node-02<span style=color:#f92672>]</span> ~$ sudo drbdadm secondary mydisk
+</code></pre></div></li>
+</ol>
+<h2 id=pacemaker>Pacemaker</h2>
+<h3 id=pacemaker-설치>Pacemaker 설치</h3>
+<ol>
+<li>
+<p>각 서버에서 필요한 패키지를 설치한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo yum install -y pcs pacemaker fence-agents-all
+</code></pre></div></li>
+<li>
+<p><code>firewalld</code>가 동작 중이라면 서비스를 추가해준다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo firewall-cmd --permanent --add-service<span style=color:#f92672>=</span>high-availability
+~$ sudo firewall-cmd --add-service<span style=color:#f92672>=</span>high-availability
+
+<span style=color:#75715e># 또는 비활성화</span>
+~$ sudo systemctl disable --now firewalld
+</code></pre></div></li>
+<li>
+<p>패키지 설치 시 생성된 hacluster 계정에 패스워드를 설정한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo passwd hacluster
+</code></pre></div></li>
+<li>
+<p>pcs 서비스를 시작한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo systemctl enable --now pcsd.service
+</code></pre></div></li>
+<li>
+<p>/etc/hosts 파일에 서버 IP와 이름을 등록한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+10.120.1.117 node-01
+10.120.1.118 node-02
+</code></pre></div></li>
+<li>
+<p>각 서버 인증 (Only run on one host)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo pcs cluster auth node-01 node-02
+Username: hacluster
+Password:
+node02: Authorized
+node01: Authorized
+</code></pre></div></li>
+<li>
+<p>클러스터를 생성한다. (Only run on one host) <code>node-01</code>, <code>node-02</code> 는 <code>/etc/hosts</code> 파일에 등록한 이름을 사용한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ CLUSTER_NAME<span style=color:#f92672>=</span>mycluster
+~$ sudo pcs cluster setup --start --name $CLUSTER_NAME node-01 node-02
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Destroying cluster on nodes: node01, node02...
+node01: Stopping Cluster (pacemaker)...
+node02: Stopping Cluster (pacemaker)...
+node02: Successfully destroyed cluster
+node01: Successfully destroyed cluster
+
+Sending &#39;pacemaker_remote authkey&#39; to &#39;node01&#39;, &#39;node02&#39;
+node01: successful distribution of the file &#39;pacemaker_remote authkey&#39;
+node02: successful distribution of the file &#39;pacemaker_remote authkey&#39;
+Sending cluster config files to the nodes...
+node01: Succeeded
+node02: Succeeded
+
+Starting cluster on nodes: node01, node02...
+node01: Starting Cluster (corosync)...
+node02: Starting Cluster (corosync)...
+node01: Starting Cluster (pacemaker)...
+node02: Starting Cluster (pacemaker)...
+
+Synchronizing pcsd certificates on nodes node01, node02...
+node02: Success
+node01: Success
+Restarting pcsd on the nodes in order to reload the certificates...
+node02: Success
+node01: Success
+</code></pre></div></li>
+<li>
+<p>노드가 재부팅 되었을때 자동으로 클러스터에 추가되도록 하려면 아래 명령어를 실행한다. (Only run on one host)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo pcs cluster enable --all
+node-01: Cluster Enabled
+node-02: Cluster Enabled
+</code></pre></div><ul>
+<li>
+<p>수동으로 실행하려면 아래 명령어를 실행 한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo pcs cluster start
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>현재 클러스터 상태 조회를 해보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo pcs cluster status
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Cluster Status:
+ Stack: corosync
+ Current DC: node01 (version 1.1.23-1.el7_9.1-9acf116022) - partition with quorum
+ Last updated: Wed Aug 25 13:58:41 2021
+ Last change: Wed Aug 25 13:42:20 2021 by hacluster via crmd on node01
+ 2 nodes configured
+ 0 resource instances configured
+
+PCSD Status:
+  node02: Online
+  node01: Online
+</code></pre></div></li>
+</ol>
+<h3 id=fencing-설정-disable>Fencing 설정 (Disable)</h3>
+<ol>
+<li>
+<p>현재 상태 확인</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo crm_verify -L -V
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>error: unpack_resources:    Resource start-up disabled since no STONITH resources have been defined
+   error: unpack_resources: Either configure some or disable STONITH with the stonith-enabled option
+   error: unpack_resources: NOTE: Clusters with shared data need STONITH to ensure data integrity
+Errors found during check: config not valid
+</code></pre></div></li>
+<li>
+<p>stonith 비활성화 (한쪽 노드에서만 실행)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo pcs property set stonith-enabled<span style=color:#f92672>=</span>false
+
+<span style=color:#75715e># disable 후에는 crm_verify 명령 실행 시 아무런 에러가 뜨지 않음</span>
+~$ sudo crm_verify -L -V
+</code></pre></div></li>
+</ol>
+<h3 id=pacemaker-docker-compose-resource-agent-추가>Pacemaker docker-compose Resource Agent 추가</h3>
+<p>docker-compose resource agent는 기본 설치되지 않으므로 수동으로 설치해야 한다.</p>
+<ol>
+<li>
+<p>docker-compose resource agent 추가</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ wget https://raw.githubusercontent.com/ClusterLabs/resource-agents/master/heartbeat/docker-compose
+~$ chmod +x docker-compose
+~$ sudo chown root:root docker-compose
+~$ sudo mv docker-compose /usr/lib/ocf/resource.d/heartbeat/
+</code></pre></div></li>
+<li>
+<p>추가된 resource agent 확인</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo pcs resource list docker-compose
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>ocf:heartbeat:docker-compose - This script manages docker services using docker-compose.
+</code></pre></div></li>
+</ol>
+<h3 id=virtual-ip-resource-추가>Virtual IP Resource 추가</h3>
+<ul>
+<li>
+<p>Resource 이름 : <code>VIP</code></p>
+</li>
+<li>
+<p>IP address : <code>10.120.1.119</code></p>
+</li>
+<li>
+<p>Netmask : <code>23</code></p>
+</li>
+<li>
+<p>Monitoring period : <code>5</code> seconds</p>
+</li>
+<li>
+<p>NIC : <code>ens192</code></p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ RESOURCE_NAME<span style=color:#f92672>=</span>VIP
+~$ sudo pcs resource create $RESOURCE_NAME ocf:heartbeat:IPaddr2 ip<span style=color:#f92672>=</span>10.120.1.119 cidr_netmask<span style=color:#f92672>=</span><span style=color:#ae81ff>23</span> nic<span style=color:#f92672>=</span>ens192 op monitor interval<span style=color:#f92672>=</span>5s
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># IP 추가되었는지 확인</span>
+~$ ip addr
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>...
+2: ens192: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span style=color:#ae81ff>1500</span> qdisc mq state UP group default qlen <span style=color:#ae81ff>1000</span>
+    link/ether 00:0c:29:e5:32:bd brd ff:ff:ff:ff:ff:ff
+    inet 10.120.1.117/23 brd 10.120.1.255 scope global noprefixroute ens192
+       valid_lft forever preferred_lft forever
+&gt;&gt;&gt; inet 10.120.1.119/23 brd 10.120.1.255 scope global secondary ens192
+       valid_lft forever preferred_lft forever
+    inet6 fe80::20c:29ff:fee5:32bd/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+...
+</code></pre></div></li>
+</ul>
+<h3 id=drbd-resource-추가>DRBD Resource 추가</h3>
+<ol>
+<li>
+<p>DRBD Resource 추가</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo pcs cluster cib drbd_cfg
+
+<span style=color:#75715e># drbd_resource 이름은 /etc/drbd.d/mydisk.res 파일에 정의한 resource 이름을 따라감</span>
+~$ RESOURCE_NAME<span style=color:#f92672>=</span>my_data
+~$ sudo pcs -f drbd_cfg resource create $RESOURCE_NAME ocf:linbit:drbd drbd_resource<span style=color:#f92672>=</span>mydisk op monitor interval<span style=color:#f92672>=</span>5s
+
+~$ MASTER_SLAVE_NAME<span style=color:#f92672>=</span>MyData
+~$ sudo pcs -f drbd_cfg resource master $MASTER_SLAVE_NAME $RESOURCE_NAME master-max<span style=color:#f92672>=</span><span style=color:#ae81ff>1</span> master-node-max<span style=color:#f92672>=</span><span style=color:#ae81ff>1</span> clone-max<span style=color:#f92672>=</span><span style=color:#ae81ff>2</span> clone-node-max<span style=color:#f92672>=</span><span style=color:#ae81ff>1</span> notify<span style=color:#f92672>=</span>true
+
+<span style=color:#75715e># verify resources</span>
+~$ sudo pcs -f drbd_cfg resource show
+Resource Group: mycluster
+    vip    <span style=color:#f92672>(</span>ocf::heartbeat:IPaddr2<span style=color:#f92672>)</span>:    Started node01
+Master/Slave Set: MyData <span style=color:#f92672>[</span>my_data<span style=color:#f92672>]</span>
+    Stopped: <span style=color:#f92672>[</span> node01 node02 <span style=color:#f92672>]</span>
+
+~$ sudo pcs cluster cib-push drbd_cfg
+CIB updated
+</code></pre></div></li>
+<li>
+<p>추가된 Resource 확인</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo pcs status
+Cluster name: my-cluster
+Stack: corosync
+Current DC: node02 <span style=color:#f92672>(</span>version 1.1.23-1.el7_9.1-9acf116022<span style=color:#f92672>)</span> - partition with quorum
+Last updated: Mon Dec <span style=color:#ae81ff>13</span> 10:59:31 <span style=color:#ae81ff>2021</span>
+Last change: Mon Dec <span style=color:#ae81ff>13</span> 10:59:28 <span style=color:#ae81ff>2021</span> by root via cibadmin on node01
+
+<span style=color:#ae81ff>2</span> nodes configured
+<span style=color:#ae81ff>3</span> resource instances configured
+
+Online: <span style=color:#f92672>[</span> node01 node02 <span style=color:#f92672>]</span>
+
+Full list of resources:
+
+Resource Group: mycluster
+    vip    <span style=color:#f92672>(</span>ocf::heartbeat:IPaddr2<span style=color:#f92672>)</span>:    Started node01
+Master/Slave Set: MyData <span style=color:#f92672>[</span>my_data<span style=color:#f92672>]</span>
+    Masters: <span style=color:#f92672>[</span> node02 <span style=color:#f92672>]</span>
+    Slaves: <span style=color:#f92672>[</span> node01 <span style=color:#f92672>]</span>
+
+Daemon Status:
+corosync: active/enabled
+pacemaker: active/enabled
+pcsd: active/enabled
+</code></pre></div></li>
+<li>
+<p>Filesystem Resource 추가</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ RESOURCE_NAME<span style=color:#f92672>=</span>fs
+~$ sudo pcs cluster cib fs_cfg
+~$ sudo pcs -f fs_cfg resource create $RESOURCE_NAME Filesystem device<span style=color:#f92672>=</span>/dev/drbd0 directory<span style=color:#f92672>=</span>/home/hsyang/data fstype<span style=color:#f92672>=</span>xfs
+Assumed agent name <span style=color:#e6db74>&#39;ocf:heartbeat:Filesystem&#39;</span> <span style=color:#f92672>(</span>deduced from <span style=color:#e6db74>&#39;Filesystem&#39;</span><span style=color:#f92672>)</span>
+
+~$ sudo pcs -f fs_cfg constraint colocation add $RESOURCE_NAME with $MASTER_SLAVE_NAME INFINITY with-rsc-role<span style=color:#f92672>=</span>Master
+~$ sudo pcs -f fs_cfg constraint order promote $MASTER_SLAVE_NAME <span style=color:#66d9ef>then</span> start $RESOURCE_NAME
+Adding MyData fs <span style=color:#f92672>(</span>kind: Mandatory<span style=color:#f92672>)</span> <span style=color:#f92672>(</span>Options: first-action<span style=color:#f92672>=</span>promote <span style=color:#66d9ef>then</span>-action<span style=color:#f92672>=</span>start<span style=color:#f92672>)</span>
+</code></pre></div></li>
+<li>
+<p>추가된 Resource 확인</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo pcs status
+Cluster name: mycluster
+Stack: corosync
+Current DC: node02 <span style=color:#f92672>(</span>version 1.1.23-1.el7_9.1-9acf116022<span style=color:#f92672>)</span> - partition with quorum
+Last updated: Mon Dec <span style=color:#ae81ff>13</span> 11:28:17 <span style=color:#ae81ff>2021</span>
+Last change: Mon Dec <span style=color:#ae81ff>13</span> 10:59:28 <span style=color:#ae81ff>2021</span> by root via cibadmin on node01
+
+<span style=color:#ae81ff>2</span> nodes configured
+<span style=color:#ae81ff>3</span> resource instances configured
+
+Online: <span style=color:#f92672>[</span> node01 node02 <span style=color:#f92672>]</span>
+
+Full list of resources:
+
+Resource Group: mycluster
+    vip    <span style=color:#f92672>(</span>ocf::heartbeat:IPaddr2<span style=color:#f92672>)</span>:    Started node01
+Master/Slave Set: MyData <span style=color:#f92672>[</span>my_data<span style=color:#f92672>]</span>
+    Masters: <span style=color:#f92672>[</span> node02 <span style=color:#f92672>]</span>
+    Slaves: <span style=color:#f92672>[</span> node01 <span style=color:#f92672>]</span>
+
+Daemon Status:
+corosync: active/enabled
+pacemaker: active/enabled
+pcsd: active/enabled
+
+~$ sudo pcs resource show
+Resource Group: mycluster
+    vip    <span style=color:#f92672>(</span>ocf::heartbeat:IPaddr2<span style=color:#f92672>)</span>:    Started node01
+Master/Slave Set: MyData <span style=color:#f92672>[</span>my_data<span style=color:#f92672>]</span>
+    Masters: <span style=color:#f92672>[</span> node02 <span style=color:#f92672>]</span>
+    Slaves: <span style=color:#f92672>[</span> node01 <span style=color:#f92672>]</span>
+</code></pre></div></li>
+<li>
+<p>Resource 들의 실행 순서와 제약 조건 설정</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ VIP_RESOURCE_NAME<span style=color:#f92672>=</span>VIP
+~$ FS_RESOURCE_NAME<span style=color:#f92672>=</span>fs
+~$ sudo pcs -f fs_cfg constraint colocation add $VIP_RESOURCE_NAME with $FS_RESOURCE_NAME INFINITY
+~$ sudo pcs -f fs_cfg constraint order $FS_RESOURCE_NAME <span style=color:#66d9ef>then</span> $VIP_RESOURCE_NAME
+Adding fs vip <span style=color:#f92672>(</span>kind: Mandatory<span style=color:#f92672>)</span> <span style=color:#f92672>(</span>Options: first-action<span style=color:#f92672>=</span>start <span style=color:#66d9ef>then</span>-action<span style=color:#f92672>=</span>start<span style=color:#f92672>)</span>
+
+~$ sudo pcs -f fs_cfg constraint
+Location Constraints:
+Ordering Constraints:
+promote MyData <span style=color:#66d9ef>then</span> start fs <span style=color:#f92672>(</span>kind:Mandatory<span style=color:#f92672>)</span>
+start fs <span style=color:#66d9ef>then</span> start vip <span style=color:#f92672>(</span>kind:Mandatory<span style=color:#f92672>)</span>
+Colocation Constraints:
+fs with MyData <span style=color:#f92672>(</span>score:INFINITY<span style=color:#f92672>)</span> <span style=color:#f92672>(</span>with-rsc-role:Master<span style=color:#f92672>)</span>
+vip with fs <span style=color:#f92672>(</span>score:INFINITY<span style=color:#f92672>)</span>
+Ticket Constraints:
+
+~$ sudo pcs -f fs_cfg resource show
+Resource Group: mycluster
+    vip <span style=color:#f92672>(</span>ocf::heartbeat:IPaddr2<span style=color:#f92672>)</span>:    Started node01
+Master/Slave Set: MyData <span style=color:#f92672>[</span>my_data<span style=color:#f92672>]</span>
+    Masters: <span style=color:#f92672>[</span> node02 <span style=color:#f92672>]</span>
+    Slaves: <span style=color:#f92672>[</span> node01 <span style=color:#f92672>]</span>
+fs  <span style=color:#f92672>(</span>ocf::heartbeat:Filesystem<span style=color:#f92672>)</span>:    Stopped
+
+<span style=color:#75715e># commit</span>
+~$ sudo pcs cluster cib-push fs_cfg
+CIB updated
+</code></pre></div></li>
+<li>
+<p>Resource 확인</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ pcs resource show --full
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Group: mycluster
+Resource: vip (class=ocf provider=heartbeat type=IPaddr2)
+Attributes: cidr_netmask=23 ip=10.120.1.119 nic=ens192
+Operations: monitor interval=30s (vip-monitor-interval-30s)
+            start interval=0s timeout=20s (vip-start-interval-0s)
+            stop interval=0s timeout=20s (vip-stop-interval-0s)
+Master: MyData
+Meta Attrs: clone-max=2 clone-node-max=1 master-max=1 master-node-max=1 notify=true
+Resource: my_data (class=ocf provider=linbit type=drbd)
+Attributes: drbd_resource=mycluster
+Operations: demote interval=0s timeout=90 (my_data-demote-interval-0s)
+            monitor interval=5s (my_data-monitor-interval-5s)
+            notify interval=0s timeout=90 (my_data-notify-interval-0s)
+            promote interval=0s timeout=90 (my_data-promote-interval-0s)
+            reload interval=0s timeout=30 (my_data-reload-interval-0s)
+            start interval=0s timeout=240 (my_data-start-interval-0s)
+            stop interval=0s timeout=100 (my_data-stop-interval-0s)
+Resource: fs (class=ocf provider=heartbeat type=Filesystem)
+Attributes: device=/dev/drbd0 directory=/data fstype=xfs
+Operations: monitor interval=20s timeout=40s (fs-monitor-interval-20s)
+            notify interval=0s timeout=60s (fs-notify-interval-0s)
+            start interval=0s timeout=60s (fs-start-interval-0s)
+            stop interval=0s timeout=60s (fs-stop-interval-0s)
+</code></pre></div></li>
+</ol>
+<h3 id=docker-compose-resource-추가>docker-compose Resource 추가</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ RESOURCE_NAME<span style=color:#f92672>=</span>myapp
+~$ VIP_RESOURCE_NAME<span style=color:#f92672>=</span>VIP
+~$ pcs cluster cib cxr_gw_cfg
+~$ pcs -f app_cfg resource create $RESOURCE_NAME ocf:heartbeat:docker-compose dirpath<span style=color:#f92672>=</span>/home/hsyang/app
+~$ pcs -f app_cfg constraint colocation add $RESOURCE_NAME with $VIP_RESOURCE_NAME INFINITY
+~$ pcs -f app_cfg constraint order $VIP_RESOURCE_NAME <span style=color:#66d9ef>then</span> $RESOURCE_NAME
+Adding vip myapp <span style=color:#f92672>(</span>kind: Mandatory<span style=color:#f92672>)</span> <span style=color:#f92672>(</span>Options: first-action<span style=color:#f92672>=</span>start <span style=color:#66d9ef>then</span>-action<span style=color:#f92672>=</span>start<span style=color:#f92672>)</span>
+</code></pre></div>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#환경-구성-목표>환경 구성 목표</a></li>
+<li><a href=#drbd-구성>DRBD 구성</a>
+<ul>
+<li><a href=#설치>설치</a></li>
+<li><a href=#drbd용-파티션-생성>DRBD용 파티션 생성</a></li>
+<li><a href=#global-설정>Global 설정</a>
+<ul>
+<li><a href=#global>global</a></li>
+<li><a href=#common>common</a></li>
+</ul>
+</li>
+<li><a href=#resource-생성>Resource 생성</a>
+<ul>
+<li><a href=#설정-파일>설정 파일</a></li>
+<li><a href=#생성>생성</a></li>
+<li><a href=#상태-확인>상태 확인</a></li>
+<li><a href=#최초-동기화>최초 동기화</a></li>
+</ul>
+</li>
+<li><a href=#복제-테스트>복제 테스트</a></li>
+</ul>
+</li>
+<li><a href=#pacemaker>Pacemaker</a>
+<ul>
+<li><a href=#pacemaker-설치>Pacemaker 설치</a></li>
+<li><a href=#fencing-설정-disable>Fencing 설정 (Disable)</a></li>
+<li><a href=#pacemaker-docker-compose-resource-agent-추가>Pacemaker docker-compose Resource Agent 추가</a></li>
+<li><a href=#virtual-ip-resource-추가>Virtual IP Resource 추가</a></li>
+<li><a href=#drbd-resource-추가>DRBD Resource 추가</a></li>
+<li><a href=#docker-compose-resource-추가>docker-compose Resource 추가</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>자주 쓰는 - git branch 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2021 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>

@@ -1,0 +1,494 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>[Django] Oauth2 구현하기 (google oauth2) | 메모장</title>
+<meta name=description content="Django oauth2 google 연동을 해보자.">
+<link rel=canonical href=https://hsyang.net/snippets/django-oauth2/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="[Django] Oauth2 구현하기 (google oauth2)">
+<meta property="og:description" content="Django oauth2 google 연동을 해보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/snippets/django-oauth2/"><meta property="article:section" content="snippets">
+<meta property="article:published_time" content="2021-12-24T10:31:56+09:00">
+<meta property="article:modified_time" content="2021-12-26T23:37:41+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="[Django] Oauth2 구현하기 (google oauth2)">
+<meta name=twitter:description content="Django oauth2 google 연동을 해보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>December 24, 2021</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">[Django] Oauth2 구현하기 (google oauth2)</h1>
+<div class="content mt-6">
+<h2 id=설치-및-django-프로젝트-초기화>설치 및 django 프로젝트 초기화</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ pip install django social-auth-app-django
+~$ django-admin startproject oauth2_project
+~$ cd oauth2_project
+</code></pre></div><ol>
+<li>
+<p>accounts app 생성</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ python manage.py startapp accounts
+</code></pre></div><ul>
+<li>
+<p>accounts/models.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> django.contrib.auth.models <span style=color:#f92672>import</span> AbstractUser
+
+<span style=color:#66d9ef>class</span> <span style=color:#a6e22e>CustomUser</span>(AbstractUser):
+    <span style=color:#66d9ef>pass</span>
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>accounts app 등록 및 기본 user model 설정</p>
+<ul>
+<li>
+<p>oauth2_project/settings.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>INSTALLED_APPS <span style=color:#f92672>=</span> [
+    <span style=color:#e6db74>&#39;django.contrib.admin&#39;</span>,
+    <span style=color:#e6db74>&#39;django.contrib.auth&#39;</span>,
+    <span style=color:#e6db74>&#39;django.contrib.contenttypes&#39;</span>,
+    <span style=color:#e6db74>&#39;django.contrib.sessions&#39;</span>,
+    <span style=color:#e6db74>&#39;django.contrib.messages&#39;</span>,
+    <span style=color:#e6db74>&#39;django.contrib.staticfiles&#39;</span>,
+    <span style=color:#e6db74>&#39;social_django&#39;</span>,
+    <span style=color:#e6db74>&#39;accounts&#39;</span>,
+]
+
+AUTH_USER_MODEL <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;accounts.CustomUser&#39;</span>
+
+LOGIN_REDIRECT_URL <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;/&#39;</span>
+LOGOUT_REDIRECT_URL <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;/&#39;</span>
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>social-auth-app-django 등록 및 관련 설정 추가</p>
+<ul>
+<li>
+<p>oauth2_project/settings.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>AUTHENTICATION_BACKENDS <span style=color:#f92672>=</span> [
+    <span style=color:#e6db74>&#39;social_core.backends.google.GoogleOAuth2&#39;</span>,   <span style=color:#75715e># for google</span>
+    <span style=color:#e6db74>&#39;django.contrib.auth.backends.ModelBackend&#39;</span>,  <span style=color:#75715e># django default auth backend</span>
+]
+
+SOCIAL_AUTH_TRAILING_SLASH <span style=color:#f92672>=</span> <span style=color:#66d9ef>False</span>  <span style=color:#75715e># Remove trailing slash from routes</span>
+SOCIAL_AUTH_GOOGLE_OAUTH2_DOMAIN <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;https://accounts.google.com/o/oauth2/auth&#39;</span>
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;GOOGLE_AUTH_KEY&#39;</span>
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;GOOGLE_AUTH_SECRET&#39;</span>
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE <span style=color:#f92672>=</span> [
+    <span style=color:#e6db74>&#39;https://www.googleapis.com/auth/userinfo.email&#39;</span>,
+    <span style=color:#e6db74>&#39;https://www.googleapis.com/auth/userinfo.profile&#39;</span>,
+    <span style=color:#e6db74>&#39;openid&#39;</span>,
+]
+
+SOCIAL_AUTH_URL_NAMESPACE <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;accounts:social&#39;</span>
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>url 생성</p>
+<ul>
+<li>
+<p>accounts/urls.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> django.urls <span style=color:#f92672>import</span> path
+<span style=color:#f92672>from</span> django.urls.conf <span style=color:#f92672>import</span> include
+<span style=color:#f92672>from</span> django.contrib.auth.views <span style=color:#f92672>import</span> LogoutView
+
+app_name <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;accounts&#39;</span>
+
+urlpatterns <span style=color:#f92672>=</span> [
+    path(<span style=color:#e6db74>&#39;&#39;</span>, include(<span style=color:#e6db74>&#39;social_django.urls&#39;</span>)),
+    path(<span style=color:#e6db74>&#39;logout/&#39;</span>, LogoutView<span style=color:#f92672>.</span>as_view(), name<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;logout&#34;</span>)
+]
+</code></pre></div></li>
+<li>
+<p>oauth2_project/urls.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> django.contrib <span style=color:#f92672>import</span> admin
+<span style=color:#f92672>from</span> django.urls <span style=color:#f92672>import</span> path
+<span style=color:#f92672>from</span> django.urls.conf <span style=color:#f92672>import</span> include
+<span style=color:#f92672>from</span> django.views.generic.base <span style=color:#f92672>import</span> TemplateView
+
+urlpatterns <span style=color:#f92672>=</span> [
+    path(<span style=color:#e6db74>&#39;admin/&#39;</span>, admin<span style=color:#f92672>.</span>site<span style=color:#f92672>.</span>urls),
+    path(<span style=color:#e6db74>&#39;accounts/&#39;</span>, include(<span style=color:#e6db74>&#39;accounts.urls&#39;</span>, namespace<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;accounts&#39;</span>)),
+    path(<span style=color:#e6db74>&#39;&#39;</span>, TemplateView<span style=color:#f92672>.</span>as_view(template_name<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;home.html&#39;</span>), name<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;home&#39;</span>),
+]
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>로그인/로그아웃 테스트용 페이지 템플릿 생성</p>
+<ul>
+<li>
+<p>templates/home.html</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-html data-lang=html>{% if user.is_authenticated %}
+
+&lt;<span style=color:#f92672>p</span>&gt;
+    Hello, {{ user.username }}
+&lt;/<span style=color:#f92672>p</span>&gt;
+
+&lt;<span style=color:#f92672>a</span> <span style=color:#a6e22e>href</span><span style=color:#f92672>=</span><span style=color:#e6db74>&#34;{% url &#39;accounts:logout&#39; %}&#34;</span>&gt;Logout&lt;/<span style=color:#f92672>a</span>&gt;
+{% else %}
+
+&lt;<span style=color:#f92672>a</span> <span style=color:#a6e22e>href</span><span style=color:#f92672>=</span><span style=color:#e6db74>&#34;{% url &#39;accounts:social:begin&#39; &#39;google-oauth2&#39; %}&#34;</span>&gt;Login with Google&lt;/<span style=color:#f92672>a</span>&gt;
+
+{% endif %}
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>테스트용 템플릿 경로 추가</p>
+<ul>
+<li>
+<p>oauth2_project/settings.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>import</span> os
+
+<span style=color:#75715e># ...</span>
+
+TEMPLATES <span style=color:#f92672>=</span> [
+    {
+        <span style=color:#e6db74>&#39;BACKEND&#39;</span>: <span style=color:#e6db74>&#39;django.template.backends.django.DjangoTemplates&#39;</span>,
+        <span style=color:#e6db74>&#39;DIRS&#39;</span>: [ os<span style=color:#f92672>.</span>path<span style=color:#f92672>.</span>join(BASE_DIR, <span style=color:#e6db74>&#39;templates&#39;</span>) ],     <span style=color:#75715e># Add !!!</span>
+        <span style=color:#e6db74>&#39;APP_DIRS&#39;</span>: <span style=color:#66d9ef>True</span>,
+        <span style=color:#e6db74>&#39;OPTIONS&#39;</span>: {
+            <span style=color:#e6db74>&#39;context_processors&#39;</span>: [
+                <span style=color:#e6db74>&#39;django.template.context_processors.debug&#39;</span>,
+                <span style=color:#e6db74>&#39;django.template.context_processors.request&#39;</span>,
+                <span style=color:#e6db74>&#39;django.contrib.auth.context_processors.auth&#39;</span>,
+                <span style=color:#e6db74>&#39;django.contrib.messages.context_processors.messages&#39;</span>,
+            ],
+        },
+    },
+]
+</code></pre></div></li>
+</ul>
+</li>
+</ol>
+<h2 id=인증-시나리오-사용자-정의>인증 시나리오 사용자 정의</h2>
+<h3 id=기본-정의-함수>기본 정의 함수</h3>
+<p>기본 인증 시나리오는 아래와 같다. 아래 정의된 함수들이 차례차례 실행된다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>SOCIAL_AUTH_PIPELINE <span style=color:#f92672>=</span> (
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.social_details&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.social_uid&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.auth_allowed&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.social_user&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.user.get_username&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.user.create_user&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.associate_user&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.load_extra_data&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.user.user_details&#39;</span>,
+)
+</code></pre></div><blockquote>
+<p><a href=https://python-social-auth.readthedocs.io/en/latest/pipeline.html#authentication-pipeline>https://python-social-auth.readthedocs.io/en/latest/pipeline.html#authentication-pipeline</a></p>
+</blockquote>
+<p>기본 인증 시나리오를 변경하고 싶은 경우,</p>
+<ol>
+<li><code>settings.py</code> 파일에 위 항목 설정</li>
+<li>원하는 함수를 추가 또는 삭제</li>
+<li>사용자 정의 함수 추가도 가능</li>
+</ol>
+<p>만약 사용자 생성 시나리오를 삭제하고 싶다면(이미 등록된 사용자만 로그인을 허용하려면),
+<code>social_core.pipeline.user.create_user</code> 항목을 삭제한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>SOCIAL_AUTH_PIPELINE <span style=color:#f92672>=</span> (
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.social_details&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.social_uid&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.auth_allowed&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.social_user&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.user.get_username&#39;</span>,
+    <span style=color:#75715e># &#39;social_core.pipeline.user.create_user&#39;,</span>
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.associate_user&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.load_extra_data&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.user.user_details&#39;</span>,
+)
+</code></pre></div><p>각 함수의 역할은 아래와 같다.</p>
+<h4 id=social_corepipelinesocial_authsocial_details>social_core.pipeline.social_auth.social_details</h4>
+<ul>
+<li>
+<p>details 라는 dict에 값들을 채워준다. 다음 단계에서 user 객체를 만드는데 사용한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>details <span style=color:#f92672>=</span> {
+    <span style=color:#e6db74>&#39;username&#39;</span>: <span style=color:#e6db74>&#39;hsyang&#39;</span>,
+    <span style=color:#e6db74>&#39;email&#39;</span>: <span style=color:#e6db74>&#39;fshilver@gmail.com&#39;</span>,
+    <span style=color:#e6db74>&#39;fullname&#39;</span>: <span style=color:#e6db74>&#39;Heesung Yang&#39;</span>,
+    <span style=color:#e6db74>&#39;first_name&#39;</span>: <span style=color:#e6db74>&#39;Heesung&#39;</span>,
+    <span style=color:#e6db74>&#39;last_name&#39;</span>: <span style=color:#e6db74>&#39;Yang&#39;</span>
+}
+</code></pre></div></li>
+</ul>
+<h4 id=social_corepipelinesocial_authsocial_uid>social_core.pipeline.social_auth.social_uid</h4>
+<ul>
+<li>oauth2 서비스 제공자(google, facebook 등)에서의 unique identifier 값을 가져온다.</li>
+<li>google oauth provider는 email 주소를 리턴한다.</li>
+</ul>
+<h4 id=social_corepipelinesocial_authauth_allowed>social_core.pipeline.social_auth.auth_allowed</h4>
+<ul>
+<li>email 또는 domain 이 유효한지 체크하는 등 현재 프로젝트에서 해당 사용자가 유효한지 체크한다.</li>
+</ul>
+<h4 id=social_corepipelinesocial_authsocial_user>social_core.pipeline.social_auth.social_user</h4>
+<ul>
+<li>이미 해당 oauth2 계정이 있는지 체크한다.</li>
+</ul>
+<h4 id=social_corepipelineuserget_username>social_core.pipeline.user.get_username</h4>
+<ul>
+<li>사용자 이름을 생성한다.</li>
+<li>계정 정보 중 일부가 중복될 경우, random 문자열을 사용자 이름에 추가한다.</li>
+</ul>
+<h4 id=social_corepipelinemailmail_validation>social_core.pipeline.mail.mail_validation</h4>
+<ul>
+<li>이메일 인증을 진행한다.</li>
+<li>disabled by default</li>
+</ul>
+<h4 id=social_corepipelinesocial_authassociate_by_email>social_core.pipeline.social_auth.associate_by_email</h4>
+<ul>
+<li>유사한 이메일을 사용하는 다른 사용자 계정이 있을 경우, 해당 계정과 연결한다.</li>
+<li>disabled by default</li>
+</ul>
+<h4 id=social_corepipelineusercreate_user>social_core.pipeline.user.create_user</h4>
+<ul>
+<li>연결된 계정이 없을 경우 사용자 계정을 생성한다.</li>
+</ul>
+<h4 id=social_corepipelinesocial_authassociate_user>social_core.pipeline.social_auth.associate_user</h4>
+<ul>
+<li>사용자 계정과 oauth2 정보를 연결하는 레코드를 생성한다.</li>
+</ul>
+<h4 id=social_corepipelinesocial_authload_extra_data>social_core.pipeline.social_auth.load_extra_data</h4>
+<ul>
+<li>설정값에 지정된 필드 데이터를 추출하여 extra_data 값을 채운다.</li>
+</ul>
+<h4 id=social_corepipelineuseruser_details>social_core.pipeline.user.user_details</h4>
+<ul>
+<li>oauth2 의 정보가 변경된 경우, 연결된 사용자 계정의 정보를 업데이트 한다.</li>
+</ul>
+<h3 id=사용자-정의-함수>사용자 정의 함수</h3>
+<p>처음 oauth2 계정과 연결 시, <code>MyGroup</code> 이라는 그룹에 포함시키고 싶은 경우 아래와 같이 할 수 있다.</p>
+<ul>
+<li>
+<p><code>accounts</code> 라는 이름의 app 생성</p>
+</li>
+<li>
+<p><code>accounts/pipelines.py</code> 파일 작성</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> django.contrib.auth.models <span style=color:#f92672>import</span> Group
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>initial_user_group</span>(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kwargs):
+    <span style=color:#66d9ef>if</span> kwargs[<span style=color:#e6db74>&#39;is_new&#39;</span>] <span style=color:#f92672>==</span> <span style=color:#66d9ef>False</span>:
+        <span style=color:#66d9ef>return</span>
+
+    group, created <span style=color:#f92672>=</span> Group<span style=color:#f92672>.</span>objects<span style=color:#f92672>.</span>get_or_create(name<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;MyGroup&#39;</span>)
+    user <span style=color:#f92672>=</span> kwargs[<span style=color:#e6db74>&#39;user&#39;</span>]
+    user<span style=color:#f92672>.</span>groups<span style=color:#f92672>.</span>add(group)
+</code></pre></div></li>
+<li>
+<p>settings.py 수정</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>SOCIAL_AUTH_PIPELINE <span style=color:#f92672>=</span> (
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.social_details&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.social_uid&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.auth_allowed&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.social_user&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.user.get_username&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.user.create_user&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.associate_user&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.social_auth.load_extra_data&#39;</span>,
+    <span style=color:#e6db74>&#39;social_core.pipeline.user.user_details&#39;</span>,
+    <span style=color:#e6db74>&#39;accounts.pipelines.initial_user_group&#39;</span>,            <span style=color:#75715e># Add</span>
+)
+</code></pre></div></li>
+</ul>
+<p>kwargs에는 아래와 같은 값들이 넘어오므로, 필요한 값을 참조하여 함수를 작성하자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>kwargs: {
+    <span style=color:#e6db74>&#39;response&#39;</span>: {
+        <span style=color:#e6db74>&#39;access_token&#39;</span>: <span style=color:#e6db74>&#39;ACCESS_TOKEN_WILL_BE_CHANGED&#39;</span>,
+        <span style=color:#e6db74>&#39;expires_in&#39;</span>: <span style=color:#ae81ff>3599</span>,
+        <span style=color:#e6db74>&#39;scope&#39;</span>: <span style=color:#e6db74>&#39;openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile&#39;</span>,
+        <span style=color:#e6db74>&#39;token_type&#39;</span>: <span style=color:#e6db74>&#39;Bearer&#39;</span>,
+        <span style=color:#e6db74>&#39;id_token&#39;</span>: <span style=color:#e6db74>&#39;ID_TOKEN_WILL_BE_CHANGED&#39;</span>,
+        <span style=color:#e6db74>&#39;sub&#39;</span>: <span style=color:#e6db74>&#39;100000000000000000000&#39;</span>,
+        <span style=color:#e6db74>&#39;name&#39;</span>: <span style=color:#e6db74>&#39;Heesung Yang&#39;</span>,
+        <span style=color:#e6db74>&#39;given_name&#39;</span>: <span style=color:#e6db74>&#39;Heesung&#39;</span>,
+        <span style=color:#e6db74>&#39;family_name&#39;</span>: <span style=color:#e6db74>&#39;Yang&#39;</span>,
+        <span style=color:#e6db74>&#39;picture&#39;</span>: <span style=color:#e6db74>&#39;https://profile.googleusercontent.com/profile_picture&#39;</span>,
+        <span style=color:#e6db74>&#39;email&#39;</span>: <span style=color:#e6db74>&#39;fshilver@gmail.com&#39;</span>,
+        <span style=color:#e6db74>&#39;email_verified&#39;</span>: <span style=color:#66d9ef>True</span>,
+        <span style=color:#e6db74>&#39;locale&#39;</span>: <span style=color:#e6db74>&#39;en&#39;</span>,
+    },
+    <span style=color:#e6db74>&#39;user&#39;</span>: <span style=color:#f92672>&lt;</span>User: hsyang<span style=color:#f92672>&gt;</span>,
+    <span style=color:#e6db74>&#39;strategy&#39;</span>: <span style=color:#f92672>&lt;</span>social_django<span style=color:#f92672>.</span>strategy<span style=color:#f92672>.</span>DjangoStrategy object at <span style=color:#ae81ff>0x10f16a160</span><span style=color:#f92672>&gt;</span>,
+    <span style=color:#e6db74>&#39;storage&#39;</span>: <span style=color:#f92672>&lt;</span><span style=color:#66d9ef>class</span> <span style=color:#960050;background-color:#1e0010>&#39;</span><span style=color:#a6e22e>social_django</span><span style=color:#f92672>.</span>models<span style=color:#f92672>.</span>DjangoStorage<span style=color:#e6db74>&#39;&gt;,</span>
+    <span style=color:#e6db74>&#39;backend&#39;</span>: <span style=color:#f92672>&lt;</span>social_core<span style=color:#f92672>.</span>backends<span style=color:#f92672>.</span>google<span style=color:#f92672>.</span>GoogleOAuth2 object at <span style=color:#ae81ff>0x10f16af40</span><span style=color:#f92672>&gt;</span>,
+    <span style=color:#e6db74>&#39;is_new&#39;</span>: <span style=color:#66d9ef>False</span>,
+    <span style=color:#e6db74>&#39;request&#39;</span>: <span style=color:#f92672>&lt;</span>WSGIRequest: GET <span style=color:#e6db74>&#39;/accounts/complete/google-oauth2&#39;</span><span style=color:#f92672>&gt;</span>,
+    <span style=color:#e6db74>&#39;details&#39;</span>: {
+        <span style=color:#e6db74>&#39;username&#39;</span>: <span style=color:#e6db74>&#39;hsyang&#39;</span>,
+        <span style=color:#e6db74>&#39;email&#39;</span>: <span style=color:#e6db74>&#39;fshilver@gmail.com&#39;</span>,
+        <span style=color:#e6db74>&#39;fullname&#39;</span>: <span style=color:#e6db74>&#39;Heesung Yang&#39;</span>,
+        <span style=color:#e6db74>&#39;first_name&#39;</span>: <span style=color:#e6db74>&#39;Heesung&#39;</span>,
+        <span style=color:#e6db74>&#39;last_name&#39;</span>: <span style=color:#e6db74>&#39;Yang&#39;</span>
+    },
+    <span style=color:#e6db74>&#39;pipeline_index&#39;</span>: <span style=color:#ae81ff>9</span>,
+    <span style=color:#e6db74>&#39;uid&#39;</span>: <span style=color:#e6db74>&#39;fshilver@gmail.com&#39;</span>,
+    <span style=color:#e6db74>&#39;social&#39;</span>: <span style=color:#f92672>&lt;</span>UserSocialAuth: hsyang<span style=color:#f92672>&gt;</span>,
+    <span style=color:#e6db74>&#39;new_association&#39;</span>: <span style=color:#66d9ef>False</span>,
+    <span style=color:#e6db74>&#39;username&#39;</span>: <span style=color:#e6db74>&#39;hsyang&#39;</span>
+}
+</code></pre></div><h2 id=faq>FAQ</h2>
+<h3 id=django-사용자-계정이-비활성화-된-경우-처리-방법>Django 사용자 계정이 비활성화 된 경우 처리 방법</h3>
+<blockquote>
+<p><a href=https://python-social-auth.readthedocs.io/en/latest/configuration/settings.html#urls-options>https://python-social-auth.readthedocs.io/en/latest/configuration/settings.html#urls-options</a></p>
+</blockquote>
+<p><code>비활성화 된 계정입니다. 관리자에게 문의하세요.</code>라는 메시지를 보여주기 위한 URL을 설정한다.</p>
+<ul>
+<li>
+<p>settings.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>SOCIAL_AUTH_INACTIVE_USER_URL <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;/&#39;</span>
+</code></pre></div></li>
+</ul>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/snippets/bash-color/>Bash Color 예제 및 활용</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#설치-및-django-프로젝트-초기화>설치 및 django 프로젝트 초기화</a></li>
+<li><a href=#인증-시나리오-사용자-정의>인증 시나리오 사용자 정의</a>
+<ul>
+<li><a href=#기본-정의-함수>기본 정의 함수</a>
+<ul>
+<li><a href=#social_corepipelinesocial_authsocial_details>social_core.pipeline.social_auth.social_details</a></li>
+<li><a href=#social_corepipelinesocial_authsocial_uid>social_core.pipeline.social_auth.social_uid</a></li>
+<li><a href=#social_corepipelinesocial_authauth_allowed>social_core.pipeline.social_auth.auth_allowed</a></li>
+<li><a href=#social_corepipelinesocial_authsocial_user>social_core.pipeline.social_auth.social_user</a></li>
+<li><a href=#social_corepipelineuserget_username>social_core.pipeline.user.get_username</a></li>
+<li><a href=#social_corepipelinemailmail_validation>social_core.pipeline.mail.mail_validation</a></li>
+<li><a href=#social_corepipelinesocial_authassociate_by_email>social_core.pipeline.social_auth.associate_by_email</a></li>
+<li><a href=#social_corepipelineusercreate_user>social_core.pipeline.user.create_user</a></li>
+<li><a href=#social_corepipelinesocial_authassociate_user>social_core.pipeline.social_auth.associate_user</a></li>
+<li><a href=#social_corepipelinesocial_authload_extra_data>social_core.pipeline.social_auth.load_extra_data</a></li>
+<li><a href=#social_corepipelineuseruser_details>social_core.pipeline.user.user_details</a></li>
+</ul>
+</li>
+<li><a href=#사용자-정의-함수>사용자 정의 함수</a></li>
+</ul>
+</li>
+<li><a href=#faq>FAQ</a>
+<ul>
+<li><a href=#django-사용자-계정이-비활성화-된-경우-처리-방법>Django 사용자 계정이 비활성화 된 경우 처리 방법</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>자주 쓰는 - git branch 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2021 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>

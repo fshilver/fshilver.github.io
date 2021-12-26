@@ -1,0 +1,121 @@
+.logo h1 {
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: 1.5em;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #F0F2F4;
+    font-family: -apple-system, 'Noto Sans KR', 'Nanum Gothic', BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+main {
+    flex: 1;
+}
+
+a,
+a.box,
+a.tag
+{
+    color: rgb(52, 58, 64);
+    text-decoration: none;
+}
+
+main a {
+    text-decoration: underline;
+}
+
+.card-content a {
+    text-decoration: none;
+}
+
+.max-800px {
+    max-width: 800px;
+}
+
+
+.author-image {
+    object-fit: cover;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+}
+
+.cover {
+    padding-bottom: 2em;
+}
+
+.narrow-background {
+    display: table;
+    padding: 0.1em;
+}
+
+.footer-text {
+    color: white;
+}
+
+.footer-text:hover {
+    color: gray;
+}
+
+.content {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    letter-spacing: -0.004em;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+
+.content h2 {
+    margin-top: 3rem;
+}
+
+.card,
+.box {
+    background-color: #f0f2f4;
+}
+
+a.box:hover,
+.box:hover {
+    cursor: pointer;
+    box-shadow: 0 0 0 2px gray inset;
+}
+
+code {
+    background-color: gray;
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* 3 depth */
+#TableOfContents > ul > li > ul {
+    padding-left: 1rem;
+}
+
+/* 4 depth */
+#TableOfContents > ul > li > ul > li > ul{
+    padding-left: 2rem;
+}
+
+.sticky {
+    top: 52px; /* bulma has-navbar-fixed-top in body */
+    position: sticky;
+}
+
+
+img[src$='#center']{
+    display: block;
+    margin: 0.7rem auto;
+}
+
+img[src$='#left']{
+    float: left;
+    margin: 0.7rem;
+}
+
+img[src$='#right']{
+    float: right;
+    margin: 0.7rem;
+}

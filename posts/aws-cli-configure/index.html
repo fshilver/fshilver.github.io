@@ -1,0 +1,491 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>AWS CLI 설치 및 기본 설정 방법 | 메모장</title>
+<meta name=description content="AWS CLI를 본격적으로 사용하기 전에 알아두면 도움이 될 내용들을 알아보자.">
+<link rel=canonical href=https://hsyang.net/posts/aws-cli-configure/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="AWS CLI 설치 및 기본 설정 방법">
+<meta property="og:description" content="AWS CLI를 본격적으로 사용하기 전에 알아두면 도움이 될 내용들을 알아보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/aws-cli-configure/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-09-19T16:00:27+09:00">
+<meta property="article:modified_time" content="2021-10-12T00:24:05+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="AWS CLI 설치 및 기본 설정 방법">
+<meta name=twitter:description content="AWS CLI를 본격적으로 사용하기 전에 알아두면 도움이 될 내용들을 알아보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<div class="navbar-item has-dropdown is-hoverable">
+<a class=navbar-link>Language</a>
+<div class=navbar-dropdown>
+<a class=navbar-item rel=alternate href=/en/posts/aws-cli-configure/ hreflang=en lang=en>en</a>
+</div>
+</div>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>September 19, 2021</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">AWS CLI 설치 및 기본 설정 방법</h1>
+<div class="content mt-6">
+<h2 id=why-cli>Why CLI?</h2>
+<blockquote>
+<p>CLI : Command Line Interface의 약자로 명령어 기반의 사용자 환경을 의미한다.</p>
+</blockquote>
+<p>처음 AWS를 접할 때는 GUI 환경인 <code>AWS Management Console</code>을 이용하는게 좀 더 직관적이고 사용성이 좋다.</p>
+<p><img src=aws-management-console.ko.png alt=aws-management-console></p>
+<p>그러나 GUI의 한계점은 분명히 있다.
+예를 들면,</p>
+<ul>
+<li>비슷한 작업을 계속 GUI로 하는건 번거롭다.(예를 들어 EC2를 반복적으로 중지/시작 하는 일)</li>
+<li>GUI로 작업하는 과정을 <code>문서화</code>하기 번거롭다. (일일이 스크린샷을 찍어야 한다.)</li>
+<li>AWS Management Console의 GUI는 계속 업데이트되기 때문에 기껏 스크린샷 열심히 찍어가며 작성했던 메뉴얼이 어느 순간 무용지물이 된다.
+<ul>
+<li>무용지물까지는 아니더라도 최신 내용이 반영되지 않기 때문에 문서를 읽는 사람에게 혼란을 줄 수 있다.</li>
+</ul>
+</li>
+</ul>
+<p>반면 CLI는 위 단점을 보완해 줄 수 있기 떄문에, 위 단점에 대해 공감하는 사람이라면 CLI 사용을 추천한다.</p>
+<ul>
+<li>비슷한 작업을 계속 GUI로 하는건 번거롭다.(예를 들어 EC2를 반복적으로 중지/시작 하는 일)
+<ul>
+<li><em>대부분 명령어 한 줄로 가능하다.</em></li>
+</ul>
+</li>
+<li>GUI로 작업하는 과정을 <code>문서화</code>하기 번거롭다. (일일이 스크린샷을 찍어야 한다.)
+<ul>
+<li><em>명령어 기반이기 때문에(텍스트) 문서화가 비교적 간단하다.</em></li>
+</ul>
+</li>
+<li>AWS Management Console의 GUI는 계속 업데이트되기 때문에 기껏 스크린샷 열심히 찍어가며 작성했던 메뉴얼이 어느 순간 무용지물이 된다.
+<ul>
+<li><em>cli는 옵션이 추가될지 언정 거의 변경되지는 않는다.</em></li>
+<li><em>변경되더라도 텍스트 수정이라 상대적으로 덜 번거롭다.</em></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>CLI가 무조건 좋다는 얘기가 아니다. GUI와 CLI가 가진 장단점이 명확하기 때문에 자신의 환경에 맞는 방법을 선택하면 된다.</p>
+</blockquote>
+<h2 id=설치>설치</h2>
+<p>AWS CLI는 버전 1과 버전 2가 있다. 당연히 버전 2가 최신 버전이므로 버전 2를 설치하자.
+설치는 AWS 공식 문서를 참고 하자. 매우 간단하다.</p>
+<ul>
+<li><a href=https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html>https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html</a></li>
+</ul>
+<p>설치 후 터미널에서 아래 명령을 입력하여 제대로 설치 되었는지, 어떤 버전이 설치되었는지 확인할 수 있다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>aws --version
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text># Windows 10
+aws-cli/2.2.39 Python/3.8.8 Windows/10 exe/AMD64 prompt/off
+
+# Mac
+aws-cli/2.1.10 Python/3.9.1 Darwin/20.6.0 source/x86_64 prompt/off
+
+# Linux
+aws-cli/2.0.13 Python/3.7.3 Linux/3.10.0-1160.21.1.el7.x86_64 botocore/2.0.0dev17
+</code></pre></div><h2 id=설정>설정</h2>
+<p>AWS 계정 생성 시 생성한 Access Key와 Secret Access Key 정보를 AWS CLI에 설정하자.
+설정 시 기본으로 사용할 <code>region</code> 이름과 cli 명령어 결과를 보여줄 형식(output)을 지정할 수 있다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws configure
+AWS Access Key ID <span style=color:#f92672>[</span>None<span style=color:#f92672>]</span>: YOUR_ACCESS_KEY
+AWS Secret Access Key <span style=color:#f92672>[</span>None<span style=color:#f92672>]</span>: YOUR_SECRET_ACCESS_KEY
+Default region name <span style=color:#f92672>[</span>None<span style=color:#f92672>]</span>: ap-northeast-2
+Default output format <span style=color:#f92672>[</span>None<span style=color:#f92672>]</span>: json
+</code></pre></div><blockquote>
+<p>region name에 설정할 값은 이 글 하단 <a href=#aws-region-list>AWS Region List</a>를 참조하자.</p>
+<p>output format 값에 따란 출력 결과 예시는 이 글 하단의 <a href=#aws-cli-output-format>AWS CLI Output Format Sample</a>을 참조하자.</p>
+</blockquote>
+<p>위와 같이 입력하면 <code>$HOME</code> 폴더 밑에 <code>.aws</code> 폴더가 생성되고 하위에 <code>config</code>, <code>credentials</code> 라는 파일이 생성된다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Windows : C:\Users\hsyang\.aws
+Mac : /Users/hsyang/.aws
+Linux : /home/hsyang/.aws
+</code></pre></div><p>파일을 열어보면 방금 설정한 정보가 텍스트 형태로 저장되어 있음을 확인할 수 있다.</p>
+<ul>
+<li>
+<p>config</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=color:#66d9ef>[default]</span>
+<span style=color:#a6e22e>region</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>ap-northeast-2</span>
+<span style=color:#a6e22e>output</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>json</span>
+</code></pre></div></li>
+<li>
+<p>credentials</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=color:#66d9ef>[default]</span>
+<span style=color:#a6e22e>aws_access_key_id</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>YOUR_ACCESS_KEY</span>
+<span style=color:#a6e22e>aws_secret_access_key</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>YOUR_SECRET_ACCESS_KEY</span>
+</code></pre></div></li>
+</ul>
+<p><code>[default]</code> 라는 문구가 보이는데 이는 <code>default</code>라는 이름의 <code>profile</code>을 의미한다.
+AWS CLI는 <code>profile</code>이라는 개념을 제공하여 여러 개의 <code>Access Key/Secret Access Key</code>를 사용하는 경우 각 Key별 <code>profile</code>을 만들어 두고 필요에 따라 변경하며 사용할 수 있다.</p>
+<p><code>dev</code> 라는 이름의 profile을 추가해보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws configure --profile dev
+AWS Access Key ID <span style=color:#f92672>[</span>None<span style=color:#f92672>]</span>: YOUR_ACCESS_KEY_FOR_DEV
+AWS Secret Access Key <span style=color:#f92672>[</span>None<span style=color:#f92672>]</span>: YOUR_SECRET_ACCESS_KEY_FOR_DEV
+Default region name <span style=color:#f92672>[</span>None<span style=color:#f92672>]</span>: us-east-1
+Default output format <span style=color:#f92672>[</span>None<span style=color:#f92672>]</span>: table
+</code></pre></div><p>그리고 config, credentials 파일을 확인하면 아래와 같이 정보가 추가되어 있다.</p>
+<ul>
+<li>
+<p>config</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=color:#66d9ef>[default]</span>
+<span style=color:#a6e22e>region</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>ap-northeast-2</span>
+<span style=color:#a6e22e>output</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>json</span>
+<span style=color:#66d9ef>[profile dev]</span>
+<span style=color:#a6e22e>region</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>us-east-1</span>
+<span style=color:#a6e22e>output</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>table</span>
+</code></pre></div></li>
+<li>
+<p>credentials</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=color:#66d9ef>[default]</span>
+<span style=color:#a6e22e>aws_access_key_id</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>YOUR_ACCESS_KEY</span>
+<span style=color:#a6e22e>aws_secret_access_key</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>YOUR_SECRET_ACCESS_KEY</span>
+<span style=color:#66d9ef>[dev]</span>
+<span style=color:#a6e22e>aws_access_key_id</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>YOUR_ACCESS_KEY_FOR_DEV</span>
+<span style=color:#a6e22e>aws_secret_access_key</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>YOUR_SECRET_ACCESS_KEY_FOR_DEV</span>
+</code></pre></div></li>
+</ul>
+<p>aws configure 명령을 사용하여 설정한 region 이름과 output은 aws cli 커맨드 실행할 때마다 변경할 수 있기 때문에, 처음 설정 시 잘 모르겠다면 일단 그대로 두고 나중에 수정하면 된다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># default profile 설정이 적용된다.</span>
+<span style=color:#75715e># ap-northeast-2(서울) 리전의 EC2 리스트가 출력되고, 출력 포맷은 json 형태다.</span>
+~$ aws ec2 describe-instances
+
+<span style=color:#75715e>## 리전만 변경하고 싶으면 아래와 같이 한다.</span>
+~$ aws ec2 describe-instances --region us-east-1
+
+<span style=color:#75715e>## 출력 포맷을 변경하고 싶으면 아래와 같이 한다.</span>
+~$ aws ec2 describe-instances --output text
+
+<span style=color:#75715e>## default profile 대신 dev profile을 적용하고 싶으면 아래와 같이 한다.</span>
+~$ aws ec2 describe-instances --profile dev
+
+<span style=color:#75715e>## 위 3가지 옵션을 동시에 사용할 수도 있다.</span>
+~$ aws ec2 describe-instances --profile dev --region eu-central-1 --output yaml
+
+<span style=color:#75715e>## dev profile 의 region을 변경하고 싶으면 아래와 같이 할 수 있다.</span>
+~$ aws configure --profile dev
+AWS Access Key ID <span style=color:#f92672>[</span>****************_DEV<span style=color:#f92672>]</span>:          <span style=color:#75715e># Enter를 입력하면 기존 정보를 그대로 사용</span>
+AWS Secret Access Key <span style=color:#f92672>[</span>****************_DEV<span style=color:#f92672>]</span>:      <span style=color:#75715e># Enter를 입력하면 기존 정보를 그대로 사용</span>
+Default region name <span style=color:#f92672>[</span>us-east-1<span style=color:#f92672>]</span>: ap-northeast-2    <span style=color:#75715e># us-east-1 =&gt; ap-northeast-2 로 변경</span>
+Default output format <span style=color:#f92672>[</span>table<span style=color:#f92672>]</span>:                     <span style=color:#75715e># Enter를 입력하면 기존 정보를 그대로 사용</span>
+</code></pre></div><h2 id=appendix>Appendix</h2>
+<h3 id=aws-region-list>AWS Region List</h3>
+<ul>
+<li><a href=https://docs.aws.amazon.com/ko_kr/general/latest/gr/rande.html>https://docs.aws.amazon.com/ko_kr/general/latest/gr/rande.html</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style=text-align:center>Name</th>
+<th style=text-align:center>Region</th>
+<th style=text-align:center>Country</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style=text-align:center>Seoul</td>
+<td style=text-align:center>ap-northeast-2</td>
+<td style=text-align:center>Asia</td>
+</tr>
+<tr>
+<td style=text-align:center>Mumbai</td>
+<td style=text-align:center>ap-south-1</td>
+<td style=text-align:center>Asia</td>
+</tr>
+<tr>
+<td style=text-align:center>Osaka</td>
+<td style=text-align:center>ap-northeast-3</td>
+<td style=text-align:center>Asia</td>
+</tr>
+<tr>
+<td style=text-align:center>Singapore</td>
+<td style=text-align:center>ap-southeast-1</td>
+<td style=text-align:center>Asia</td>
+</tr>
+<tr>
+<td style=text-align:center>Sydney</td>
+<td style=text-align:center>ap-southeast-2</td>
+<td style=text-align:center>Asia</td>
+</tr>
+<tr>
+<td style=text-align:center>Tokyo</td>
+<td style=text-align:center>ap-northeast-1</td>
+<td style=text-align:center>Asia</td>
+</tr>
+<tr>
+<td style=text-align:center>Hongkong</td>
+<td style=text-align:center>ap-east-1</td>
+<td style=text-align:center>Asia</td>
+</tr>
+<tr>
+<td style=text-align:center>Ohio</td>
+<td style=text-align:center>us-east-2</td>
+<td style=text-align:center>US</td>
+</tr>
+<tr>
+<td style=text-align:center>Virginia</td>
+<td style=text-align:center>us-east-1</td>
+<td style=text-align:center>US</td>
+</tr>
+<tr>
+<td style=text-align:center>Califonia</td>
+<td style=text-align:center>us-west-1</td>
+<td style=text-align:center>US</td>
+</tr>
+<tr>
+<td style=text-align:center>Oregon</td>
+<td style=text-align:center>us-west-2</td>
+<td style=text-align:center>US</td>
+</tr>
+<tr>
+<td style=text-align:center>Sanpaulo</td>
+<td style=text-align:center>sa-east-1</td>
+<td style=text-align:center>South America</td>
+</tr>
+<tr>
+<td style=text-align:center>Canada</td>
+<td style=text-align:center>ca-central-1</td>
+<td style=text-align:center>Canada</td>
+</tr>
+<tr>
+<td style=text-align:center>Frankfurut</td>
+<td style=text-align:center>eu-central-1</td>
+<td style=text-align:center>Europe</td>
+</tr>
+<tr>
+<td style=text-align:center>Island</td>
+<td style=text-align:center>eu-west-1</td>
+<td style=text-align:center>Europe</td>
+</tr>
+<tr>
+<td style=text-align:center>London</td>
+<td style=text-align:center>eu-west-2</td>
+<td style=text-align:center>Europe</td>
+</tr>
+<tr>
+<td style=text-align:center>Paris</td>
+<td style=text-align:center>eu-west-3</td>
+<td style=text-align:center>Europe</td>
+</tr>
+<tr>
+<td style=text-align:center>Stockholm</td>
+<td style=text-align:center>eu-north-1</td>
+<td style=text-align:center>Europe</td>
+</tr>
+</tbody>
+</table>
+<h3 id=aws-cli-output-format>AWS CLI Output Format Sample</h3>
+<p>다음은 aws iam list-groups 명령어 실행 결과 예시이다.</p>
+<h4 id=json>json</h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>aws iam list-groups --output json
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;Groups&#34;</span>: [
+        {
+            <span style=color:#f92672>&#34;Path&#34;</span>: <span style=color:#e6db74>&#34;/&#34;</span>,
+            <span style=color:#f92672>&#34;GroupName&#34;</span>: <span style=color:#e6db74>&#34;Administrator&#34;</span>,
+            <span style=color:#f92672>&#34;GroupId&#34;</span>: <span style=color:#e6db74>&#34;GROUP_ID_1&#34;</span>,
+            <span style=color:#f92672>&#34;Arn&#34;</span>: <span style=color:#e6db74>&#34;arn:aws:iam::YOUR_ACCOUNT_ID:group/Administrator&#34;</span>,
+            <span style=color:#f92672>&#34;CreateDate&#34;</span>: <span style=color:#e6db74>&#34;2021-01-22T04:34:11+00:00&#34;</span>
+        },
+        {
+            <span style=color:#f92672>&#34;Path&#34;</span>: <span style=color:#e6db74>&#34;/&#34;</span>,
+            <span style=color:#f92672>&#34;GroupName&#34;</span>: <span style=color:#e6db74>&#34;Operator&#34;</span>,
+            <span style=color:#f92672>&#34;GroupId&#34;</span>: <span style=color:#e6db74>&#34;GROUP_ID_2&#34;</span>,
+            <span style=color:#f92672>&#34;Arn&#34;</span>: <span style=color:#e6db74>&#34;arn:aws:iam::YOUR_ACCOUNT_ID:group/Operator&#34;</span>,
+            <span style=color:#f92672>&#34;CreateDate&#34;</span>: <span style=color:#e6db74>&#34;2021-02-04T06:39:10+00:00&#34;</span>
+        },
+        {
+            <span style=color:#f92672>&#34;Path&#34;</span>: <span style=color:#e6db74>&#34;/&#34;</span>,
+            <span style=color:#f92672>&#34;GroupName&#34;</span>: <span style=color:#e6db74>&#34;SysAdministrator&#34;</span>,
+            <span style=color:#f92672>&#34;GroupId&#34;</span>: <span style=color:#e6db74>&#34;GROUP_ID_3&#34;</span>,
+            <span style=color:#f92672>&#34;Arn&#34;</span>: <span style=color:#e6db74>&#34;arn:aws:iam::YOUR_ACCOUNT_ID:group/SysAdministrator&#34;</span>,
+            <span style=color:#f92672>&#34;CreateDate&#34;</span>: <span style=color:#e6db74>&#34;2021-01-22T04:34:43+00:00&#34;</span>
+        }
+    ]
+}
+</code></pre></div><h4 id=table>table</h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>aws iam list-groups --output table
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>----------------------------------------------------------------------------------------------------------------------------------
+|                                                               ListGroups                                                       |
++--------------------------------------------------------------------------------------------------------------------------------+
+||                                                                Groups                                                        ||
+|+------------------------------------------------------+----------------------------+-------------+-------------------+--------+|
+||                        Arn                           |        CreateDate          |  GroupId    |     GroupName     | Path   ||
+|+------------------------------------------------------+----------------------------+-------------+-------------------+--------+|
+||  arn:aws:iam::YOUR_ACCOUNT_ID:group/Administrator    |  2021-01-22T04:34:11+00:00 |  GROUP_ID_1 |  Administrator    |  /     ||
+||  arn:aws:iam::YOUR_ACCOUNT_ID:group/Operator         |  2021-02-04T06:39:10+00:00 |  GROUP_ID_2 |  Operator         |  /     ||
+||  arn:aws:iam::YOUR_ACCOUNT_ID:group/SysAdministrator |  2021-01-22T04:34:43+00:00 |  GROUP_ID_3 |  SysAdministrator |  /     ||
+|+------------------------------------------------------+----------------------------+-------------+-------------------+--------+|
+</code></pre></div><h4 id=yaml>yaml</h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>aws iam list-groups --output yaml
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#f92672>Groups</span>:
+- <span style=color:#f92672>Arn</span>: <span style=color:#ae81ff>arn:aws:iam::YOUR_ACCOUNT_ID:group/Administrator</span>
+  <span style=color:#f92672>CreateDate</span>: <span style=color:#e6db74>&#39;2021-01-22T04:34:11+00:00&#39;</span>
+  <span style=color:#f92672>GroupId</span>: <span style=color:#ae81ff>GROUP_ID_1</span>
+  <span style=color:#f92672>GroupName</span>: <span style=color:#ae81ff>Administrator</span>
+  <span style=color:#f92672>Path</span>: <span style=color:#ae81ff>/</span>
+- <span style=color:#f92672>Arn</span>: <span style=color:#ae81ff>arn:aws:iam::YOUR_ACCOUNT_ID:group/Operator</span>
+  <span style=color:#f92672>CreateDate</span>: <span style=color:#e6db74>&#39;2021-02-04T06:39:10+00:00&#39;</span>
+  <span style=color:#f92672>GroupId</span>: <span style=color:#ae81ff>GROUP_ID_2</span>
+  <span style=color:#f92672>GroupName</span>: <span style=color:#ae81ff>Operator</span>
+  <span style=color:#f92672>Path</span>: <span style=color:#ae81ff>/</span>
+- <span style=color:#f92672>Arn</span>: <span style=color:#ae81ff>arn:aws:iam::YOUR_ACCOUNT_ID:group/SysAdministrator</span>
+  <span style=color:#f92672>CreateDate</span>: <span style=color:#e6db74>&#39;2021-01-22T04:34:43+00:00&#39;</span>
+  <span style=color:#f92672>GroupId</span>: <span style=color:#ae81ff>GROUP_ID_3</span>
+  <span style=color:#f92672>GroupName</span>: <span style=color:#ae81ff>SysAdministrator</span>
+  <span style=color:#f92672>Path</span>: <span style=color:#ae81ff>/</span>
+</code></pre></div><h4 id=text>text</h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>aws iam list-groups --output text
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>GROUPS  arn:aws:iam::YOUR_ACCOUNT_ID:group/Administrator     2021-01-22T04:34:11+00:00  GROUP_ID_1  Administrator     /
+GROUPS  arn:aws:iam::YOUR_ACCOUNT_ID:group/Operator          2021-02-04T06:39:10+00:00  GROUP_ID_2  Operator          /
+GROUPS  arn:aws:iam::YOUR_ACCOUNT_ID:group/SysAdministrator  2021-01-22T04:34:43+00:00  GROUP_ID_3  SysAdministrator  /
+</code></pre></div>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/how-to-fix-dll-file-not-found/>윈도우에서 DLL 파일을 찾을 수 없는 오류 해결 방법 (msvcp.dll, msvcr.dll 등등)</a>
+</div>
+<div class="column has-text-right">
+<p>Next post</p>
+<a href=/posts/aws-cli-ec2/>AWS CLI - EC2 생성하기</a>
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#why-cli>Why CLI?</a></li>
+<li><a href=#설치>설치</a></li>
+<li><a href=#설정>설정</a></li>
+<li><a href=#appendix>Appendix</a>
+<ul>
+<li><a href=#aws-region-list>AWS Region List</a></li>
+<li><a href=#aws-cli-output-format>AWS CLI Output Format Sample</a>
+<ul>
+<li><a href=#json>json</a></li>
+<li><a href=#table>table</a></li>
+<li><a href=#yaml>yaml</a></li>
+<li><a href=#text>text</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/aws-cli-ec2/>AWS CLI - EC2 생성하기</a></h1>
+<time class="has-text-grey-light is-size-7">11 October 2021</time>
+<h1><a href=https://hsyang.net/posts/python-google-spreadsheets/>[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기</a></h1>
+<time class="has-text-grey-light is-size-7">17 August 2021</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>자주 쓰는 - git branch 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2021 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>

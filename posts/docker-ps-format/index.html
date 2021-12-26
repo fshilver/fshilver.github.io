@@ -1,0 +1,372 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Docker ps 내용 바꾸기 | 메모장</title>
+<meta name=description content="docker ps 명령어 실행 시 내용이 길어 줄바꿈이 되는 경우가 있다. 필요한 정보만 출력해서 줄바꿈을 없애고 가독성을 높여보자.">
+<link rel=canonical href=https://hsyang.net/posts/docker-ps-format/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="Docker ps 내용 바꾸기">
+<meta property="og:description" content="docker ps 명령어 실행 시 내용이 길어 줄바꿈이 되는 경우가 있다. 필요한 정보만 출력해서 줄바꿈을 없애고 가독성을 높여보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/docker-ps-format/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-12-02T10:05:12+09:00">
+<meta property="article:modified_time" content="2021-12-02T10:35:21+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="Docker ps 내용 바꾸기">
+<meta name=twitter:description content="docker ps 명령어 실행 시 내용이 길어 줄바꿈이 되는 경우가 있다. 필요한 정보만 출력해서 줄바꿈을 없애고 가독성을 높여보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>December 2, 2021</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">Docker ps 내용 바꾸기</h1>
+<div class="content mt-6">
+<h2 id=내-이야기>내 이야기</h2>
+<p>docker ps 실행 시 기본으로 출력되는 항목은 다음과 같다.</p>
+<p><img src=docker-ps-default.png alt=docker-ps-default.png></p>
+<p>그러나,</p>
+<ul>
+<li>이미지 이름이 길거나</li>
+<li>컨테이너 이름이 길거나</li>
+<li>터미널 가로 크기가 좁거나</li>
+</ul>
+<p>등등 다양한 이유로 위와 같이 줄바꿈이 되는 경우 <strong>가독성이 매우 떨어진다</strong>. (물론 줄바꿈이 되더라도 잘 보는 분들도 있다.)
+필자는 한 줄 출력을 선호하기 때문에 아래와 같이 변경해 보았다.</p>
+<p>아래 가이드는 Linux/Mac을 기준으로 작성하였다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># 사용자 계정의 $HOME 디렉토리 하위에 .docker 디렉토리를 생성하고</span>
+~$ mkdir ~/.docker
+
+<span style=color:#75715e># config.json 파일을 만든다.</span>
+~$ vi ~/.docker/config.json
+</code></pre></div><p>~/.docker/config.json 내용은 아래와 같이 변경하자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;psFormat&#34;</span>: <span style=color:#e6db74>&#34;table {{.Names}}\\t{{.Image}}\\t{{.Status}}\\t{{.Ports}}&#34;</span>
+}
+</code></pre></div><p>그리고 다시 docker ps 명령어를 실행해보면,</p>
+<p><img src=docker-ps-change-format.png alt=docker-ps-change-format.png></p>
+<p>설정한 정보만 출력된다.!
+이 외에도 출력할 수 있는 정보의 종류는 다양하지만 추천하는 항목은 아래 4개다.
+필자가 모든 정보를 하나하나 출력해 보았지만, 이 4개면 충분하다고 결론 내렸다.</p>
+<ul>
+<li>Names</li>
+<li>Image</li>
+<li>Status</li>
+<li>Ports</li>
+</ul>
+<p>출력할 수 있는 모든 정보와 출력 예제는 아래를 참고하자.</p>
+<h2 id=reference>Reference</h2>
+<p>설정할 수 있는 정보의 종류는 docker 공식 문서에 나와있다.</p>
+<ul>
+<li><a href=https://docs.docker.com/engine/reference/commandline/ps/#formatting>https://docs.docker.com/engine/reference/commandline/ps/#formatting</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style=text-align:left>Placeholder</th>
+<th style=text-align:left>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style=text-align:left>.ID</td>
+<td style=text-align:left>Container ID</td>
+</tr>
+<tr>
+<td style=text-align:left>.Image</td>
+<td style=text-align:left>Image ID</td>
+</tr>
+<tr>
+<td style=text-align:left>.Command</td>
+<td style=text-align:left>Quoted command</td>
+</tr>
+<tr>
+<td style=text-align:left>.CreatedAt</td>
+<td style=text-align:left>Time when the container was created.</td>
+</tr>
+<tr>
+<td style=text-align:left>.RunningFor</td>
+<td style=text-align:left>Elapsed time since the container was started.</td>
+</tr>
+<tr>
+<td style=text-align:left>.Ports</td>
+<td style=text-align:left>Exposed ports.</td>
+</tr>
+<tr>
+<td style=text-align:left>.State</td>
+<td style=text-align:left>Container status (for example; “created”, “running”, “exited”).</td>
+</tr>
+<tr>
+<td style=text-align:left>.Status</td>
+<td style=text-align:left>Container status with details about duration and health-status.</td>
+</tr>
+<tr>
+<td style=text-align:left>.Size</td>
+<td style=text-align:left>Container disk size.</td>
+</tr>
+<tr>
+<td style=text-align:left>.Names</td>
+<td style=text-align:left>Container names.</td>
+</tr>
+<tr>
+<td style=text-align:left>.Labels</td>
+<td style=text-align:left>All labels assigned to the container.</td>
+</tr>
+<tr>
+<td style=text-align:left>.Label</td>
+<td style=text-align:left>Value of a specific label for this container. For example &lsquo;{{.Label &ldquo;com.docker.swarm.cpu&rdquo;}}&rsquo;</td>
+</tr>
+<tr>
+<td style=text-align:left>.Mounts</td>
+<td style=text-align:left>Names of the volumes mounted in this container.</td>
+</tr>
+<tr>
+<td style=text-align:left>.Networks</td>
+<td style=text-align:left>Names of the networks attached to this container.</td>
+</tr>
+</tbody>
+</table>
+<p>아래 <code>docker-compose.yml</code> 파일로 생성한 container 2개의 ps 결과를 각 항목마다 출력해보았다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#f92672>version</span>: <span style=color:#e6db74>&#34;3.1&#34;</span>
+<span style=color:#f92672>services</span>:
+  <span style=color:#f92672>mc</span>:
+    <span style=color:#f92672>image</span>: <span style=color:#ae81ff>nextgenhealthcare/connect</span>
+    <span style=color:#f92672>environment</span>:
+      - <span style=color:#ae81ff>DATABASE=postgres</span>
+      - <span style=color:#ae81ff>DATABASE_URL=jdbc:postgresql://db:5432/mirthdb</span>
+      - <span style=color:#ae81ff>DATABASE_MAX_CONNECTIONS=20</span>
+      - <span style=color:#ae81ff>DATABASE_USERNAME=mirthdb</span>
+      - <span style=color:#ae81ff>DATABASE_PASSWORD=mirthdb</span>
+      - <span style=color:#ae81ff>DATABASE_MAX_RETRY=2</span>
+      - <span style=color:#ae81ff>DATABASE_RETRY_WAIT=10000</span>
+      - <span style=color:#ae81ff>KEYSTORE_STOREPASS=docker_storepass</span>
+      - <span style=color:#ae81ff>KEYSTORE_KEYPASS=docker_keypass</span>
+      - <span style=color:#ae81ff>VMOPTIONS=-Xmx512m</span>
+    <span style=color:#f92672>ports</span>:
+      - <span style=color:#ae81ff>8080</span>:<span style=color:#ae81ff>8080</span><span style=color:#ae81ff>/tcp</span>
+      - <span style=color:#ae81ff>8443</span>:<span style=color:#ae81ff>8443</span><span style=color:#ae81ff>/tcp</span>
+    <span style=color:#f92672>depends_on</span>:
+      - <span style=color:#ae81ff>db</span>
+  <span style=color:#f92672>db</span>:
+    <span style=color:#f92672>image</span>: <span style=color:#ae81ff>postgres</span>
+    <span style=color:#f92672>environment</span>:
+      - <span style=color:#ae81ff>POSTGRES_USER=mirthdb</span>
+      - <span style=color:#ae81ff>POSTGRES_PASSWORD=mirthdb</span>
+      - <span style=color:#ae81ff>POSTGRES_DB=mirthdb</span>
+    <span style=color:#f92672>expose</span>:
+      - <span style=color:#ae81ff>5432</span>
+    <span style=color:#f92672>volumes</span>:
+      - <span style=color:#ae81ff>db_data:/var/lib/postgres</span>
+
+<span style=color:#f92672>volumes</span>:
+  <span style=color:#f92672>db_data</span>:
+</code></pre></div><h3 id=id>.ID</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>CONTAINER ID
+6d568d28031b
+b57416d12805
+</code></pre></div><h3 id=image>.Image</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>IMAGE
+nextgenhealthcare/connect
+postgres
+</code></pre></div><h3 id=command>.Command</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>COMMAND
+&#34;/entrypoint.sh ./mc…&#34;
+&#34;docker-entrypoint.s…&#34;
+</code></pre></div><h3 id=createdat>.CreatedAt</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>CREATED AT
+2021-11-30 13:51:24 +0900 KST
+2021-11-30 13:51:23 +0900 KST
+</code></pre></div><h3 id=runningfor>.RunningFor</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>CREATED
+59 minutes ago
+59 minutes ago
+</code></pre></div><h3 id=ports>.Ports</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>PORTS
+0.0.0.0:8080-&gt;8080/tcp, :::8080-&gt;8080/tcp, 0.0.0.0:8443-&gt;8443/tcp, :::8443-&gt;8443/tcp
+5432/tcp
+</code></pre></div><h3 id=state>.State</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>STATE
+running
+running
+</code></pre></div><h3 id=status>.Status</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>STATUS
+Up About an hour
+Up About an hour
+</code></pre></div><h3 id=size>.Size</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>SIZE
+0B
+0B
+</code></pre></div><h3 id=names>.Names</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>NAMES
+hl7-connect_mc_1
+hl7-connect_db_1
+</code></pre></div><h3 id=labels>.Labels</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>LABELS
+com.docker.compose.version=1.29.2,com.docker.compose.config-hash=53e742ed62bef910a6e42620df5ec5f21d1497cf0838ce7753940901f4991666,com.docker.compose.container-number=1,com.docker.compose.oneoff=False,com.docker.compose.project=hl7-connect,com.docker.compose.project.config_files=docker-compose.yml,com.docker.compose.project.working_dir=/home/hsyang/hl7-connect,com.docker.compose.service=mc
+com.docker.compose.container-number=1,com.docker.compose.oneoff=False,com.docker.compose.project=hl7-connect,com.docker.compose.project.config_files=docker-compose.yml,com.docker.compose.project.working_dir=/home/hsyang/hl7-connect,com.docker.compose.service=db,com.docker.compose.version=1.29.2,com.docker.compose.config-hash=b6096adc2af7ffac8ca18fc7effe3329664f30ddfa5244ec4134afec1ef58c6e
+</code></pre></div><h3 id=label>.Label</h3>
+<ul>
+<li>
+<p>~/.docker/config.json</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;psFormat&#34;</span>: <span style=color:#e6db74>&#34;table {{.Label \&#34;com.docker.compose.project.working_dir\&#34;}}&#34;</span>
+}
+</code></pre></div></li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>working dir
+/home/hsyang/hl7-connect
+/home/hsyang/hl7-connect
+</code></pre></div><h3 id=mounts>.Mounts</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>MOUNTS
+hl7-connect_db…,406e8d713670e9…
+edfb9d8aa80ea0…,d740b1ce45a8c0…
+</code></pre></div><h3 id=networks>.Networks</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>NETWORKS
+hl7-connect_default
+hl7-connect_default
+</code></pre></div>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/git-branch/>자주 쓰는 - git branch 명령어</a>
+</div>
+<div class="column has-text-right">
+<p>Next post</p>
+<a href=/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a>
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#내-이야기>내 이야기</a></li>
+<li><a href=#reference>Reference</a>
+<ul>
+<li><a href=#id>.ID</a></li>
+<li><a href=#image>.Image</a></li>
+<li><a href=#command>.Command</a></li>
+<li><a href=#createdat>.CreatedAt</a></li>
+<li><a href=#runningfor>.RunningFor</a></li>
+<li><a href=#ports>.Ports</a></li>
+<li><a href=#state>.State</a></li>
+<li><a href=#status>.Status</a></li>
+<li><a href=#size>.Size</a></li>
+<li><a href=#names>.Names</a></li>
+<li><a href=#labels>.Labels</a></li>
+<li><a href=#label>.Label</a></li>
+<li><a href=#mounts>.Mounts</a></li>
+<li><a href=#networks>.Networks</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>자주 쓰는 - git branch 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2021 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>

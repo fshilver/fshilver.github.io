@@ -1,0 +1,224 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>[Python] MS Word 파일 수정하기 | 메모장</title>
+<meta name=description content="파이썬으로 MS Word 파일에서 원하는 부분만 변경하는 방법을 알아보자.">
+<link rel=canonical href=https://hsyang.net/posts/python-docx/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="[Python] MS Word 파일 수정하기">
+<meta property="og:description" content="파이썬으로 MS Word 파일에서 원하는 부분만 변경하는 방법을 알아보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/python-docx/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-08-07T22:11:17+09:00">
+<meta property="article:modified_time" content="2021-09-26T14:50:44+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="[Python] MS Word 파일 수정하기">
+<meta name=twitter:description content="파이썬으로 MS Word 파일에서 원하는 부분만 변경하는 방법을 알아보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>August 7, 2021</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">[Python] MS Word 파일 수정하기</h1>
+<div class="content mt-6">
+<p>python 코드로 <code>MS Word</code> 문서를 편집할 때 사용할 수 있는 라이브러리를 소개하고자 한다.</p>
+<ul>
+<li><a href=https://python-docx.readthedocs.io/en/latest/index.html>python-docx</a></li>
+<li><a href=https://docxtpl.readthedocs.io/en/latest/>docxtpl</a></li>
+</ul>
+<p><code>python-docx</code>은 코드로 직접 문서를 작성하는데 초점이 맞춰져 있는 반면, <code>docxtpl</code>은 이미 만들어져 있는 문서를 읽어와서 필요한 부분만 변경하는 것에 초점이 맞춰져 있다.
+필자는 DB 데이터를 <code>MS Word</code> 문서로 생성해야 할 필요가 있었고, 이 경우 문서를 직접 코드로 작성하는 <code>python-docx</code>보다는 <code>MS Word</code>로 작성한 template 에서 필요한 부분만 바꿀 수 있는 <code>docxtpl</code> 라이브러리를 사용하는 편이 훨씬 효율적이었다.</p>
+<p>(참고로 <code>docxtpl</code> 라이브러리 내부에서 <code>python-docx</code>를 사용한다.)</p>
+<h2 id=docxtpl>docxtpl</h2>
+<p>우선 라이브러리부터 설치하자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ pip install docxtpl
+</code></pre></div><p>아래와 같은 <code>MS Word</code> 문서 양식이 있다. 해당 문서에서 <code>{{ doc_num }}</code> 와 <code>{{ name }}</code> 이라고 되어 있는 부분이 치환할 부분이다. 치환하고 싶은 부분을 <code>{{ }}</code> 로 감싼 뒤 괄호 안에 python 코드에서 넘겨줄 이름을 적어주면 된다.</p>
+<p><img src=docxtpl.png alt=certificates_template></p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> docxtpl <span style=color:#f92672>import</span> DocxTemplate
+
+doc <span style=color:#f92672>=</span> DocxTemplate(<span style=color:#e6db74>&#39;certificates_template.docx&#39;</span>)
+
+context <span style=color:#f92672>=</span> {
+    <span style=color:#e6db74>&#39;doc_num&#39;</span>: <span style=color:#e6db74>&#39;2021-0101&#39;</span>,
+    <span style=color:#e6db74>&#39;name&#39;</span> : <span style=color:#e6db74>&#39;홍길동&#39;</span>,
+}
+
+doc<span style=color:#f92672>.</span>render(context)
+doc<span style=color:#f92672>.</span>save(<span style=color:#e6db74>&#39;output.docx&#39;</span>)
+</code></pre></div><p>결과는 아래와 같이 의도한 대로 잘 나온다!</p>
+<p><img src=certificates.png alt=certificates_output></p>
+<h3 id=template-filter-사용하기>template filter 사용하기</h3>
+<p>추가로 <code>docxtpl</code> 사용 시 활용할 수 있는 <code>filter</code> 기능에 대해 알아보겠다. <code>filter</code>란 python 코드에서 넘어온 값을 문서에 렌더링 하기 전에 변환하는 기능인데 template 문서에서 간단하게 활용할 수 있다.</p>
+<p>여기서는 숫자값에 천단위 comma를 추가하는 <code>filter</code>를 작성해보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>import</span> jinja2
+<span style=color:#f92672>from</span> docxtpl <span style=color:#f92672>import</span> DocxTemplate
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>comma</span>(value):
+    <span style=color:#75715e># python3 의 format 함수를 이용.</span>
+    <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;</span><span style=color:#e6db74>{:,}</span><span style=color:#e6db74>&#34;</span><span style=color:#f92672>.</span>format(value)
+
+jinja_env <span style=color:#f92672>=</span> jinja2<span style=color:#f92672>.</span>Environment()
+jinja_env<span style=color:#f92672>.</span>filters[<span style=color:#e6db74>&#39;c&#39;</span>] <span style=color:#f92672>=</span> comma   <span style=color:#75715e># filter 이름을 c 라고 붙였다.</span>
+
+
+doc <span style=color:#f92672>=</span> DocxTemplate(<span style=color:#e6db74>&#39;certificates_template.docx&#39;</span>)
+
+context <span style=color:#f92672>=</span> {
+    <span style=color:#e6db74>&#39;doc_num&#39;</span>: <span style=color:#e6db74>&#39;2021-0101&#39;</span>,
+    <span style=color:#e6db74>&#39;name&#39;</span> : <span style=color:#e6db74>&#39;홍길동&#39;</span>,
+    <span style=color:#e6db74>&#39;cost&#39;</span> : <span style=color:#ae81ff>1000000</span>,
+}
+
+doc<span style=color:#f92672>.</span>render(context, jinja_env)
+doc<span style=color:#f92672>.</span>save(<span style=color:#e6db74>&#39;output.docx&#39;</span>)
+</code></pre></div><p>MS Word 문서 template 에서는 아래와 같이 위에서 작성한 <code>filter</code> 이름을 <code>|</code> 와 함께 써주면 된다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>{{ 변수명 | 필터명 }}
+</code></pre></div><p><img src=certificates_filter_template.png alt=certificates_filter_template></p>
+<p>위 template과 코드를 실행하면 아래 결과와 같이 숫자 값에 천단위 <code>,</code> 가 추가됨을 확인할 수 있다.</p>
+<p><img src=certificates_filter.png alt=certificates_filter></p>
+<p>filter 기능을 활용하여 원래 값을 문서 출력 순간에 변환할 수 있는데, 어떻게 활용하면 좋을지는 각자의 몫에 맡기겠다.</p>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/vim-modeline/>소스코드 내에(텍스트 파일) vim 옵션 설정하기</a>
+</div>
+<div class="column has-text-right">
+<p>Next post</p>
+<a href=/posts/python-google-spreadsheets/>[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기</a>
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#docxtpl>docxtpl</a>
+<ul>
+<li><a href=#template-filter-사용하기>template filter 사용하기</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/how-smartphone-apps-edit-photos/>스마트폰 앱은 어떻게 이미지를 보정하는 걸까?</a></h1>
+<time class="has-text-grey-light is-size-7">15 November 2021</time>
+<h1><a href=https://hsyang.net/posts/how-are-images-stored-and-displayed-on-a-computer/>컴퓨터는 이미지를 어떻게 저장하고 표현할까?</a></h1>
+<time class="has-text-grey-light is-size-7">1 November 2021</time>
+<h1><a href=https://hsyang.net/posts/python-requests-library-timeout/>[Python] Requests 라이브러리의 Connection Timeout에 관하여</a></h1>
+<time class="has-text-grey-light is-size-7">28 August 2021</time>
+<h1><a href=https://hsyang.net/posts/python-google-spreadsheets/>[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기</a></h1>
+<time class="has-text-grey-light is-size-7">17 August 2021</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>자주 쓰는 - git branch 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2021 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>

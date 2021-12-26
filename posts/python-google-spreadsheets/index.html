@@ -1,0 +1,633 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기 | 메모장</title>
+<meta name=description content="파이썬을 이용하여 AWS EC2 정보를 구글 시트문서에 내가 원하는 형태로 정리하는 방법을 알아보자.">
+<link rel=canonical href=https://hsyang.net/posts/python-google-spreadsheets/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기">
+<meta property="og:description" content="파이썬을 이용하여 AWS EC2 정보를 구글 시트문서에 내가 원하는 형태로 정리하는 방법을 알아보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/python-google-spreadsheets/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-08-17T00:01:00+09:00">
+<meta property="article:modified_time" content="2021-09-26T21:08:34+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기">
+<meta name=twitter:description content="파이썬을 이용하여 AWS EC2 정보를 구글 시트문서에 내가 원하는 형태로 정리하는 방법을 알아보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>August 17, 2021</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기</h1>
+<div class="content mt-6">
+<h2 id=서론>서론</h2>
+<p>사용 중인 AWS EC2 리소스에 대해 엑셀 문서로 정리해서 보안팀에 제출해야 하는 일이 생겼다.
+1년에 한번씩 보안 심사를 받는데, 그 때마다 같은 일을 계속해야 하는 귀찮음을 해결하고자 삽질한 기록을 남긴다.</p>
+<ul>
+<li>사용 언어 : Python 3.6</li>
+<li>사용한 라이브러리
+<ul>
+<li>AWS
+<ul>
+<li>boto3 : 1.18.21</li>
+</ul>
+</li>
+<li>Google Sheets (Link to <a href=https://developers.google.com/sheets/api/quickstart/python>Official Document</a>)
+<ul>
+<li>google-api-python-client : 2.15.0</li>
+<li>google-auth-httplib2 : 0.1.0</li>
+<li>google-auth-oauthlib : 0.4.5</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id=aws>AWS</h2>
+<p>boto3는 AWS에서 공식지원하는 파이썬 라이브러리다. (<a href=https://aws.amazon.com/ko/sdk-for-python/>공식 홈페이지</a>) 해당 라이브러리 사용의 큰 흐름은 아래와 같다.</p>
+<ol>
+<li>boto3 session 생성 (profile, region)</li>
+<li>session 으로부터 client 생성</li>
+<li>생성한 client 로 필요한 리소스 조회/생성/삭제/업데이트</li>
+</ol>
+<h3 id=엑세스-키-생성>엑세스 키 생성</h3>
+<p>우선 자신의 AWS 계정에서 사용할 Key를 생성하자. 아래 두 정보가 필요하다. 이미 사용 중인 key가 있다면 아래 내용은 넘어가자.</p>
+<ul>
+<li>ACCESS_KEY</li>
+<li>SECRET_ACCESS_KEY</li>
+</ul>
+<ol>
+<li>
+<p>AWS Console 페이지 접속 후 IAM 서비스 선택한다.
+<img src=iam-access-key-generation-0.png alt="aws iam service selection screenshot"></p>
+</li>
+<li>
+<p>왼쪽 사이드바 메뉴에서 <code>사용자</code> 선택 후 자신의 계정명을 클릭한다.
+<img src=iam-access-key-generation-1.png alt="aws iam service selection screenshot"></p>
+</li>
+<li>
+<p><code>보안 자격 증명</code> 탭을 클릭한다.
+<img src=iam-access-key-generation-2.png alt="aws iam service selection screenshot"></p>
+</li>
+<li>
+<p>화면을 아래로 스크롤한 후 <code>엑세스 키 만들기</code> 버튼을 클릭한다.
+<img src=iam-access-key-generation-4.png alt="aws iam service selection screenshot"></p>
+</li>
+<li>
+<p>자동으로 생성된 <code>엑세스 키 ID</code>와 <code>비밀 엑세스 키</code>(<code>표시</code> 버튼을 눌러서 확인)를 적어둔다.
+주의할 점은 <code>비밀 엑세스 키</code> 값은 해당 창을 닫으면 <strong>이 후 확인할 수 있는 방법</strong>이 없다.! <strong>잊어버릴 경우 재생성</strong> 해야한다.
+<img src=iam-access-key-generation-5.png alt="aws iam service selection screenshot"></p>
+</li>
+<li>
+<p>아래와 같이 엑세스 키가 생성됨을 확인할 수 있다. 해당 키는 언제든지 <code>비활성화</code>/<code>삭제</code>가 가능하므로 혹시나 외부에 노출된 경우 <strong>바로 삭제</strong>하자. (가장 오른쪽의 <code>x</code> 버튼을 누르면 삭제할 수 있다.)
+<img src=iam-access-key-generation-6.png alt="aws iam service selection screenshot"></p>
+</li>
+</ol>
+<h3 id=boto3-라이브러리>boto3 라이브러리</h3>
+<p>우선 라이브러리 설치부터 하자. 필자는 파이썬 3.6을 사용하였다. 아래 명령어를 터미널 창에 입력한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>pip install boto3
+</code></pre></div><p>그 후 아래 코드를 입력하여 ec2 인스턴스 정보를 받아와보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#75715e>#!/usr/bin/env python3</span>
+
+<span style=color:#f92672>import</span> boto3
+<span style=color:#f92672>from</span> botocore.config <span style=color:#f92672>import</span> Config
+
+<span style=color:#75715e># 아래처럼 코드 내에 키를 삽입하는건 굉장히 위험하다 !!!</span>
+<span style=color:#75715e># 코드가 github public repository에 올라가는 순간...</span>
+<span style=color:#75715e># 좀 더 나은 방법은 이 포스팅 하단부에 나오니 해당 부분을 참고하자.</span>
+AWS_ACCESS_KEY<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;YOUR_ACCESS_KEY&#39;</span>
+AWS_SECRET_KEY<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;YOUR_SECRET_ACCESS_KEY&#39;</span>
+
+client <span style=color:#f92672>=</span> boto3<span style=color:#f92672>.</span>client(<span style=color:#e6db74>&#39;ec2&#39;</span>,
+                      aws_access_key_id<span style=color:#f92672>=</span>AWS_ACCESS_KEY,
+                      aws_secret_access_key<span style=color:#f92672>=</span>AWS_SECRET_KEY,
+                      config<span style=color:#f92672>=</span>Config(region_name<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;ap-northeast-2&#39;</span>),
+                     )
+
+<span style=color:#75715e># running 상태인 ec2 인스턴스 목록 얻기</span>
+response <span style=color:#f92672>=</span> client<span style=color:#f92672>.</span>describe_instances(
+    Filters<span style=color:#f92672>=</span>[
+            {<span style=color:#e6db74>&#39;Name&#39;</span>: <span style=color:#e6db74>&#39;instance-state-name&#39;</span>, <span style=color:#e6db74>&#39;Values&#39;</span>: [<span style=color:#e6db74>&#39;running&#39;</span>]}
+        ]
+    )
+
+<span style=color:#75715e># `response`를 출력하면 굉장히 많은 정보가 출력됨을 알 수 있는데</span>
+<span style=color:#75715e># 내용이 너무 길어서 여기에서는 필자가 필요했던 내용만 추려서 출력해보았다.</span>
+<span style=color:#75715e># print(response)</span>
+
+<span style=color:#66d9ef>for</span> obj <span style=color:#f92672>in</span> response[<span style=color:#e6db74>&#39;Reservations&#39;</span>]:
+    <span style=color:#66d9ef>for</span> tag <span style=color:#f92672>in</span> obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>][<span style=color:#e6db74>&#39;Tags&#39;</span>]:
+        <span style=color:#66d9ef>if</span> tag[<span style=color:#e6db74>&#39;Key&#39;</span>] <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;Name&#39;</span>:
+            name <span style=color:#f92672>=</span> tag[<span style=color:#e6db74>&#39;Value&#39;</span>]
+
+        print(<span style=color:#e6db74>&#34;</span><span style=color:#e6db74>{}</span><span style=color:#e6db74> </span><span style=color:#e6db74>{}</span><span style=color:#e6db74> </span><span style=color:#e6db74>{}</span><span style=color:#e6db74> </span><span style=color:#e6db74>{}</span><span style=color:#e6db74> </span><span style=color:#e6db74>{}</span><span style=color:#e6db74> </span><span style=color:#e6db74>{}</span><span style=color:#e6db74> </span><span style=color:#e6db74>{}</span><span style=color:#e6db74>&#34;</span><span style=color:#f92672>.</span>format(
+                obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>][<span style=color:#e6db74>&#39;InstanceId&#39;</span>],
+                name,
+                obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>][<span style=color:#e6db74>&#39;InstanceType&#39;</span>],
+                obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>]<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;PrivateIpAddress&#39;</span>),
+                obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>]<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;PublicIpAddress&#39;</span>),
+                obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>][<span style=color:#e6db74>&#39;State&#39;</span>][<span style=color:#e6db74>&#39;Name&#39;</span>],
+                obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>][<span style=color:#e6db74>&#39;Placement&#39;</span>][<span style=color:#e6db74>&#39;AvailabilityZone&#39;</span>],
+        ))
+</code></pre></div><p>아래는 출력 결과다. 이제 이 내용을 구글 시트로 생성해보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plaintext data-lang=plaintext>i-0d6d659b8e7745462 test-ec2-02 t3a.nano 172.31.8.172 3.34.95.108 running ap-northeast-2a
+i-0735e4c70bd06ed42 test-ec2-01 t3a.nano 172.31.7.145 3.38.96.11 running ap-northeast-2a
+</code></pre></div><h2 id=구글-시트-api>구글 시트 API</h2>
+<p>API 이용을 위해 우선 아래 과정을 통해 API 이용 권한을 획득하자.</p>
+<h3 id=구글-프로젝트-생성>구글 프로젝트 생성</h3>
+<ol>
+<li>
+<p>구글 Console 페이지에 접속하여 새로운 프로젝트를 생성한다.
+<img src=google-console-1.png alt="google console main page">
+<img src=google-console-2.png alt="google console main page">
+<img src=google-console-3.png alt="google console main page"></p>
+</li>
+<li>
+<p>구글 API Library 페이지에 접속 후 <code>google sheets</code>를 검색한다. 이 때 위에서 생성한 프로젝트가 선택된 상태인지 체크한다.</p>
+<ul>
+<li><a href=https://console.cloud.google.com/apis/library>https://console.cloud.google.com/apis/library</a></li>
+</ul>
+<p><img src=google-api-library-1.png alt="google api library main page">
+<img src=google-api-library-2.png alt="google api library main page">
+<img src=google-api-library-3.png alt="google api library main page"></p>
+</li>
+<li>
+<p>API 사용을 위한 Credentials을 생성한다.</p>
+<p><img src=google-api-credentials-1.png alt="google api credential creation screen">
+<img src=google-api-credentials-2.png alt="google api credential creation screen">
+<img src=google-api-credentials-3.png alt="google api credential creation screen">
+<img src=google-api-credentials-4.png alt="google api credential creation screen">
+<img src=google-api-credentials-5.png alt="google api credential creation screen">
+<img src=google-api-credentials-6.png alt="google api credential creation screen">
+<img src=google-api-credentials-7.png alt="google api credential creation screen"></p>
+<p>다운로드한 파일은 잠시 후 사용해야 하니 잘 보관할 것.</p>
+<p><img src=google-api-credentials-8.png alt="google api credential creation screen"></p>
+</li>
+<li>
+<p>현재 이 API는 <code>Testing</code> 단계이다. <code>PUBLISH APP</code> 버튼을 눌러 <code>Production</code> 단계로 변경할 수 있는데 절차가 복잡하고 시간도 2~3일 더 필요하다.
+(구글에서 인증을 해줘야 한다.)
+<img src=google-api-status.png alt="google api status ">
+<img src=google-api-publish.png alt="google api publish "></p>
+</li>
+<li>
+<p>이 App은 나만 사용할 것이므로 Testing 단계로도 충분하다. 단, Testing 단계에서는 Test users 목록에 등록되어 있는 구글 계정들만 해당 API를 사용할 수 있으므로 본인의 구글 계정을 Test users 목록에 추가하자.</p>
+<p><img src=google-api-add-test-user.png alt="google api add test user"></p>
+</li>
+</ol>
+<p>자. 이제 API를 사용할 준비를 마쳤다. 이제 본격적으로 코드를 작성해보자. (<em>API 코드 작성보다 API 사용 준비하는 과정이 더 복잡해 보이는 이유는 단지 느낌인 걸까&mldr;</em>)</p>
+<h3 id=구글-시트-api-사용-전-알아둘-내용>구글 시트 API 사용 전 알아둘 내용</h3>
+<p>코드 작성 전에 구글 시트에서 사용하는 용어와 URL 규칙에 대해 알고 가면 더 좋다.</p>
+<ul>
+<li>Spreadsheet : 구글 시트 문서를 의미한다. 엑셀로 비유하면 엑셀파일이라고 보면 된다.</li>
+<li>Sheet : 구글 시트 하단에 표기되는 탭 각각을 의미한다.</li>
+<li>Cell : 각 칸을 의미한다.</li>
+<li>A1 notation
+<ul>
+<li>구글 시트의 범위를 나타내는 표현식이다.</li>
+<li>예)
+<ul>
+<li>Sheet1!A1:B2 : 이름이 <code>Sheet1</code>인 시트의 A1,A2,B1,B2 Cell</li>
+<li>Sheet1!A:A : 이름이 <code>Sheet1</code>인 시트의 A열 전체</li>
+<li>Sheet1!1:2 : 이름이 <code>Sheet1</code>인 시트의 1,2 번째 행 전체</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>URL은 아래와 같이 생겼는데 <code>Spreadsheet ID</code>와 <code>Sheet ID</code>가 포함되어 있다.
+이 ID값은 파이썬 코드상에서 사용된다.</p>
+<p><a href=https://docs.google.com/spreadsheets/d/>https://docs.google.com/spreadsheets/d/</a><em><strong>spreadsheetId</strong></em>/edit#gid=<em><strong>sheetId</strong></em></p>
+<p>예를 들어, 아래와 같은 URL이 있다고 할때 <code>SpreadsheetId</code>와 <code>SheetId</code>는 각각 다음과 같다.</p>
+<pre><code>https://docs.google.com/spreadsheets/d/1xuAfx7X9g2Nd5DikD-sLM4iA_lk45H0AKYJ0BS0sqfA/edit#gid=0
+</code></pre><ul>
+<li>SpreadsheetId : <code>1xuAfx7X9g2Nd5DikD-sLM4iA_lk45H0AKYJ0BS0sqfA</code></li>
+<li>SheetId : <code>0</code>
+<ul>
+<li>Spreadsheet를 생성할 때 기본으로 생성되는 sheet의 ID는 항상 <code>0</code>이다.</li>
+<li>추가 생성되는 sheet의 ID는 꽤 큰 숫자값이다. 예) <code>1784376386</code></li>
+</ul>
+</li>
+</ul>
+<h3 id=구글-시트-api-활용한-파이썬-코드>구글 시트 API 활용한 파이썬 코드</h3>
+<ol>
+<li>
+<p>우선 늘 그렇듯 설치부터 하자. 아래 명령어를 터미널에서 입력한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>pip install --upgrade google-api-python-client <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>                    google-auth-httplib2 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>                    google-auth-oauthlib
+</code></pre></div></li>
+<li>
+<p>이전 과정에서 다운로드 받은 <code>client_secret_xxxxxxxxxxxx.json</code> 파일의 이름을 <code>credentials.json</code>으로 변경한다.</p>
+</li>
+<li>
+<p>아래 코드를 붙여넣는다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>import</span> os
+
+<span style=color:#f92672>from</span> googleapiclient.discovery <span style=color:#f92672>import</span> build
+<span style=color:#f92672>from</span> google_auth_oauthlib.flow <span style=color:#f92672>import</span> InstalledAppFlow
+<span style=color:#f92672>from</span> google.auth.transport.requests <span style=color:#f92672>import</span> Request
+<span style=color:#f92672>from</span> google.oauth2.credentials <span style=color:#f92672>import</span> Credentials
+
+SCOPES <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#39;https://www.googleapis.com/auth/spreadsheets&#39;</span>]
+
+<span style=color:#75715e># 아래 코드는 구글 공식 페이지에서 가져왔다.</span>
+<span style=color:#75715e># https://developers.google.com/sheets/api/quickstart/python</span>
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>init_token</span>():
+    creds <span style=color:#f92672>=</span> <span style=color:#66d9ef>None</span>
+    <span style=color:#66d9ef>if</span> os<span style=color:#f92672>.</span>path<span style=color:#f92672>.</span>exists(<span style=color:#e6db74>&#39;token.json&#39;</span>):
+        creds <span style=color:#f92672>=</span> Credentials<span style=color:#f92672>.</span>from_authorized_user_file(<span style=color:#e6db74>&#39;token.json&#39;</span>, SCOPES)
+
+    <span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> creds <span style=color:#f92672>or</span> <span style=color:#f92672>not</span> creds<span style=color:#f92672>.</span>valid:
+        <span style=color:#66d9ef>if</span> creds <span style=color:#f92672>and</span> creds<span style=color:#f92672>.</span>expired <span style=color:#f92672>and</span> creds<span style=color:#f92672>.</span>refresh_token:
+            creds<span style=color:#f92672>.</span>refresh(Request())
+        <span style=color:#66d9ef>else</span>:
+            flow <span style=color:#f92672>=</span> InstalledAppFlow<span style=color:#f92672>.</span>from_client_secrets_file(
+                <span style=color:#e6db74>&#39;credentials.json&#39;</span>, SCOPES)
+            creds <span style=color:#f92672>=</span> flow<span style=color:#f92672>.</span>run_local_server(port<span style=color:#f92672>=</span><span style=color:#ae81ff>0</span>)
+
+        <span style=color:#66d9ef>with</span> open(<span style=color:#e6db74>&#39;token.json&#39;</span>, <span style=color:#e6db74>&#39;w&#39;</span>) <span style=color:#66d9ef>as</span> token:
+            token<span style=color:#f92672>.</span>write(creds<span style=color:#f92672>.</span>to_json())
+    <span style=color:#66d9ef>return</span> creds
+
+
+service <span style=color:#f92672>=</span> build(<span style=color:#e6db74>&#39;sheets&#39;</span>, <span style=color:#e6db74>&#39;v4&#39;</span>, credentials<span style=color:#f92672>=</span>init_token())
+
+<span style=color:#75715e># 구글 시트에 입력할 값들</span>
+<span style=color:#75715e># 리스트 안에 리스트 형태로 표현하며, 내부 리스트가 각 행을 의미한다.</span>
+values <span style=color:#f92672>=</span> [
+    [<span style=color:#e6db74>&#39;ID&#39;</span>, <span style=color:#e6db74>&#39;Name&#39;</span>, <span style=color:#e6db74>&#39;Type&#39;</span>, <span style=color:#e6db74>&#39;PrivateIP&#39;</span>, <span style=color:#e6db74>&#39;PublicIP&#39;</span>, <span style=color:#e6db74>&#39;State&#39;</span>, <span style=color:#e6db74>&#39;AZ&#39;</span>],
+]
+
+<span style=color:#75715e># 새로운 Spreadsheet 생성 방법</span>
+<span style=color:#75715e># spreadsheet = {</span>
+<span style=color:#75715e>#     &#39;properties&#39;: {</span>
+<span style=color:#75715e>#         &#39;title&#39;: &#39;새 시트&#39;</span>
+<span style=color:#75715e>#     }</span>
+<span style=color:#75715e># }</span>
+<span style=color:#75715e># sheet = service.spreadsheets().create(body=spreadsheet).execute()</span>
+<span style=color:#75715e># SPREADSHEET_ID = sheet.get(&#39;spreadsheetId&#39;)</span>
+
+<span style=color:#75715e># 이 예제에서는 이미 생성되어 있는 문서의 spreadsheetId 값을 이용하였다.</span>
+<span style=color:#75715e># 기존에 생성되어 있던 문서의 spreadsheetId를 확인하는 방법은 위에 이미 설명했다.</span>
+SPREADSHEET_ID <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;1xuAfx7X9g2Nd5DikD-sLM4iA_lk45H0AKYJ0BS0sqfA&#39;</span>
+
+<span style=color:#75715e># Sheet1 이라는 이름의 sheet에 값을 업데이트 하였다.</span>
+service<span style=color:#f92672>.</span>spreadsheets()<span style=color:#f92672>.</span>values()<span style=color:#f92672>.</span>update(
+                spreadsheetId<span style=color:#f92672>=</span>SPREADSHEET_ID,
+                range<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;Sheet1!A1:Z</span><span style=color:#e6db74>{}</span><span style=color:#e6db74>&#34;</span><span style=color:#f92672>.</span>format(len(values)),
+                valueInputOption<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;RAW&#39;</span>,
+                body<span style=color:#f92672>=</span>{<span style=color:#e6db74>&#39;values&#39;</span>: values}
+)<span style=color:#f92672>.</span>execute()
+</code></pre></div></li>
+<li>
+<p>위 코드를 최초 실행 시 아래와 같이 브라우저가 자동으로 실행되며 어디서 많이 본 화면이 뜬다.
+(<code>구글계정으로 로그인하기</code>를 해본적이 있다면, 해당 절차와 동일하다고 생각하면 된다.)
+이 절차는 로컬에서만 가능하기 때문에 원격으로 접속한 리눅스 서버에서 이 코드를 실행시키면 에러가 발생한다.
+원격에서 실행하고 싶으면 로컬에서 우선 한번 실행한 후, 그 뒤에 생성된 <code>token.json</code> 파일을 원격 서버로 복사한 후 실행하자.</p>
+<p><img src=google-api-credentials-10.png alt="google api credential creation screen">
+<img src=google-api-credentials-11.png alt="google api credential creation screen">
+<img src=google-api-credentials-12.png alt="google api credential creation screen">
+<img src=google-api-credentials-13.png alt="google api credential creation screen"></p>
+</li>
+<li>
+<p>성공이다. 이제 AWS 코드와 구글 시트 코드를 하나로 합쳐보자.</p>
+<p><img src=google-sheet-test.png alt="google sheet test screen"></p>
+</li>
+</ol>
+<h2 id=aws--구글-시트-api>AWS + 구글 시트 API</h2>
+<p>일단 코드부터 보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>import</span> os
+
+<span style=color:#f92672>import</span> boto3
+<span style=color:#f92672>from</span> botocore.config <span style=color:#f92672>import</span> Config
+
+<span style=color:#f92672>from</span> googleapiclient.discovery <span style=color:#f92672>import</span> build
+<span style=color:#f92672>from</span> google_auth_oauthlib.flow <span style=color:#f92672>import</span> InstalledAppFlow
+<span style=color:#f92672>from</span> google.auth.transport.requests <span style=color:#f92672>import</span> Request
+<span style=color:#f92672>from</span> google.oauth2.credentials <span style=color:#f92672>import</span> Credentials
+
+AWS_ACCESS_KEY<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;AKIAYAMQOPDIXEGGW5PB&#39;</span>
+AWS_SECRET_KEY<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;+7X55bOrKcghIiRA7f2F8/653OsCeyv3qsyhbB54&#39;</span>
+
+client <span style=color:#f92672>=</span> boto3<span style=color:#f92672>.</span>client(<span style=color:#e6db74>&#39;ec2&#39;</span>,
+                      aws_access_key_id<span style=color:#f92672>=</span>AWS_ACCESS_KEY,
+                      aws_secret_access_key<span style=color:#f92672>=</span>AWS_SECRET_KEY,
+                      config<span style=color:#f92672>=</span>Config(region_name<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;ap-northeast-2&#39;</span>),
+                     )
+
+<span style=color:#75715e># running 상태인 ec2 인스턴스 목록 얻기</span>
+response <span style=color:#f92672>=</span> client<span style=color:#f92672>.</span>describe_instances(
+    Filters<span style=color:#f92672>=</span>[
+            {<span style=color:#e6db74>&#39;Name&#39;</span>: <span style=color:#e6db74>&#39;instance-state-name&#39;</span>, <span style=color:#e6db74>&#39;Values&#39;</span>: [<span style=color:#e6db74>&#39;running&#39;</span>]}
+        ]
+    )
+
+ec2_list <span style=color:#f92672>=</span> []
+<span style=color:#66d9ef>for</span> obj <span style=color:#f92672>in</span> response[<span style=color:#e6db74>&#39;Reservations&#39;</span>]:
+    <span style=color:#66d9ef>for</span> tag <span style=color:#f92672>in</span> obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>][<span style=color:#e6db74>&#39;Tags&#39;</span>]:
+        <span style=color:#66d9ef>if</span> tag[<span style=color:#e6db74>&#39;Key&#39;</span>] <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;Name&#39;</span>:
+            name <span style=color:#f92672>=</span> tag[<span style=color:#e6db74>&#39;Value&#39;</span>]
+
+        ec2_list<span style=color:#f92672>.</span>append([
+            obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>][<span style=color:#e6db74>&#39;InstanceId&#39;</span>],
+            name,
+            obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>][<span style=color:#e6db74>&#39;InstanceType&#39;</span>],
+            obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>]<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;PrivateIpAddress&#39;</span>),
+            obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>]<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;PublicIpAddress&#39;</span>),
+            obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>][<span style=color:#e6db74>&#39;State&#39;</span>][<span style=color:#e6db74>&#39;Name&#39;</span>],
+            obj[<span style=color:#e6db74>&#39;Instances&#39;</span>][<span style=color:#ae81ff>0</span>][<span style=color:#e6db74>&#39;Placement&#39;</span>][<span style=color:#e6db74>&#39;AvailabilityZone&#39;</span>],
+        ])
+
+SCOPES <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#39;https://www.googleapis.com/auth/spreadsheets&#39;</span>]
+
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>init_token</span>():
+    creds <span style=color:#f92672>=</span> <span style=color:#66d9ef>None</span>
+    <span style=color:#66d9ef>if</span> os<span style=color:#f92672>.</span>path<span style=color:#f92672>.</span>exists(<span style=color:#e6db74>&#39;token.json&#39;</span>):
+        creds <span style=color:#f92672>=</span> Credentials<span style=color:#f92672>.</span>from_authorized_user_file(<span style=color:#e6db74>&#39;token.json&#39;</span>, SCOPES)
+
+    <span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> creds <span style=color:#f92672>or</span> <span style=color:#f92672>not</span> creds<span style=color:#f92672>.</span>valid:
+        <span style=color:#66d9ef>if</span> creds <span style=color:#f92672>and</span> creds<span style=color:#f92672>.</span>expired <span style=color:#f92672>and</span> creds<span style=color:#f92672>.</span>refresh_token:
+            creds<span style=color:#f92672>.</span>refresh(Request())
+        <span style=color:#66d9ef>else</span>:
+            flow <span style=color:#f92672>=</span> InstalledAppFlow<span style=color:#f92672>.</span>from_client_secrets_file(
+                <span style=color:#e6db74>&#39;credentials.json&#39;</span>, SCOPES)
+            creds <span style=color:#f92672>=</span> flow<span style=color:#f92672>.</span>run_local_server(port<span style=color:#f92672>=</span><span style=color:#ae81ff>0</span>)
+
+        <span style=color:#66d9ef>with</span> open(<span style=color:#e6db74>&#39;token.json&#39;</span>, <span style=color:#e6db74>&#39;w&#39;</span>) <span style=color:#66d9ef>as</span> token:
+            token<span style=color:#f92672>.</span>write(creds<span style=color:#f92672>.</span>to_json())
+    <span style=color:#66d9ef>return</span> creds
+
+
+service <span style=color:#f92672>=</span> build(<span style=color:#e6db74>&#39;sheets&#39;</span>, <span style=color:#e6db74>&#39;v4&#39;</span>, credentials<span style=color:#f92672>=</span>init_token())
+values <span style=color:#f92672>=</span> [
+    [<span style=color:#e6db74>&#39;ID&#39;</span>, <span style=color:#e6db74>&#39;Name&#39;</span>, <span style=color:#e6db74>&#39;Type&#39;</span>, <span style=color:#e6db74>&#39;PrivateIP&#39;</span>, <span style=color:#e6db74>&#39;PublicIP&#39;</span>, <span style=color:#e6db74>&#39;State&#39;</span>, <span style=color:#e6db74>&#39;AZ&#39;</span>],
+]
+
+values<span style=color:#f92672>.</span>extend(ec2_list)
+
+SPREADSHEET_ID <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;1HLpvoAc2Cntxy1bMBu0ZaxTbmhz5Z7Ek_uH4K9RTiRE&#39;</span>
+
+service<span style=color:#f92672>.</span>spreadsheets()<span style=color:#f92672>.</span>values()<span style=color:#f92672>.</span>update(
+                spreadsheetId<span style=color:#f92672>=</span>SPREADSHEET_ID,
+                range<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;Sheet1!A1:G</span><span style=color:#e6db74>{}</span><span style=color:#e6db74>&#34;</span><span style=color:#f92672>.</span>format(len(values)),
+                valueInputOption<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;RAW&#39;</span>,
+                body<span style=color:#f92672>=</span>{<span style=color:#e6db74>&#39;values&#39;</span>: values}
+)<span style=color:#f92672>.</span>execute()
+</code></pre></div><p>결과는&mldr; 두둥! 성공이다.</p>
+<p><img src=aws-ec2-to-google-sheet.png alt="aws ec2 to google sheet"></p>
+<h2 id=추가-기능들>추가 기능들</h2>
+<p>위 예제는 아주 기본적인 내용만을 다루고 있는데, 필자의 경우 아래와 같은 상황이라 조금 더 내용을 추가하였다.</p>
+<h3 id=aws-계정별지역별-접속-방법>aws 계정별/지역별 접속 방법</h3>
+<p>사용 중인 AWS Root 계정이 n개이고 각 계정의 모든 region에 대한 전수 조사가 필요하다. 이럴 때는 아래와 같이 가능하다.
+<code>사용자 홈 폴더/.aws/</code> 폴더 하위에 <code>config</code>, <code>credentials</code> 파일을 만들고 아래와 같이 파일 내용을 적어둔다.
+(사실 <code>awscli</code>를 설치 후 config 설정을 하면 아래 파일들이 자동으로 생성된다. 자세한 내용은 <a href=/posts/aws-cli-configure/>이 글</a>을 참고하자.)</p>
+<ul>
+<li>
+<p><code>~/.aws/config</code></p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=color:#66d9ef>[default]</span>
+<span style=color:#a6e22e>region</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>ap-northeast-2</span>
+<span style=color:#a6e22e>output</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>json</span>
+
+<span style=color:#66d9ef>[profile dev]</span>
+<span style=color:#a6e22e>region</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>ap-northeast-2</span>
+<span style=color:#a6e22e>output</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>json</span>
+
+<span style=color:#66d9ef>[profile prod]</span>
+<span style=color:#a6e22e>region</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>ap-northeast-2</span>
+<span style=color:#a6e22e>output</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>json</span>
+</code></pre></div></li>
+<li>
+<p><code>~/.aws/credentials</code> : 위 <code>config</code> 파일에 작성한 profile 이름과 해당 profile의 <code>access key</code>,<code>secret access key</code> 정보를 적는다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=color:#66d9ef>[default]</span>
+<span style=color:#a6e22e>aws_access_key_id</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>AAAAAAAAAPDIV4INFU65</span>
+<span style=color:#a6e22e>aws_secret_access_key</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>9x3Yvt88+OmSSSSSSSSSSSSSSSSS</span>
+
+<span style=color:#66d9ef>[dev]</span>
+<span style=color:#a6e22e>aws_access_key_id</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>AAAAAAAAAL4246XEJPVU</span>
+<span style=color:#a6e22e>aws_secret_access_key</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>zpY22349347SSSSSSSSSSSSSSSSS</span>
+
+<span style=color:#66d9ef>[prod]</span>
+<span style=color:#a6e22e>aws_access_key_id</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>AAAAAAAAA2323YKSSPP</span>
+<span style=color:#a6e22e>aws_secret_access_key</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>135-asgasrSSSSSSSSSSSSSSSSSS</span>
+</code></pre></div></li>
+</ul>
+<p>그리고 코드에서 아래와 같이 사용한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>REGION <span style=color:#f92672>=</span> [
+    <span style=color:#e6db74>&#34;us-east-2&#34;</span>,
+    <span style=color:#e6db74>&#34;us-east-1&#34;</span>,
+    <span style=color:#e6db74>&#34;us-west-1&#34;</span>,
+    <span style=color:#e6db74>&#34;us-west-2&#34;</span>,
+    <span style=color:#e6db74>&#34;sa-east-1&#34;</span>,
+    <span style=color:#e6db74>&#34;ap-northeast-2&#34;</span>,
+    <span style=color:#e6db74>&#34;ap-south-1&#34;</span>,
+    <span style=color:#e6db74>&#34;ap-northeast-3&#34;</span>,
+    <span style=color:#e6db74>&#34;ap-southeast-1&#34;</span>,
+    <span style=color:#e6db74>&#34;ap-southeast-2&#34;</span>,
+    <span style=color:#e6db74>&#34;ap-northeast-1&#34;</span>,
+    <span style=color:#e6db74>&#34;ca-central-1&#34;</span>,
+    <span style=color:#e6db74>&#34;eu-central-1&#34;</span>,
+    <span style=color:#e6db74>&#34;eu-west-1&#34;</span>,
+    <span style=color:#e6db74>&#34;eu-west-2&#34;</span>,
+    <span style=color:#e6db74>&#34;eu-west-3&#34;</span>,
+    <span style=color:#e6db74>&#34;eu-north-1&#34;</span>,
+]
+profile_list <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#39;dev&#39;</span>, <span style=color:#e6db74>&#39;prod&#39;</span>]
+
+<span style=color:#66d9ef>for</span> profile <span style=color:#f92672>in</span> profile_list:
+    <span style=color:#66d9ef>for</span> region <span style=color:#f92672>in</span> REGION:
+        session <span style=color:#f92672>=</span> boto3<span style=color:#f92672>.</span>session<span style=color:#f92672>.</span>Session(
+            profile_name<span style=color:#f92672>=</span>profile,
+            region_name<span style=color:#f92672>=</span>region
+            )
+        client <span style=color:#f92672>=</span> session<span style=color:#f92672>.</span>client(<span style=color:#e6db74>&#39;ec2&#39;</span>)
+        response <span style=color:#f92672>=</span> client<span style=color:#f92672>.</span>describe_instances()
+</code></pre></div><h3 id=sheet-추가-및-이름-변경>sheet 추가 및 이름 변경</h3>
+<p>구글 시트 생성 시 default sheet 이름은 <code>Sheet1</code> 이다. 이 이름을 변경하는 방법과 sheet를 추가하는 방법은 아래 코드를 참조하자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>service<span style=color:#f92672>.</span>spreadsheets()<span style=color:#f92672>.</span>batchUpdate(spreadsheetId<span style=color:#f92672>=</span>SPREADSHEET_ID, body<span style=color:#f92672>=</span>{
+    <span style=color:#e6db74>&#39;requests&#39;</span>: [
+        {
+            <span style=color:#e6db74>&#39;updateSheetProperties&#39;</span>: {
+                <span style=color:#e6db74>&#39;properties&#39;</span>: {
+                    <span style=color:#e6db74>&#39;title&#39;</span>: <span style=color:#e6db74>&#39;EC2&#39;</span>
+                },
+                <span style=color:#e6db74>&#39;fields&#39;</span>: <span style=color:#e6db74>&#39;title&#39;</span>
+            }
+        },
+        {
+            <span style=color:#e6db74>&#39;addSheet&#39;</span>: {
+                <span style=color:#e6db74>&#39;properties&#39;</span>: {
+                    <span style=color:#e6db74>&#39;title&#39;</span>: <span style=color:#e6db74>&#39;RDS&#39;</span>
+                }
+            }
+        }
+    ]
+})<span style=color:#f92672>.</span>execute()
+</code></pre></div><h2 id=마치며>마치며</h2>
+<p>코드는 얼마 안되는데, 코드를 사용하기 위한 준비과정이 훨씬 길었다&mldr;
+구글 API 등록은 이제 눈감고도 할 것 같&mldr;</p>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/python-docx/>[Python] MS Word 파일 수정하기</a>
+</div>
+<div class="column has-text-right">
+<p>Next post</p>
+<a href=/posts/tcpdump/>tcpdump 명령어 활용법</a>
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#서론>서론</a></li>
+<li><a href=#aws>AWS</a>
+<ul>
+<li><a href=#엑세스-키-생성>엑세스 키 생성</a></li>
+<li><a href=#boto3-라이브러리>boto3 라이브러리</a></li>
+</ul>
+</li>
+<li><a href=#구글-시트-api>구글 시트 API</a>
+<ul>
+<li><a href=#구글-프로젝트-생성>구글 프로젝트 생성</a></li>
+<li><a href=#구글-시트-api-사용-전-알아둘-내용>구글 시트 API 사용 전 알아둘 내용</a></li>
+<li><a href=#구글-시트-api-활용한-파이썬-코드>구글 시트 API 활용한 파이썬 코드</a></li>
+</ul>
+</li>
+<li><a href=#aws--구글-시트-api>AWS + 구글 시트 API</a></li>
+<li><a href=#추가-기능들>추가 기능들</a>
+<ul>
+<li><a href=#aws-계정별지역별-접속-방법>aws 계정별/지역별 접속 방법</a></li>
+<li><a href=#sheet-추가-및-이름-변경>sheet 추가 및 이름 변경</a></li>
+</ul>
+</li>
+<li><a href=#마치며>마치며</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/how-smartphone-apps-edit-photos/>스마트폰 앱은 어떻게 이미지를 보정하는 걸까?</a></h1>
+<time class="has-text-grey-light is-size-7">15 November 2021</time>
+<h1><a href=https://hsyang.net/posts/how-are-images-stored-and-displayed-on-a-computer/>컴퓨터는 이미지를 어떻게 저장하고 표현할까?</a></h1>
+<time class="has-text-grey-light is-size-7">1 November 2021</time>
+<h1><a href=https://hsyang.net/posts/aws-cli-ec2/>AWS CLI - EC2 생성하기</a></h1>
+<time class="has-text-grey-light is-size-7">11 October 2021</time>
+<h1><a href=https://hsyang.net/posts/aws-cli-configure/>AWS CLI 설치 및 기본 설정 방법</a></h1>
+<time class="has-text-grey-light is-size-7">19 September 2021</time>
+<h1><a href=https://hsyang.net/posts/python-requests-library-timeout/>[Python] Requests 라이브러리의 Connection Timeout에 관하여</a></h1>
+<time class="has-text-grey-light is-size-7">28 August 2021</time>
+<h1><a href=https://hsyang.net/posts/python-docx/>[Python] MS Word 파일 수정하기</a></h1>
+<time class="has-text-grey-light is-size-7">7 August 2021</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>자주 쓰는 - git branch 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2021 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>

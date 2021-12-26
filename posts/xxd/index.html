@@ -1,0 +1,366 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>리눅스 명령어 - xxd (파일 hex/binary view) | 메모장</title>
+<meta name=description content="xxd 명령어를 이용하여 파일이 컴퓨터에 저장된 형태 그대로 보는 방법을 알아보자.">
+<link rel=canonical href=https://hsyang.net/posts/xxd/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="리눅스 명령어 - xxd (파일 hex/binary view)">
+<meta property="og:description" content="xxd 명령어를 이용하여 파일이 컴퓨터에 저장된 형태 그대로 보는 방법을 알아보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/xxd/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-12-12T22:44:32+09:00">
+<meta property="article:modified_time" content="2021-12-12T23:49:18+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="리눅스 명령어 - xxd (파일 hex/binary view)">
+<meta name=twitter:description content="xxd 명령어를 이용하여 파일이 컴퓨터에 저장된 형태 그대로 보는 방법을 알아보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>December 12, 2021</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">리눅스 명령어 - xxd (파일 hex/binary view)</h1>
+<div class="content mt-6">
+<p>xxd는 파일의 내용을 컴퓨터에 저장된, 있는 그대로의 데이터를 보여주는 명령어다.
+이 글에서는 centos 설치 후 생성되는 파일을 예제로 사용했다. (<code>/root/anaconda-ks.cfg</code>)</p>
+<h2 id=출력>출력</h2>
+<h3 id=no-option>No option</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>~$ xxd /root/anaconda-ks.cfg | head
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>0000000: 2376 6572 7369 6f6e 3d44 4556 454c 0a23  #version=DEVEL.#
+0000010: 2053 7973 7465 6d20 6175 7468 6f72 697a   System authoriz
+0000020: 6174 696f 6e20 696e 666f 726d 6174 696f  ation informatio
+0000030: 6e0a 6175 7468 202d 2d65 6e61 626c 6573  n.auth --enables
+0000040: 6861 646f 7720 2d2d 7061 7373 616c 676f  hadow --passalgo
+0000050: 3d73 6861 3531 320a 2320 5573 6520 6e65  =sha512.# Use ne
+0000060: 7477 6f72 6b20 696e 7374 616c 6c61 7469  twork installati
+0000070: 6f6e 0a75 726c 202d 2d75 726c 3d22 6874  on.url --url=&#34;ht
+0000080: 7470 3a2f 2f6d 6972 726f 722e 6365 6e74  tp://mirror.cent
+0000090: 6f73 2e6f 7267 2f63 656e 746f 732f 372f  os.org/centos/7/
+</code></pre></div><ul>
+<li>한 줄에 16바이트씩 출력된다.</li>
+<li>맨 마지막 줄의 데이터를 예로 들어 설명하자면,
+<ul>
+<li><code>0000090</code> : 파일의 오프셋이다. (위치)</li>
+<li><code>6f73 2e6f 7267 (...생략)</code> : 실제 파일 데이터 (16진수, Hexa decimal)</li>
+<li><code>os.org/centos/7/</code> : 실제 파일 데이터를 ascii code로 표현</li>
+</ul>
+</li>
+</ul>
+<h3 id=비트-출력>비트 출력</h3>
+<p><code>-b</code> : 데이터를 0과 1로 출력</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>~$ xxd -b /root/anaconda-ks.cfg | head 
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>0000000: 00100011 01110110 01100101 01110010 01110011 01101001  #versi
+0000006: 01101111 01101110 00111101 01000100 01000101 01010110  on=DEV
+000000c: 01000101 01001100 00001010 00100011 00100000 01010011  EL.# S
+0000012: 01111001 01110011 01110100 01100101 01101101 00100000  ystem
+0000018: 01100001 01110101 01110100 01101000 01101111 01110010  author
+000001e: 01101001 01111010 01100001 01110100 01101001 01101111  izatio
+0000024: 01101110 00100000 01101001 01101110 01100110 01101111  n info
+000002a: 01110010 01101101 01100001 01110100 01101001 01101111  rmatio
+0000030: 01101110 00001010 01100001 01110101 01110100 01101000  n.auth
+0000036: 00100000 00101101 00101101 01100101 01101110 01100001   --ena
+</code></pre></div><ul>
+<li>비트로 출력하면, 한 줄에 더 적은 데이터(6바이트)씩 출력된다.</li>
+</ul>
+<h3 id=데이터-열-갯수-지정>데이터 열 갯수 지정</h3>
+<p><code>-c</code> : columns, 바이트 단위, 기본값 16, 최대 256</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=color:#75715e># 2 bytes per line</span>
+~$ xxd -c <span style=color:#ae81ff>2</span> /root/anaconda-ks.cfg | head
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>0000000: 2376  #v
+0000002: 6572  er
+0000004: 7369  si
+0000006: 6f6e  on
+0000008: 3d44  =D
+000000a: 4556  EV
+000000c: 454c  EL
+000000e: 0a23  .#
+0000010: 2053   S
+0000012: 7973  ys
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=color:#75715e># 2 bytes per line</span>
+~$ xxd -c <span style=color:#ae81ff>2</span> -b /root/anaconda-ks.cfg | head
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>0000000: 00100011 01110110  #v
+0000002: 01100101 01110010  er
+0000004: 01110011 01101001  si
+0000006: 01101111 01101110  on
+0000008: 00111101 01000100  =D
+000000a: 01000101 01010110  EV
+000000c: 01000101 01001100  EL
+000000e: 00001010 00100011  .#
+0000010: 00100000 01010011   S
+0000012: 01111001 01110011  ys
+</code></pre></div><h3 id=그룹-크기-지정>그룹 크기 지정</h3>
+<ul>
+<li><code>-g &lt;숫자></code> : 그룹 크기 지정</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>~$ xxd -g <span style=color:#ae81ff>1</span> /root/anaconda-ks.cfg | head
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>0000000: 23 76 65 72 73 69 6f 6e 3d 44 45 56 45 4c 0a 23  #version=DEVEL.#
+0000010: 20 53 79 73 74 65 6d 20 61 75 74 68 6f 72 69 7a   System authoriz
+0000020: 61 74 69 6f 6e 20 69 6e 66 6f 72 6d 61 74 69 6f  ation informatio
+0000030: 6e 0a 61 75 74 68 20 2d 2d 65 6e 61 62 6c 65 73  n.auth --enables
+0000040: 68 61 64 6f 77 20 2d 2d 70 61 73 73 61 6c 67 6f  hadow --passalgo
+0000050: 3d 73 68 61 35 31 32 0a 23 20 55 73 65 20 6e 65  =sha512.# Use ne
+0000060: 74 77 6f 72 6b 20 69 6e 73 74 61 6c 6c 61 74 69  twork installati
+0000070: 6f 6e 0a 75 72 6c 20 2d 2d 75 72 6c 3d 22 68 74  on.url --url=&#34;ht
+0000080: 74 70 3a 2f 2f 6d 69 72 72 6f 72 2e 63 65 6e 74  tp://mirror.cent
+0000090: 6f 73 2e 6f 72 67 2f 63 65 6e 74 6f 73 2f 37 2f  os.org/centos/7/
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>xxd -g <span style=color:#ae81ff>2</span> /root/anaconda-ks.cfg | head
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>0000000: 2376 6572 7369 6f6e 3d44 4556 454c 0a23  #version=DEVEL.#
+0000010: 2053 7973 7465 6d20 6175 7468 6f72 697a   System authoriz
+0000020: 6174 696f 6e20 696e 666f 726d 6174 696f  ation informatio
+0000030: 6e0a 6175 7468 202d 2d65 6e61 626c 6573  n.auth --enables
+0000040: 6861 646f 7720 2d2d 7061 7373 616c 676f  hadow --passalgo
+0000050: 3d73 6861 3531 320a 2320 5573 6520 6e65  =sha512.# Use ne
+0000060: 7477 6f72 6b20 696e 7374 616c 6c61 7469  twork installati
+0000070: 6f6e 0a75 726c 202d 2d75 726c 3d22 6874  on.url --url=&#34;ht
+0000080: 7470 3a2f 2f6d 6972 726f 722e 6365 6e74  tp://mirror.cent
+0000090: 6f73 2e6f 7267 2f63 656e 746f 732f 372f  os.org/centos/7/
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>~$ xxd -g <span style=color:#ae81ff>4</span> /root/anaconda-ks.cfg | head
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>0000000: 23766572 73696f6e 3d444556 454c0a23  #version=DEVEL.#
+0000010: 20537973 74656d20 61757468 6f72697a   System authoriz
+0000020: 6174696f 6e20696e 666f726d 6174696f  ation informatio
+0000030: 6e0a6175 7468202d 2d656e61 626c6573  n.auth --enables
+0000040: 6861646f 77202d2d 70617373 616c676f  hadow --passalgo
+0000050: 3d736861 3531320a 23205573 65206e65  =sha512.# Use ne
+0000060: 74776f72 6b20696e 7374616c 6c617469  twork installati
+0000070: 6f6e0a75 726c202d 2d75726c 3d226874  on.url --url=&#34;ht
+0000080: 74703a2f 2f6d6972 726f722e 63656e74  tp://mirror.cent
+0000090: 6f732e6f 72672f63 656e746f 732f372f  os.org/centos/7/
+</code></pre></div><h3 id=c-언어-헤더-파일-형식으로-출력>C 언어 헤더 파일 형식으로 출력</h3>
+<ul>
+<li><code>-i</code> : 가끔, 파일 내용을 소스코드에 그대로 넣고 싶은 경우 사용한다.
+<ul>
+<li>html 파일을 C 언어로 작성한 웹 서버 코드에 같이 포함시키고 싶을때 사용해봄</li>
+</ul>
+</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>xxd -i /root/anaconda-ks.cfg | head
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>char</span> _root_anaconda_ks_cfg[] <span style=color:#f92672>=</span> {
+  <span style=color:#ae81ff>0x23</span>, <span style=color:#ae81ff>0x76</span>, <span style=color:#ae81ff>0x65</span>, <span style=color:#ae81ff>0x72</span>, <span style=color:#ae81ff>0x73</span>, <span style=color:#ae81ff>0x69</span>, <span style=color:#ae81ff>0x6f</span>, <span style=color:#ae81ff>0x6e</span>, <span style=color:#ae81ff>0x3d</span>, <span style=color:#ae81ff>0x44</span>, <span style=color:#ae81ff>0x45</span>, <span style=color:#ae81ff>0x56</span>,
+  <span style=color:#ae81ff>0x45</span>, <span style=color:#ae81ff>0x4c</span>, <span style=color:#ae81ff>0x0a</span>, <span style=color:#ae81ff>0x23</span>, <span style=color:#ae81ff>0x20</span>, <span style=color:#ae81ff>0x53</span>, <span style=color:#ae81ff>0x79</span>, <span style=color:#ae81ff>0x73</span>, <span style=color:#ae81ff>0x74</span>, <span style=color:#ae81ff>0x65</span>, <span style=color:#ae81ff>0x6d</span>, <span style=color:#ae81ff>0x20</span>,
+  <span style=color:#ae81ff>0x61</span>, <span style=color:#ae81ff>0x75</span>, <span style=color:#ae81ff>0x74</span>, <span style=color:#ae81ff>0x68</span>, <span style=color:#ae81ff>0x6f</span>, <span style=color:#ae81ff>0x72</span>, <span style=color:#ae81ff>0x69</span>, <span style=color:#ae81ff>0x7a</span>, <span style=color:#ae81ff>0x61</span>, <span style=color:#ae81ff>0x74</span>, <span style=color:#ae81ff>0x69</span>, <span style=color:#ae81ff>0x6f</span>,
+  <span style=color:#ae81ff>0x6e</span>, <span style=color:#ae81ff>0x20</span>, <span style=color:#ae81ff>0x69</span>, <span style=color:#ae81ff>0x6e</span>, <span style=color:#ae81ff>0x66</span>, <span style=color:#ae81ff>0x6f</span>, <span style=color:#ae81ff>0x72</span>, <span style=color:#ae81ff>0x6d</span>, <span style=color:#ae81ff>0x61</span>, <span style=color:#ae81ff>0x74</span>, <span style=color:#ae81ff>0x69</span>, <span style=color:#ae81ff>0x6f</span>,
+  <span style=color:#ae81ff>0x6e</span>, <span style=color:#ae81ff>0x0a</span>, <span style=color:#ae81ff>0x61</span>, <span style=color:#ae81ff>0x75</span>, <span style=color:#ae81ff>0x74</span>, <span style=color:#ae81ff>0x68</span>, <span style=color:#ae81ff>0x20</span>, <span style=color:#ae81ff>0x2d</span>, <span style=color:#ae81ff>0x2d</span>, <span style=color:#ae81ff>0x65</span>, <span style=color:#ae81ff>0x6e</span>, <span style=color:#ae81ff>0x61</span>,
+  <span style=color:#ae81ff>0x62</span>, <span style=color:#ae81ff>0x6c</span>, <span style=color:#ae81ff>0x65</span>, <span style=color:#ae81ff>0x73</span>, <span style=color:#ae81ff>0x68</span>, <span style=color:#ae81ff>0x61</span>, <span style=color:#ae81ff>0x64</span>, <span style=color:#ae81ff>0x6f</span>, <span style=color:#ae81ff>0x77</span>, <span style=color:#ae81ff>0x20</span>, <span style=color:#ae81ff>0x2d</span>, <span style=color:#ae81ff>0x2d</span>,
+  <span style=color:#ae81ff>0x70</span>, <span style=color:#ae81ff>0x61</span>, <span style=color:#ae81ff>0x73</span>, <span style=color:#ae81ff>0x73</span>, <span style=color:#ae81ff>0x61</span>, <span style=color:#ae81ff>0x6c</span>, <span style=color:#ae81ff>0x67</span>, <span style=color:#ae81ff>0x6f</span>, <span style=color:#ae81ff>0x3d</span>, <span style=color:#ae81ff>0x73</span>, <span style=color:#ae81ff>0x68</span>, <span style=color:#ae81ff>0x61</span>,
+  <span style=color:#ae81ff>0x35</span>, <span style=color:#ae81ff>0x31</span>, <span style=color:#ae81ff>0x32</span>, <span style=color:#ae81ff>0x0a</span>, <span style=color:#ae81ff>0x23</span>, <span style=color:#ae81ff>0x20</span>, <span style=color:#ae81ff>0x55</span>, <span style=color:#ae81ff>0x73</span>, <span style=color:#ae81ff>0x65</span>, <span style=color:#ae81ff>0x20</span>, <span style=color:#ae81ff>0x6e</span>, <span style=color:#ae81ff>0x65</span>,
+  <span style=color:#ae81ff>0x74</span>, <span style=color:#ae81ff>0x77</span>, <span style=color:#ae81ff>0x6f</span>, <span style=color:#ae81ff>0x72</span>, <span style=color:#ae81ff>0x6b</span>, <span style=color:#ae81ff>0x20</span>, <span style=color:#ae81ff>0x69</span>, <span style=color:#ae81ff>0x6e</span>, <span style=color:#ae81ff>0x73</span>, <span style=color:#ae81ff>0x74</span>, <span style=color:#ae81ff>0x61</span>, <span style=color:#ae81ff>0x6c</span>,
+  ...<span style=color:#960050;background-color:#1e0010>생략</span>
+  <span style=color:#ae81ff>0x65</span>, <span style=color:#ae81ff>0x72</span>, <span style=color:#ae81ff>0x76</span>, <span style=color:#ae81ff>0x65</span>, <span style=color:#ae81ff>0x2d</span>, <span style=color:#ae81ff>0x6d</span>, <span style=color:#ae81ff>0x62</span>, <span style=color:#ae81ff>0x3d</span>, <span style=color:#ae81ff>0x27</span>, <span style=color:#ae81ff>0x61</span>, <span style=color:#ae81ff>0x75</span>, <span style=color:#ae81ff>0x74</span>,
+  <span style=color:#ae81ff>0x6f</span>, <span style=color:#ae81ff>0x27</span>, <span style=color:#ae81ff>0x0a</span>, <span style=color:#ae81ff>0x0a</span>, <span style=color:#ae81ff>0x25</span>, <span style=color:#ae81ff>0x65</span>, <span style=color:#ae81ff>0x6e</span>, <span style=color:#ae81ff>0x64</span>, <span style=color:#ae81ff>0x0a</span>
+};
+<span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>int</span> _root_anaconda_ks_cfg_len <span style=color:#f92672>=</span> <span style=color:#ae81ff>6921</span>;
+</code></pre></div><h3 id=특정-길이만큼만-읽기>특정 길이만큼만 읽기</h3>
+<ul>
+<li><code>-l &lt;숫자: 바이트단위></code> : 파일 용량이 너무 크고, 파일 앞부분의 내용만 필요한 경우 유용</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>xxd -l <span style=color:#ae81ff>132</span> /root/anaconda-ks.cfg
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>0000000: 2376 6572 7369 6f6e 3d44 4556 454c 0a23  #version=DEVEL.#
+0000010: 2053 7973 7465 6d20 6175 7468 6f72 697a   System authoriz
+0000020: 6174 696f 6e20 696e 666f 726d 6174 696f  ation informatio
+0000030: 6e0a 6175 7468 202d 2d65 6e61 626c 6573  n.auth --enables
+0000040: 6861 646f 7720 2d2d 7061 7373 616c 676f  hadow --passalgo
+0000050: 3d73 6861 3531 320a 2320 5573 6520 6e65  =sha512.# Use ne
+0000060: 7477 6f72 6b20 696e 7374 616c 6c61 7469  twork installati
+0000070: 6f6e 0a75 726c 202d 2d75 726c 3d22 6874  on.url --url=&#34;ht
+0000080: 7470 3a2f                                tp:/
+</code></pre></div><h3 id=데이터만-출력>데이터만 출력</h3>
+<ul>
+<li><code>-p</code> : 순수 데이터만 출력하고 싶을 때 사용</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>xxd -p /root/anaconda-ks.cfg | head
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>2376657273696f6e3d444556454c0a232053797374656d20617574686f72
+697a6174696f6e20696e666f726d6174696f6e0a61757468202d2d656e61
+626c65736861646f77202d2d70617373616c676f3d7368613531320a2320
+557365206e6574776f726b20696e7374616c6c6174696f6e0a75726c202d
+2d75726c3d22687474703a2f2f6d6972726f722e63656e746f732e6f7267
+2f63656e746f732f372f6f732f7838365f36342f220a7265706f202d2d6e
+616d653d226f7322202d2d6261736575726c3d687474703a2f2f6d697272
+6f72736e61702e63656e746f732e6f72672f32303139303132372f63656e
+746f732f372f6f732f7838365f36342f202d2d636f73743d3130300a7265
+706f202d2d6e616d653d227570646174657322202d2d6261736575726c3d
+</code></pre></div><h3 id=대문자-출력>대문자 출력</h3>
+<ul>
+<li><code>-u</code> : uppercase</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>xxd -u /root/anaconda-ks.cfg | head
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>0000000: 2376 6572 7369 6F6E 3D44 4556 454C 0A23  #version=DEVEL.#
+0000010: 2053 7973 7465 6D20 6175 7468 6F72 697A   System authoriz
+0000020: 6174 696F 6E20 696E 666F 726D 6174 696F  ation informatio
+0000030: 6E0A 6175 7468 202D 2D65 6E61 626C 6573  n.auth --enables
+0000040: 6861 646F 7720 2D2D 7061 7373 616C 676F  hadow --passalgo
+0000050: 3D73 6861 3531 320A 2320 5573 6520 6E65  =sha512.# Use ne
+0000060: 7477 6F72 6B20 696E 7374 616C 6C61 7469  twork installati
+0000070: 6F6E 0A75 726C 202D 2D75 726C 3D22 6874  on.url --url=&#34;ht
+0000080: 7470 3A2F 2F6D 6972 726F 722E 6365 6E74  tp://mirror.cent
+0000090: 6F73 2E6F 7267 2F63 656E 746F 732F 372F  os.org/centos/7/
+</code></pre></div><h2 id=수정>수정</h2>
+<p>수정도 가능하다.</p>
+<ul>
+<li>
+<p>원본 파일을 hex code로 출력한다. (file -> hexdump)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>~$ xxd /root/anaconda-ks.cfg &gt; temp
+</code></pre></div></li>
+<li>
+<p>데이터 부분만 수정한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>~$ vim temp
+</code></pre></div><ul>
+<li>
+<p>파일 내용 수정 예시</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text># 첫 번째 줄을
+0000000: 2376 6572 7369 6F6E 3D44 4556 454C 0A23  #version=DEVEL.#
+
+# 다음과 같이 수정
+# #version -&gt; $version
+0000000: 2476 6572 7369 6F6E 3D44 4556 454C 0A23  #version=DEVEL.#
+         --
+         ^
+         |
+         수정
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>수정한 파일을 저장한다. (hexdump -> file)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>~$ xxd -r temp /root/anaconda-ks-edited.cfg
+</code></pre></div></li>
+</ul>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/docker-ps-format/>Docker ps 내용 바꾸기</a>
+</div>
+<div class="column has-text-right">
+<p>Next post</p>
+<a href=/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a>
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#출력>출력</a>
+<ul>
+<li><a href=#no-option>No option</a></li>
+<li><a href=#비트-출력>비트 출력</a></li>
+<li><a href=#데이터-열-갯수-지정>데이터 열 갯수 지정</a></li>
+<li><a href=#그룹-크기-지정>그룹 크기 지정</a></li>
+<li><a href=#c-언어-헤더-파일-형식으로-출력>C 언어 헤더 파일 형식으로 출력</a></li>
+<li><a href=#특정-길이만큼만-읽기>특정 길이만큼만 읽기</a></li>
+<li><a href=#데이터만-출력>데이터만 출력</a></li>
+<li><a href=#대문자-출력>대문자 출력</a></li>
+</ul>
+</li>
+<li><a href=#수정>수정</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>자주 쓰는 - git branch 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2021 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>

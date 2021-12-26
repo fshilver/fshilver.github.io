@@ -1,0 +1,345 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>스마트폰 앱은 어떻게 이미지를 보정하는 걸까? | 메모장</title>
+<meta name=description content="이미지 보정의 원리를 알아보고 파이썬 코드로 직접 보정해보자.">
+<link rel=canonical href=https://hsyang.net/posts/how-smartphone-apps-edit-photos/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="스마트폰 앱은 어떻게 이미지를 보정하는 걸까?">
+<meta property="og:description" content="이미지 보정의 원리를 알아보고 파이썬 코드로 직접 보정해보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/how-smartphone-apps-edit-photos/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-11-15T15:37:16+09:00">
+<meta property="article:modified_time" content="2021-11-26T00:08:15+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="스마트폰 앱은 어떻게 이미지를 보정하는 걸까?">
+<meta name=twitter:description content="이미지 보정의 원리를 알아보고 파이썬 코드로 직접 보정해보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>November 15, 2021</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">스마트폰 앱은 어떻게 이미지를 보정하는 걸까?</h1>
+<div class="content mt-6">
+<h2 id=이미지-보정>이미지 보정</h2>
+<p>스마트폰이 필수 아이템으로 자리잡은 요즘, 스마트폰을 이용한 사진 촬영과 보정은 매우 흔한 일상이 되었다.
+터치 몇 번으로 보정할 수 있는 앱들도 많이 사용되고 있다.
+터치 몇 번으로 이미지가 확확 바뀌는 일들은 실제로 어떻게 이뤄지는 걸까?</p>
+<h2 id=이미지-밝기-조정>이미지 밝기 조정</h2>
+<blockquote>
+<p>이어지는 내용은 (<a href=https://hsyang.net/posts/how-are-images-stored-and-displayed-on-a-computer/>컴퓨터는 어떻게 이미지를 저장하고 표현할까</a>) 글을 읽었다는 가정하에 작성한 내용이므로 혹시 위 글을 아직 읽지 않았다면 먼저 읽기를 추천한다.</p>
+</blockquote>
+<h3 id=이미지-밝게-만들기>이미지 밝게 만들기</h3>
+<p>아래 흑백 이미지를 예로 들어 보자.</p>
+<p><a href=cameraman.png><img src=cameraman.png#center alt=cameraman></a></p>
+<p>흑백 이미지는 0~255(검은색~흰색) 사이의 숫자로 표현된다. 숫자가 255에 가까울수록 흰색에 가까워 진다.
+이 말은 이미지의 밝기를 밝게 하기 위해선 픽셀의 값을 일정하게 증가시키면 이미지가 밝아지고
+감소시키면 이미지가 어두워진다는 얘기다.</p>
+<p>먼저 이미지를 밝게 만들어보자. 각 픽셀의 값을 50씩 증가시켜보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> PIL <span style=color:#f92672>import</span> Image
+<span style=color:#f92672>import</span> numpy <span style=color:#66d9ef>as</span> np
+
+<span style=color:#75715e># 이미지를 읽어서 numpy 객체로 변환</span>
+img <span style=color:#f92672>=</span> np<span style=color:#f92672>.</span>array(Image<span style=color:#f92672>.</span>open(<span style=color:#e6db74>&#34;cameraman.png&#34;</span>))
+
+<span style=color:#75715e># 이미지의 각 픽셀 값을 50씩 증가시킴</span>
+img <span style=color:#f92672>=</span> img <span style=color:#f92672>+</span> <span style=color:#ae81ff>50</span>
+
+Image<span style=color:#f92672>.</span>fromarray(img)<span style=color:#f92672>.</span>show()
+</code></pre></div><p><a href=cameraman-brighten-overflow.png><img src=cameraman-brighten-overflow.png alt=cameraman-brighten-overflow.png></a></p>
+<p>이미지가 밝아지긴 했는데&mldr; 군데군데 이상한 점이 보인다.</p>
+<p><em><strong>대체 왜 하얀 부분이었던 곳이 검정색으로 변한거지??</strong></em></p>
+<p>왜 이런 현상이 나올까?</p>
+<p>흑백 이미지는 각 픽셀이 0(검은색) ~ 255(흰색)값을 갖는다고 말했다.
+밝기를 조정하기 전, 흰 색 픽셀의 값은 255 였을 것이고, 여기에 50을 더했으면 305가 되는게 아닌가?
+잠깐, 가장 밝은 흰 색이 255 라고 했는데 305는 어떤 색이 되는거지? 흰 색보다 더 밝은 색이 있는건가?</p>
+<h3 id=컴퓨터와-이진수>컴퓨터와 이진수</h3>
+<p>혹시 컴퓨터는 0과 1로 모든 데이터를 표현한다는 얘기를 들어본 적 있는가?
+0과 1로 표현할 수 있는 건 오직 2가지 뿐인데 이게 무슨 얘기일까?
+우선 아래 그림을 보자.</p>
+<p><img src=binary.png alt="binary number"></p>
+<ul>
+<li>한 자리수일 때는 0과 1만 표현할 수 있다.</li>
+<li>두 자리를 묶어서 하나의 수를 표현할 수 있다. 즉 11 이라고 쓰고 숫자 3이라고 해석할 수 있다.</li>
+<li>세 자리를 묶어서 하나의 수를 표현할 수 있다. 즉 111 이라고 쓰고 숫자 7이라고 해석할 수 있다.</li>
+<li>네 자리를 묶어서 하나의 수를 표현할 수 있다. 즉 1111 이라고 쓰고 숫자 15이라고 해석할 수 있다.</li>
+<li>혹시 이진법/이진수 라는 단어가 떠오르지 않는가? 우리가 수학시간에 배운 이진수가 이렇게 활용되고 있다&mldr;!!!</li>
+</ul>
+<p>흑백 이미지는 숫자 0 ~ 255 로 각 픽셀을 표현한다고 했다.
+0 ~ 255를 0과 1로 표현하려면 몇 자리수가 필요할까? 직접 계산해보면 8자리가 필요하다는 걸 알 수 있다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>0 0 0 0 0 0 0 0 -&gt; 0
+0 0 0 0 0 0 0 1 -&gt; 1
+...
+1 1 1 1 1 1 1 0 -&gt; 254
+1 1 1 1 1 1 1 1 -&gt; 255
+</code></pre></div><p>대부분의 흑백 이미지는 8자리만 사용해서 각 픽셀을 표현한다. (그래서 8비트 흑백 이미지라고 부르기도 한다.)
+즉, 표현할 수 있는 가장 큰 숫자는 255다.
+근데 255에 1을 더하면 어떻게 될까? 일단 한번 이진수로 표현해보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>    1 1 1 1 1 1 1 1
++                 1
+-------------------
+  1 0 0 0 0 0 0 0 0
+</code></pre></div><p>256을 0과 1로 표현하기 위해 한 자리가 더 필요하다! 총 아홉 자리수가 필요하다.
+근데 흑백 이미지는 8자리만 사용한다고 했다. 그래서 맨 앞 한자리가 버려지고 0만 남는다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>    1 1 1 1 1 1 1 1
++                 1
+-------------------
+    0 0 0 0 0 0 0 0  -&gt; 맨 앞자리 1이 버려지고 0만 남았다.
+</code></pre></div><p><strong>다시 0</strong>이 되었다. 즉, <code>검은색</code>이 되었다는 말이다. 255(흰색)보다 큰 256이 더 밝아지기는 커녕 가장 어두운 0(검은색)이 되었다.
+이게 바로 앞에서 보았던 <em><strong>흰색이 검은색으로 변했던 비밀이다!</strong></em></p>
+<p>255에 2를 더하면 어떻게 되는지 한번 더 살펴보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>    1 1 1 1 1 1 1 1  -&gt; 255
++                 1
+-------------------
+  1 0 0 0 0 0 0 0 0  -&gt; 256
++                 1
+-------------------
+  1 0 0 0 0 0 0 0 1  -&gt; 257
+
+위에서 맨 앞자리 1을 버리면 00000001만 남는다. 즉, 숫자 1이 된다.
+거의 검정에 가까운 값이다.
+    0 0 0 0 0 0 0 1
+</code></pre></div><p><code>한 바퀴 돌아 다시 제자리</code> 느낌이지 않은가?</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>254 -&gt; 254  (1 1 1 1 1 1 1 0)
+255 -&gt; 255  (1 1 1 1 1 1 1 1)
+256 -&gt; 0    (0 0 0 0 0 0 0 0)
+257 -&gt; 1    (0 0 0 0 0 0 0 1)
+258 -&gt; 2    (0 0 0 0 0 0 1 0)
+259 -&gt; 3    (0 0 0 0 0 0 1 1)
+...
+</code></pre></div><p>위 현상은 우리가 원했던 결과와 다르다. 더 이상 밝아질 수 없으면 그냥 가장 밝은 색으로 표현하면 좋겠다.
+픽셀에 어떤 값을 더했는데 255(흰 색)보다 커지면 그냥 255로 만들어서 흰색으로 표현하면 좋겠다.
+이를 좀 어려운 말로 <code>Saturation</code> 연산이라고 한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>254 -&gt; 254  (1 1 1 1 1 1 1 0)
+255 -&gt; 255  (1 1 1 1 1 1 1 1)
+256 -&gt; 255  (1 1 1 1 1 1 1 1)
+257 -&gt; 255  (1 1 1 1 1 1 1 1)
+258 -&gt; 255  (1 1 1 1 1 1 1 1)
+259 -&gt; 255  (1 1 1 1 1 1 1 1)
+...
+</code></pre></div><p>자, 처음 코드를 약간 수정해보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> PIL <span style=color:#f92672>import</span> Image
+<span style=color:#f92672>import</span> numpy <span style=color:#66d9ef>as</span> np
+
+<span style=color:#75715e># 이미지를 읽어서 numpy 객체로 생성</span>
+img <span style=color:#f92672>=</span> np<span style=color:#f92672>.</span>array(Image<span style=color:#f92672>.</span>open(<span style=color:#e6db74>&#39;cameraman.png&#39;</span>))
+
+<span style=color:#75715e># 이 예제에서 사용한 cameraman 흑백 이미지를 읽으면</span>
+<span style=color:#75715e># 각 픽셀이 8자리로 구성되어 있다.(8비트 흑백 이미지)</span>
+<span style=color:#75715e># 때문에 255를 초과하는 값은 자동으로 0,1 과 같이 변경된다.</span>
+<span style=color:#75715e># 이를 방지하기 위해 자리수를 16자리로 늘린다. (16비트 흑백 영상으로 변환)</span>
+<span style=color:#75715e># 16자리에선 65535 까지 표현할 수 있다.</span>
+img <span style=color:#f92672>=</span> img<span style=color:#f92672>.</span>astype(np<span style=color:#f92672>.</span>uint16)
+
+<span style=color:#75715e># 각 픽셀마다 50씩 더하기</span>
+img <span style=color:#f92672>=</span> img <span style=color:#f92672>+</span> <span style=color:#ae81ff>50</span>
+
+<span style=color:#75715e># 255를 넘는 픽셀값은 255로 설정</span>
+img[img <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>255</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>255</span>
+
+<span style=color:#75715e># 16자리에서 8자리로 다시 변경(8비트 흑백 영상으로 변환)</span>
+img <span style=color:#f92672>=</span> img<span style=color:#f92672>.</span>astype(np<span style=color:#f92672>.</span>uint8)
+
+<span style=color:#75715e># 이미지 보기</span>
+Image<span style=color:#f92672>.</span>fromarray(img)<span style=color:#f92672>.</span>show()
+</code></pre></div><p><a href=brighten.png><img src=brighten.png#center alt="brighten image pixel"></a></p>
+<p><em><strong>흰색이 검은색으로 변하던 현상이 없어졌다 !!!</strong></em></p>
+<p><a href=cameraman-brighten.png><img src=cameraman-brighten.png#center alt="brighten cameraman"></a></p>
+<h2 id=이미지-반전>이미지 반전</h2>
+<p>이미지 반전은 어떻게 할 수 있을까? <code>반전</code>은, 뒤바꾼다는 의미이므로 각 픽셀값을 아래와 같이 바꿔보면 어떨까?</p>
+<ul>
+<li>
+<p>픽셀값이 0인 경우 255로(검은색 -> 흰색), 255인 경우 0으로(흰색->검은색) 바꾼다.</p>
+</li>
+<li>
+<p>픽셀값이 1인 경우 254로(덜 검은색 -> 덜 흰색), 254인 경우 1로 바꾼다.</p>
+</li>
+<li>
+<p>정리하면 아래와 같다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>0   &lt;-&gt; 255
+1   &lt;-&gt; 254
+2   &lt;-&gt; 253
+...
+125 &lt;-&gt; 130
+126 &lt;-&gt; 129
+127 &lt;-&gt; 128
+</code></pre></div></li>
+</ul>
+<p><a href=cameraman-invert.png><img src=cameraman-invert.png#center alt="inverted cameraman"></a></p>
+<p>와우! 예상했던대로 된다!</p>
+<p>아래는 파이썬으로 구현한 예제 코드다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> PIL <span style=color:#f92672>import</span> Image
+<span style=color:#f92672>import</span> numpy <span style=color:#66d9ef>as</span> np
+
+img <span style=color:#f92672>=</span> np<span style=color:#f92672>.</span>array(Image<span style=color:#f92672>.</span>open(<span style=color:#e6db74>&#39;cameraman.png&#39;</span>))
+
+<span style=color:#75715e># 0을 입력하면, 255가 되어야 하고</span>
+<span style=color:#75715e># 1을 입력하면, 254가 되어야 하고</span>
+<span style=color:#75715e># 2을 입력하면, 253가 되어야 하고</span>
+<span style=color:#75715e># 3을 입력하면, 252가 되어야 하고</span>
+<span style=color:#75715e># ...</span>
+<span style=color:#75715e># 127을 입력하면, 128이 되어야 한다.</span>
+<span style=color:#75715e># 위 상황을 모두 만족하는 공식은 다음과 같다.</span>
+<span style=color:#75715e># y = 255 - x</span>
+
+<span style=color:#75715e># 위 공식의 x에 0을 넣으면 255가 나온다.</span>
+<span style=color:#75715e># 위 공식의 x에 1을 넣으면 254가 나온다.</span>
+<span style=color:#75715e># 위 공식의 x에 255를 넣으면 0이 나온다.</span>
+img <span style=color:#f92672>=</span> <span style=color:#ae81ff>255</span> <span style=color:#f92672>-</span> img
+
+Image<span style=color:#f92672>.</span>fromarray(img)<span style=color:#f92672>.</span>show()
+</code></pre></div><h2 id=마치며>마치며</h2>
+<p>매우 간단한 보정 방법을 살펴보았다.
+사실 우리가 일상생활에서 스마트폰으로 촬영한 이미지를 보정하는 것들은 훨씬 더 복잡하다.
+각 픽셀 값을 어떻게 변화시킬 것인지, 수학적으로 풀어내야 하기 때문이다.
+(중고등학교 때 <strong>수학은 대체 배워서 어따갖다 쓰냐</strong>며 무시했었는데&mldr;)</p>
+<p>앞으로 필자도 좀 더 공부해서 복잡한 예제들을 하나씩 포스팅 해보겠다. (수학의 정석을 사야하나&mldr;)</p>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/how-are-images-stored-and-displayed-on-a-computer/>컴퓨터는 이미지를 어떻게 저장하고 표현할까?</a>
+</div>
+<div class="column has-text-right">
+<p>Next post</p>
+<a href=/posts/dicom-windowing/>DICOM 영상에서 Window Center와 Window Width는 대체 왜 쓰는걸까?</a>
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#이미지-보정>이미지 보정</a></li>
+<li><a href=#이미지-밝기-조정>이미지 밝기 조정</a>
+<ul>
+<li><a href=#이미지-밝게-만들기>이미지 밝게 만들기</a></li>
+<li><a href=#컴퓨터와-이진수>컴퓨터와 이진수</a></li>
+</ul>
+</li>
+<li><a href=#이미지-반전>이미지 반전</a></li>
+<li><a href=#마치며>마치며</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/how-are-images-stored-and-displayed-on-a-computer/>컴퓨터는 이미지를 어떻게 저장하고 표현할까?</a></h1>
+<time class="has-text-grey-light is-size-7">1 November 2021</time>
+<h1><a href=https://hsyang.net/posts/python-requests-library-timeout/>[Python] Requests 라이브러리의 Connection Timeout에 관하여</a></h1>
+<time class="has-text-grey-light is-size-7">28 August 2021</time>
+<h1><a href=https://hsyang.net/posts/python-google-spreadsheets/>[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기</a></h1>
+<time class="has-text-grey-light is-size-7">17 August 2021</time>
+<h1><a href=https://hsyang.net/posts/python-docx/>[Python] MS Word 파일 수정하기</a></h1>
+<time class="has-text-grey-light is-size-7">7 August 2021</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>자주 쓰는 - git branch 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2021 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>

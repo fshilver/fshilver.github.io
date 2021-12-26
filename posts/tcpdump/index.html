@@ -1,0 +1,295 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>tcpdump 명령어 활용법 | 메모장</title>
+<meta name=description content="자주 사용하는 tcpdump 옵션과 활용법에 대해 알아보자.">
+<link rel=canonical href=https://hsyang.net/posts/tcpdump/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="tcpdump 명령어 활용법">
+<meta property="og:description" content="자주 사용하는 tcpdump 옵션과 활용법에 대해 알아보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/tcpdump/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-08-23T18:21:37+09:00">
+<meta property="article:modified_time" content="2021-09-26T14:50:44+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="tcpdump 명령어 활용법">
+<meta name=twitter:description content="자주 사용하는 tcpdump 옵션과 활용법에 대해 알아보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>August 23, 2021</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">tcpdump 명령어 활용법</h1>
+<div class="content mt-6">
+<p><code>tcpdump</code>는 네트워크 패킷을 캡쳐할 수 있는 명령어로 여러가지 상황에서 활용할 수 있다.</p>
+<ul>
+<li>HTTP API 통신하는 app이 실제로 어떤 내용을 주고 받는지 확인하고 싶을 때(API document가 없다거나, 디버깅 등을 하기 위해)</li>
+<li>A -> B 로 메시지를 전송했는데 B 의 app 로그에는 아무것도 안남았을 때
+<ul>
+<li>만약 A와 B가 서로 다른 회사면 서로 상대방 탓이라며 책임 떠넘기기 하는 경우가 있음</li>
+<li>A는 <code>우리는 분명 보냈다. B의 문제다.</code> 라고 말하고 B는 <code>우린 못받았다. A의 문제다</code> 라면서 이야기가 끝나지 않는 상황</li>
+<li>이런 상황에서 <code>tcpdump</code>를 활용하면 메시지가 어디까지 전송되었는지 확인할 수 있음</li>
+</ul>
+</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo tcpdump -nn -i eth0 net 10.20.30.0/24 and port <span style=color:#ae81ff>80</span>
+</code></pre></div><p>위와 같은 형태로 명령어를 사용할 수 있는데 그 의미를 해석하자면 다음과 같다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plaintext data-lang=plaintext>eth0 네트워크 인터페이스를 통해 10.20.30.0/24 네트워크와 주고 받는 패킷 중 포트 넘버가 80 인 패킷을 캡쳐해라.
+</code></pre></div><p>더 다양한 옵션은 아래에서 살펴보자.</p>
+<h2 id=항상-사용하는-옵션>항상 사용하는 옵션</h2>
+<ul>
+<li>
+<p><code>-i &lt;network interface></code> : 네트워크 패킷을 캡쳐할 네트워크 인터페이스 지정</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=color:#75715e># eth0 네트워크 인터페이스의 패킷 캡쳐</span>
+~$ sudo tcpdump -i eth0
+
+<span style=color:#75715e># 모든 네트워크 인터페이스의 패킷 캡쳐</span>
+~$ sudo tcpdump -i any
+</code></pre></div></li>
+<li>
+<p><code>-nn</code> : IP, Port를 이름으로 변환하지 않고 그대로 출력한다. 변환 과정이 없으므로 패킷 덤프 시 딜레이가 없다. <em><strong>항상 사용하자</strong></em>.</p>
+<p><img src=tcpdump-nn-option.png alt="tcpdump -nn option"></p>
+<ul>
+<li><code>IP</code> -> <code>hostname</code> 변환하지 않는다.</li>
+<li><code>Port</code> -> <code>well-known protocol</code> 변환하지 않는다.</li>
+</ul>
+</li>
+</ul>
+<h2 id=자주-사용하는-옵션>자주 사용하는 옵션</h2>
+<ul>
+<li>
+<p><code>-w &lt;file name></code> : 패킷 캡쳐 내용을 파일로 저장한다. 보통 wireshark GUI에서 분석을 위해 서버에서 일단 파일로 저장 후 로컬 컴퓨터로 다운로드한다. 파일 확장자는 pcap을 사용하지만 아무거나 상관없다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>~$ sudo tcpdump -i any port <span style=color:#ae81ff>80</span> -w dump.pcap
+</code></pre></div></li>
+<li>
+<p><code>-A</code> : packet 내용을 ASCII 로 출력한다. HTTP Header 정보 등을 터미널에서 실시간으로 확인할 때 유용하다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>~$ sudo tcpdump -i any port <span style=color:#ae81ff>80</span> -A -nn
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plaintext data-lang=plaintext>21:01:13.268676 IP 10.120.0.31.9000 &gt; 10.120.1.111.33200: Flags [P.], seq 1:320, ack 81, win 227, options [nop,nop,TS val 554863434 ecr 553599198], length 319
+E..s%9@.?...
+x..
+x.o#(...6.p4........S.....
+!..J .@.HTTP/1.1 200 OK
+Server: nginx
+Date: Mon, 23 Aug 2021 12:00:53 GMT
+Content-Type: application/json
+Content-Length: 29
+Connection: keep-alive
+Allow: GET, HEAD, OPTIONS
+Vary: Accept-Language, Cookie
+Content-Language: en
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+</code></pre></div></li>
+</ul>
+<h2 id=가끔-사용하면-유용한-옵션>가끔 사용하면 유용한 옵션</h2>
+<h3 id=패킷-캡쳐-내용을-파일로-저장-시-rotation-하는-방법>패킷 캡쳐 내용을 파일로 저장 시 Rotation 하는 방법</h3>
+<p>종종 어떤 문제의 원인 파악을 위해 패킷 캡쳐가 필요할 때가 있다. 근데 해당 문제가 잘 재현이 되지 않아 재현될 때까지 패킷 캡쳐를 해야할 때가 있다.
+이런 경우, 패킷 캡쳐를 위해 tcpdump 명령어를 계속 실행해두면 디스크 용량이 꽉 찰 수도 있기 때문에 조심해야 하는데 이럴 때 활용하면 좋은 옵션이 있다.</p>
+<ul>
+<li><code>-G &lt;seconds></code> : 지정한 시간마다 파일을 rotation한다. <code>-w</code> 옵션의 파일명을 <code>strftime</code> 형식으로 써야하며, <code>-w</code> 설정을 안할경우 동일한 파일명에 덮어쓰기가 된다.
+<ul>
+<li>strftime 형식
+<ul>
+<li>%Y : 년</li>
+<li>%m : 월</li>
+<li>%d : 일</li>
+<li>%H : 시</li>
+<li>%M : 분</li>
+<li>%S : 초</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>-C &lt;file size></code> : 지정한 파일 사이즈마다 rotation 한다. (unit : 1,000,000 bytes)</li>
+<li><code>-W &lt;total number of files></code> : 몇 개의 pcap 파일을 생성할 지 설정. <code>-G</code>, <code>-C</code> 옵션과 함께 사용 가능하다.</li>
+<li><code>-z &lt;command></code> : 파일 Rotation 직 후 실행할 명령어 지정이 가능하다. gzip 을 이용하여 압축도 가능하다.
+<blockquote>
+<p>-z 옵션 사용 시 <code>gzip: trace.pcap.gz: Permission denied</code> 라는 에러가 발생하는 경우가 있다.
+sudo 명령어로 tcpdump를 실행하면 tcpdump 유저/그룹으로 파일이 생성되는데, 이 파일을 압축할 권한이 현재 계정에 없기 때문이다.</p>
+<pre><code>-rw-r--r-- 1 tcpdump tcpdump 10005643  8월 23 21:51 trace
+</code></pre><p>이 때 <code>-Z &lt;user account></code> 옵션을 이용하여 생성되는 파일의 유저/그룹을 설정할 수 있다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo tcpdump -i eth0 port <span style=color:#ae81ff>80</span> -nn -Z hsyang -z gzip -C <span style=color:#ae81ff>10</span> -w trace -W <span style=color:#ae81ff>2</span>
+</code></pre></div></blockquote>
+</li>
+</ul>
+<h4 id=지정한-시간마다-rotation>지정한 시간마다 Rotation</h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># 10초마다 Rotate. 파일이 계속 생성되므로 주의!!!</span>
+~$ sudo tcpdump -nn -i eth0 -G <span style=color:#ae81ff>10</span> -w <span style=color:#e6db74>&#39;trace_%Y-%m-%d_%H:%M:%S.pcap&#39;</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plaintext data-lang=plaintext>trace_2021-08-23_21:30:34.pcap
+trace_2021-08-23_21:30:44.pcap
+trace_2021-08-23_21:30:56.pcap
+trace_2021-08-23_21:31:08.pcap
+...
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># 10초마다 Rotate. 총 2개의 파일 생성 후 종료된다. 종료 시 아래와 같은 메시지가 출력된다.</span>
+<span style=color:#75715e># Maximum file limit reached: 2</span>
+~$ sudo tcpdump -nn -i eth0 -G <span style=color:#ae81ff>10</span> -W <span style=color:#ae81ff>2</span> -w <span style=color:#e6db74>&#39;trace_%Y-%m-%d_%H:%M:%S.pcap&#39;</span>
+
+<span style=color:#75715e># 만약 하루에 한번 발생하는 에러를 추적하고 싶은 경우, 아래와 같이 24시간 동안의 패킷만 캡쳐하는 방법을 사용할 수 있다.</span>
+~$ sudo tcpdump -nn -i eth0 -G <span style=color:#ae81ff>3600</span> -W <span style=color:#ae81ff>24</span> -w <span style=color:#e6db74>&#39;trace_%Y-%m-%d_%H:%M:%S.pcap&#39;</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plaintext data-lang=plaintext>trace_2021-08-23_21:36:16.pcap
+trace_2021-08-23_21:36:27.pcap
+</code></pre></div><h4 id=지정한-파일-크기마다-rotation>지정한 파일 크기마다 Rotation</h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># 10 MB 마다 Rotate</span>
+<span style=color:#75715e># -w 로 지정한 파일명 끝에 숫자가 자동으로 붙는다.</span>
+~$ sudo tcpdump -nn -i eth0 -C <span style=color:#ae81ff>10</span> -w trace
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plaintext data-lang=plaintext>-rw-r--r-- 1 tcpdump tcpdump 10005643  8월 23 21:51 trace
+-rw-r--r-- 1 tcpdump tcpdump 10000174  8월 23 21:51 trace1
+-rw-r--r-- 1 tcpdump tcpdump 10001430  8월 23 21:51 trace2
+-rw-r--r-- 1 tcpdump tcpdump 10000294  8월 23 21:51 trace3
+-rw-r--r-- 1 tcpdump tcpdump 10001716  8월 23 21:51 trace4
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># 10 MB 마다 Rotate</span>
+<span style=color:#75715e># -w 로 지정한 파일명 끝에 숫자가 자동으로 붙는다.</span>
+<span style=color:#75715e># 파일을 5개로 유지하며 계속 Rotate 한다.</span>
+~$ sudo tcpdump -nn -i eth0 -C <span style=color:#ae81ff>10</span> -W <span style=color:#ae81ff>5</span> -w trace
+</code></pre></div><p><code>-W</code> 옵션이 없을때와 다르게 0번부터 번호가 붙는다.
+그리고 <code>-W</code> 옵션을 <code>-G</code> 옵션과 사용 할 때와는 다르게 <code>-C</code> 옵션과 사용 할 때는 해당 갯수만큼 파일이 생성되면 종료하지 않고 이전 파일을 덮어쓰며 계속 Rotate 한다.
+아래 예를 보면 trace0~2 파일의 생성시각이 trace3,4 보다 이후인 것을 확인할 수 있는데 생성된 파일 수가 5개가 넘어가면서 이전 파일을 덮어쓴 결과다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plaintext data-lang=plaintext>-rw-r--r-- 1 tcpdump tcpdump 10001994  8월 23 22:01 trace0
+-rw-r--r-- 1 tcpdump tcpdump 10001920  8월 23 22:01 trace1
+-rw-r--r-- 1 tcpdump tcpdump  7557120  8월 23 22:01 trace2
+-rw-r--r-- 1 tcpdump tcpdump 10001492  8월 23 22:00 trace3
+-rw-r--r-- 1 tcpdump tcpdump 10005576  8월 23 22:00 trace4
+</code></pre></div><p>즉,</p>
+<ul>
+<li><code>-G 10 -W 5</code> : 10초 간격으로 파일 생성. 파일 5개 생성 시 tcpdump 종료됨</li>
+<li><code>-C 10 -W 5</code> : 10MB 마다 파일 생성. 파일 5개가 계속 Rotation -> Overwrite 되며 계속 캡쳐됨</li>
+</ul>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/python-google-spreadsheets/>[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기</a>
+</div>
+<div class="column has-text-right">
+<p>Next post</p>
+<a href=/posts/python-requests-library-timeout/>[Python] Requests 라이브러리의 Connection Timeout에 관하여</a>
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#항상-사용하는-옵션>항상 사용하는 옵션</a></li>
+<li><a href=#자주-사용하는-옵션>자주 사용하는 옵션</a></li>
+<li><a href=#가끔-사용하면-유용한-옵션>가끔 사용하면 유용한 옵션</a>
+<ul>
+<li><a href=#패킷-캡쳐-내용을-파일로-저장-시-rotation-하는-방법>패킷 캡쳐 내용을 파일로 저장 시 Rotation 하는 방법</a>
+<ul>
+<li><a href=#지정한-시간마다-rotation>지정한 시간마다 Rotation</a></li>
+<li><a href=#지정한-파일-크기마다-rotation>지정한 파일 크기마다 Rotation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>자주 쓰는 - git branch 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2021 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>

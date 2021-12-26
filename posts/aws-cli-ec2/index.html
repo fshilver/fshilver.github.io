@@ -1,0 +1,867 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>AWS CLI - EC2 생성하기 | 메모장</title>
+<meta name=description content="AWS CLI를 이용하여 EC2 인스턴스를 생성하는 방법을 알아보자.">
+<link rel=canonical href=https://hsyang.net/posts/aws-cli-ec2/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="AWS CLI - EC2 생성하기">
+<meta property="og:description" content="AWS CLI를 이용하여 EC2 인스턴스를 생성하는 방법을 알아보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/aws-cli-ec2/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-10-11T11:58:00+09:00">
+<meta property="article:modified_time" content="2021-10-12T12:02:19+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="AWS CLI - EC2 생성하기">
+<meta name=twitter:description content="AWS CLI를 이용하여 EC2 인스턴스를 생성하는 방법을 알아보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>October 11, 2021</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">AWS CLI - EC2 생성하기</h1>
+<div class="content mt-6">
+<h2 id=ec2-란>EC2 란?</h2>
+<p>AWS를 처음 사용할 때 가장 쉽게 접할 수 있는 서비스가 <code>EC2</code>다. 일반 서버를 다루는 것과 비슷하다.
+물리적인 하드웨어 구입 없이, AWS 상에 가상의 서버를 만드는 서비스가 <code>EC2</code>다.</p>
+<p>일단, 명령어 예시부터 보고 가자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 run-instances <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --image-id ami-06e83aceba2cb0907 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --instance-type t3a.nano <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --block-device-mappings <span style=color:#e6db74>&#39;DeviceName=/dev/sda1,Ebs={DeleteOnTermination=true,VolumeSize=30,VolumeType=gp3}&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --key-name my-key-1 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --tag-specifications <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>             <span style=color:#e6db74>&#39;ResourceType=instance,Tags=[{Key=Name,Value=my-test-ec2-1}]&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>             <span style=color:#e6db74>&#39;ResourceType=volume,Tags=[{Key=Name,Value=my-test-ec2-1}]&#39;</span>
+</code></pre></div><p>옵션이 상당히 많다. 너무 겁먹지 말자. 실제 물리적인 컴퓨터를 구매해서 OS를 설치하고 SSH 접속까지 완료하는 과정과 비교하면 좀 더 쉽게 이해할 수 있다.</p>
+<p>대략 아래와 같은 순서가 될 것이다.</p>
+<ol>
+<li>사용할 OS 결정
+<ul>
+<li>OSX을 쓸 거면 Mac을 구입하고 Windows를 쓸 거면 Windows가 포함된 랩탑을 구매하는 것과 비슷하다.</li>
+</ul>
+</li>
+<li>사용할 Machine Spec 결정
+<ul>
+<li>CPU, 메모리, 디스크 용량 등</li>
+</ul>
+</li>
+<li>Machine 구입 및 부팅</li>
+<li>ssh 접속</li>
+</ol>
+<p><code>EC2</code>도 동일하다. 위 항목을 잘 기억하고 하나하나 진행해보자.</p>
+<h2 id=사용할-os-결정>사용할 OS 결정</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 run-instances <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --image-id ami-06e83aceba2cb0907 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --instance-type t3a.nano <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --block-device-mappings <span style=color:#e6db74>&#39;DeviceName=/dev/sda1,Ebs={DeleteOnTermination=true,VolumeSize=30,VolumeType=gp3}&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --key-name my-key-1 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --tag-specifications <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>             <span style=color:#e6db74>&#39;ResourceType=instance,Tags=[{Key=Name,Value=my-test-ec2-1}]&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>             <span style=color:#e6db74>&#39;ResourceType=volume,Tags=[{Key=Name,Value=my-test-ec2-1}]&#39;</span>
+</code></pre></div><p>위 명령어 예시 옵션의 <code>--image-id</code> 에 대한 값을 찾는 과정이다.</p>
+<p>AWS에서 사용할 수 있는 OS는 AMI(Amazon Machine Image) 형태로 제공된다.
+AMI란, <code>OS + 자신만의 application 설치 및 서버 설정 등</code>이 포함된 것이라고 이해하면 된다.
+물론 OS만 설치된 AMI도 있다.</p>
+<p>여기서는 CentOS 7을 사용하겠다. (OS만 설치된 AMI)</p>
+<p>아래 명령어로 AMI 검색이 가능하지만, 솔직히 추천하지 않는다. 알아보기 어렵다. 차라리 <a href=https://aws.amazon.com/marketplace>https://aws.amazon.com/marketplace</a> 에서 AMI 찾아 본 후 AMI ID를 확인하는 편을 추천한다.</p>
+<h3 id=cli로-검색하기>CLI로 검색하기</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 describe-images --filters <span style=color:#e6db74>&#39;Name=description,Values=*CentOS Linux 7*&#39;</span> --query <span style=color:#e6db74>&#39;Images[*].[ImageId,Description]&#39;</span> --output table
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+|                                                                                              DescribeImages                                                                                               |
++-----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|  ami-01449fc66c70c5787|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-021015b95e7bdfbbe|  CentOS Linux 7 x86_64 HVM EBS ENA 1901_01 by Banzai Cloud                                                                                                                        |
+|  ami-0214cba1bd453d731|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-02e115f53f532b515|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-02f1bca131a9e4b5b|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-03fb719d0aa5bd708|  Ontoportal Appliance version 3.0.2 runing on CentOS Linux 7 x86_64 HVM EBS 20200807                                                                                              |
+|  ami-046d669bfeaa106e7|  Ontoportal Appliance version 3.0.5 runing on CentOS Linux 7 x86_64 HVM EBS 20210826                                                                                              |
+|  ami-049d6d9eadf675b17|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-04eff034ca5126817|  CentOS 7 LVM Minimal Install Golden AMI Template (CentOS Linux 7.9 LVM) (CentOS Linux 7 LVM) (CentOS Linux LVM) (CentOS 7.9 LVM) (CentOS LVM) (centoslinux7 lvm) (centos7 lvm)   |
+|  ami-054259e08868dab06|  CentOS 7 Minimal Install Golden AMI Template (CentOS Linux 7.9) (CentOS 7.9) (centos7)                                                                                           |
+|  ami-069c47c6f4465913d|  CentOS 7 Minimal Install Golden AMI Template (CentOS Linux 7.9) (CentOS 7.9) (centos7)                                                                                           |
+|  ami-06cf2a72dadf92410|  CentOS Linux 7 x86_64 HVM EBS ENA 1901_01                                                                                                                                        |
+|  ami-06e83aceba2cb0907|  CentOS Linux 7 x86_64 HVM EBS ENA 2002_01                                                                                                                                        |
+|  ami-0708dd1de57b297a9|  CentOS 7 Minimal Install Golden AMI Template (CentOS Linux 7.9) (CentOS 7.9) (centos7)                                                                                           |
+|  ami-082a9dcda6ea953f4|  Ontoportal Appliance version 3.0.4 runing on CentOS Linux 7 x86_64 HVM EBS 20210708                                                                                              |
+|  ami-0863040845c41f065|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-08874d501077c2ff9|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-088f496c95a767281|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-09835c9087e4c0ea9|  CentOS 7 Minimal Install Golden AMI Template (CentOS Linux 7.9) (CentOS 7.9) (centos7)                                                                                           |
+|  ami-0a36b8229ac6b03da|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-0a80d0baa4e8c508b|  Ontoportal Appliance version 3.0.3 runing on CentOS Linux 7 x86_64 HVM EBS 20201211                                                                                              |
+|  ami-0a942096c3b61bf14|  CentOS 7 Minimal Install Golden AMI Template (CentOS Linux 7.9) (CentOS 7.9) (centos7)                                                                                           |
+|  ami-0af4f8ade20044f62|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-0b730778606329e4c|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-0be614e732b058722|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-0daaed13d41ea083a|  CentOS 7 Latest Minimal Install Golden AMI Template (CentOS Linux 7.9) (CentOS 7.9) (centos7)                                                                                    |
+|  ami-0ef66197dfb521bf4|  CentOS 7 Minimal Install Golden AMI Template (CentOS Linux 7.9) (CentOS 7.9) (centos7)                                                                                           |
+|  ami-0fa2bb48672e42b7d|  AWS-VMImport service: Linux - CentOS Linux 7 (Core) - 3.10.0-1062.4.3.el7.x86_64                                                                                                 |
+|  ami-46963e28         |  CentOS Linux 7 x86_64 HVM EBS ENA 1804_2                                                                                                                                         |
+|  ami-53a1073d         |  CentOS Linux 7 x86_64 HVM EBS 1708_11.01                                                                                                                                         |
+|  ami-56a40238         |  CentOS Linux 7 x86_64 HVM EBS 1708_11.01                                                                                                                                         |
+|  ami-6bf42905         |  Racemi CentOS Linux 7 x86_64 HVM EBS 20150928                                                                                                                                    |
+|  ami-885e8fe6         |  Asgard-1.5.1 kinc ami v2 for CentOS Linux 7                                                                                                                                      |
+|  ami-97cb19f9         |  CentOS Linux 7 x86_64 HVM EBS 1703_01                                                                                                                                            |
+|  ami-995cf3f7         |  CentOS Linux 7 x86_64 HVM EBS ENA 1803_01                                                                                                                                        |
+|  ami-bf9c36d1         |  CentOS Linux 7 x86_64 HVM EBS ENA 1805_01                                                                                                                                        |
+|  ami-c9f12ca7         |  CentOS Linux 7 x86_64 HVM EBS 1704_01                                                                                                                                            |
+|  ami-f3a70f9d         |  CentOS Linux 7 x86_64 HVM EBS ENA 1804_1                                                                                                                                         |
++-----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+</code></pre></div><h3 id=aws-market-place-에서-검색하기>AWS Market Place 에서 검색하기</h3>
+<p>AWS Management Console에 로그인 후 <a href=https://aws.amazon.com/marketplace>https://aws.amazon.com/marketplace</a>에 접속하여 진행해야 한다.</p>
+<p><img src=aws-ami-search-1.png alt=aws-ami-search-1>
+<img src=aws-ami-search-2.png alt=aws-ami-search-2>
+<img src=aws-ami-search-3.png alt=aws-ami-search-3>
+<img src=aws-ami-search-4.png alt=aws-ami-search-4>
+<img src=aws-ami-search-5.png alt=aws-ami-search-5></p>
+<h4 id=ami-검색-결과에-대해-알아둘-점>AMI 검색 결과에 대해 알아둘 점</h4>
+<p>필자가 선택한 CentOS 7 (x86_64) - with Updates HVM 이미지를 예로 들어보겠다.</p>
+<h5 id=같은-ami라도-region에-따라-ami-id가-달라진다>같은 AMI라도 Region에 따라 AMI ID가 달라진다</h5>
+<ul>
+<li>
+<p>즉, 같은 AMI라 하더라도 서울 Region과 미국 오하이오 Region의 AMI ID가 각각 다르다.</p>
+<ul>
+<li><code>ami-06e83aceba2cb0907</code> : 서울</li>
+<li><code>ami-01e36b7901e884a10</code> : 오하이오</li>
+</ul>
+</li>
+<li>
+<p>아래는 같은 AMI의 AMI ID를 각 Region별로 찾는 방법이다.</p>
+<ul>
+<li>
+<p>검색 기준으로 삼을 AMI ID를 정한 후, 해당 AMI의 상세 정보 조회</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 describe-images --image-ids ami-06e83aceba2cb0907 --region ap-northeast-2
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;Images&#34;</span>: [
+        {
+            <span style=color:#f92672>&#34;Architecture&#34;</span>: <span style=color:#e6db74>&#34;x86_64&#34;</span>,
+            <span style=color:#f92672>&#34;CreationDate&#34;</span>: <span style=color:#e6db74>&#34;2020-03-09T21:54:51.000Z&#34;</span>,
+            <span style=color:#f92672>&#34;ImageId&#34;</span>: <span style=color:#e6db74>&#34;ami-06e83aceba2cb0907&#34;</span>,
+            <span style=color:#f92672>&#34;ImageLocation&#34;</span>: <span style=color:#e6db74>&#34;aws-marketplace/CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4&#34;</span>,
+            <span style=color:#f92672>&#34;ImageType&#34;</span>: <span style=color:#e6db74>&#34;machine&#34;</span>,
+            <span style=color:#f92672>&#34;Public&#34;</span>: <span style=color:#66d9ef>true</span>,
+            <span style=color:#f92672>&#34;OwnerId&#34;</span>: <span style=color:#e6db74>&#34;679593333241&#34;</span>,
+            <span style=color:#f92672>&#34;PlatformDetails&#34;</span>: <span style=color:#e6db74>&#34;Linux/UNIX&#34;</span>,
+            <span style=color:#f92672>&#34;UsageOperation&#34;</span>: <span style=color:#e6db74>&#34;RunInstances&#34;</span>,
+            <span style=color:#f92672>&#34;ProductCodes&#34;</span>: [
+                {
+                    <span style=color:#f92672>&#34;ProductCodeId&#34;</span>: <span style=color:#e6db74>&#34;aw0evgkw8e5c1q413zgy5pjce&#34;</span>,
+                    <span style=color:#f92672>&#34;ProductCodeType&#34;</span>: <span style=color:#e6db74>&#34;marketplace&#34;</span>
+                }
+            ],
+            <span style=color:#f92672>&#34;State&#34;</span>: <span style=color:#e6db74>&#34;available&#34;</span>,
+            <span style=color:#f92672>&#34;BlockDeviceMappings&#34;</span>: [
+                {
+                    <span style=color:#f92672>&#34;DeviceName&#34;</span>: <span style=color:#e6db74>&#34;/dev/sda1&#34;</span>,
+                    <span style=color:#f92672>&#34;Ebs&#34;</span>: {
+                        <span style=color:#f92672>&#34;DeleteOnTermination&#34;</span>: <span style=color:#66d9ef>false</span>,
+                        <span style=color:#f92672>&#34;SnapshotId&#34;</span>: <span style=color:#e6db74>&#34;snap-0a58cffe5397c48d7&#34;</span>,
+                        <span style=color:#f92672>&#34;VolumeSize&#34;</span>: <span style=color:#ae81ff>8</span>,
+                        <span style=color:#f92672>&#34;VolumeType&#34;</span>: <span style=color:#e6db74>&#34;gp2&#34;</span>,
+                        <span style=color:#f92672>&#34;Encrypted&#34;</span>: <span style=color:#66d9ef>false</span>
+                    }
+                }
+            ],
+            <span style=color:#f92672>&#34;Description&#34;</span>: <span style=color:#e6db74>&#34;CentOS Linux 7 x86_64 HVM EBS ENA 2002_01&#34;</span>,
+            <span style=color:#f92672>&#34;EnaSupport&#34;</span>: <span style=color:#66d9ef>true</span>,
+            <span style=color:#f92672>&#34;Hypervisor&#34;</span>: <span style=color:#e6db74>&#34;xen&#34;</span>,
+            <span style=color:#f92672>&#34;ImageOwnerAlias&#34;</span>: <span style=color:#e6db74>&#34;aws-marketplace&#34;</span>,
+            <span style=color:#f92672>&#34;Name&#34;</span>: <span style=color:#e6db74>&#34;CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4&#34;</span>,
+            <span style=color:#f92672>&#34;RootDeviceName&#34;</span>: <span style=color:#e6db74>&#34;/dev/sda1&#34;</span>,
+            <span style=color:#f92672>&#34;RootDeviceType&#34;</span>: <span style=color:#e6db74>&#34;ebs&#34;</span>,
+            <span style=color:#f92672>&#34;SriovNetSupport&#34;</span>: <span style=color:#e6db74>&#34;simple&#34;</span>,
+            <span style=color:#f92672>&#34;VirtualizationType&#34;</span>: <span style=color:#e6db74>&#34;hvm&#34;</span>
+        }
+    ]
+}
+</code></pre></div></li>
+<li>
+<p>미국 오하이오 Region에서 동일한 AMI ID로 검색 시 결과 없음</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 describe-images --image-ids ami-06e83aceba2cb0907 --region us-east-2
+
+An error occurred <span style=color:#f92672>(</span>InvalidAMIID.NotFound<span style=color:#f92672>)</span> when calling the DescribeImages operation: The image id <span style=color:#e6db74>&#39;[ami-06e83aceba2cb0907]&#39;</span> does not exist
+</code></pre></div></li>
+<li>
+<p>서울 Region에 존재하는 ami-06e83aceba2cb0907 의 Description 정보를 이용하여 미국 오하이오 Region에서 필터링 후 검색</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>aws ec2 describe-images <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        --filters <span style=color:#e6db74>&#39;Name=description,Values=*CentOS Linux 7 x86_64 HVM EBS ENA 2002_01&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        --query <span style=color:#e6db74>&#39;Images[*].[ImageId,Description,Name]&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        --output table <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        --region us-east-2
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>------------------------------------------------------------------------
+|                            DescribeImages                            |
++------------------------+---------------------------------------------+
+|  ami-01e36b7901e884a10 |  CentOS Linux 7 x86_64 HVM EBS ENA 2002_01  |
++------------------------+---------------------------------------------+
+</code></pre></div></li>
+</ul>
+</li>
+</ul>
+<h5 id=같은-ami라도-aws-cli와-aws-market-place에서-표시되는-ami-이름이-다르다>같은 AMI라도 aws cli와 AWS Market Place에서 표시되는 AMI 이름이 다르다</h5>
+<p>AWS Market Place에서 보여지는 이름은 <code>CentOS 7 (x86_64) - with Updates HVM</code> 이다.</p>
+<p><img src=aws-ami-search-5.png alt=aws-ami-search-5></p>
+<p>반면, 위 스크린샷에 표현된 AMI ID의 상세 정보를 cli로 출력해보면 어디에서도 위 문구를 찾을 수 없다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>aws ec2 describe-images --image-ids ami-06e83aceba2cb0907
+<span style=color:#f92672>{</span>
+    <span style=color:#e6db74>&#34;Images&#34;</span>: <span style=color:#f92672>[</span>
+        <span style=color:#f92672>{</span>
+            <span style=color:#e6db74>&#34;Architecture&#34;</span>: <span style=color:#e6db74>&#34;x86_64&#34;</span>,
+            <span style=color:#e6db74>&#34;CreationDate&#34;</span>: <span style=color:#e6db74>&#34;2020-03-09T21:54:51.000Z&#34;</span>,
+            <span style=color:#e6db74>&#34;ImageId&#34;</span>: <span style=color:#e6db74>&#34;ami-06e83aceba2cb0907&#34;</span>,
+            <span style=color:#e6db74>&#34;ImageLocation&#34;</span>: <span style=color:#e6db74>&#34;aws-marketplace/CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4&#34;</span>,
+            <span style=color:#e6db74>&#34;ImageType&#34;</span>: <span style=color:#e6db74>&#34;machine&#34;</span>,
+            <span style=color:#e6db74>&#34;Public&#34;</span>: true,
+            <span style=color:#e6db74>&#34;OwnerId&#34;</span>: <span style=color:#e6db74>&#34;679593333241&#34;</span>,
+            <span style=color:#e6db74>&#34;PlatformDetails&#34;</span>: <span style=color:#e6db74>&#34;Linux/UNIX&#34;</span>,
+            <span style=color:#e6db74>&#34;UsageOperation&#34;</span>: <span style=color:#e6db74>&#34;RunInstances&#34;</span>,
+            <span style=color:#e6db74>&#34;ProductCodes&#34;</span>: <span style=color:#f92672>[</span>
+                <span style=color:#f92672>{</span>
+                    <span style=color:#e6db74>&#34;ProductCodeId&#34;</span>: <span style=color:#e6db74>&#34;aw0evgkw8e5c1q413zgy5pjce&#34;</span>,
+                    <span style=color:#e6db74>&#34;ProductCodeType&#34;</span>: <span style=color:#e6db74>&#34;marketplace&#34;</span>
+                <span style=color:#f92672>}</span>
+            <span style=color:#f92672>]</span>,
+            <span style=color:#e6db74>&#34;State&#34;</span>: <span style=color:#e6db74>&#34;available&#34;</span>,
+            <span style=color:#e6db74>&#34;BlockDeviceMappings&#34;</span>: <span style=color:#f92672>[</span>
+                <span style=color:#f92672>{</span>
+                    <span style=color:#e6db74>&#34;DeviceName&#34;</span>: <span style=color:#e6db74>&#34;/dev/sda1&#34;</span>,
+                    <span style=color:#e6db74>&#34;Ebs&#34;</span>: <span style=color:#f92672>{</span>
+                        <span style=color:#e6db74>&#34;DeleteOnTermination&#34;</span>: false,
+                        <span style=color:#e6db74>&#34;SnapshotId&#34;</span>: <span style=color:#e6db74>&#34;snap-0a58cffe5397c48d7&#34;</span>,
+                        <span style=color:#e6db74>&#34;VolumeSize&#34;</span>: 8,
+                        <span style=color:#e6db74>&#34;VolumeType&#34;</span>: <span style=color:#e6db74>&#34;gp2&#34;</span>,
+                        <span style=color:#e6db74>&#34;Encrypted&#34;</span>: false
+                    <span style=color:#f92672>}</span>
+                <span style=color:#f92672>}</span>
+            <span style=color:#f92672>]</span>,
+            <span style=color:#e6db74>&#34;Description&#34;</span>: <span style=color:#e6db74>&#34;CentOS Linux 7 x86_64 HVM EBS ENA 2002_01&#34;</span>,
+            <span style=color:#e6db74>&#34;EnaSupport&#34;</span>: true,
+            <span style=color:#e6db74>&#34;Hypervisor&#34;</span>: <span style=color:#e6db74>&#34;xen&#34;</span>,
+            <span style=color:#e6db74>&#34;ImageOwnerAlias&#34;</span>: <span style=color:#e6db74>&#34;aws-marketplace&#34;</span>,
+            <span style=color:#e6db74>&#34;Name&#34;</span>: <span style=color:#e6db74>&#34;CentOS Linux 7 x86_64 HVM EBS ENA 2002_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-0042af67f8e4dcc20.4&#34;</span>,
+            <span style=color:#e6db74>&#34;RootDeviceName&#34;</span>: <span style=color:#e6db74>&#34;/dev/sda1&#34;</span>,
+            <span style=color:#e6db74>&#34;RootDeviceType&#34;</span>: <span style=color:#e6db74>&#34;ebs&#34;</span>,
+            <span style=color:#e6db74>&#34;SriovNetSupport&#34;</span>: <span style=color:#e6db74>&#34;simple&#34;</span>,
+            <span style=color:#e6db74>&#34;VirtualizationType&#34;</span>: <span style=color:#e6db74>&#34;hvm&#34;</span>
+        <span style=color:#f92672>}</span>
+    <span style=color:#f92672>]</span>
+<span style=color:#f92672>}</span>
+</code></pre></div><h2 id=사용할-machine-spec-결정>사용할 Machine Spec 결정</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 run-instances <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --image-id ami-06e83aceba2cb0907 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --instance-type t3a.nano <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --block-device-mappings <span style=color:#e6db74>&#39;DeviceName=/dev/sda1,Ebs={DeleteOnTermination=true,VolumeSize=30,VolumeType=gp3}&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --key-name my-key-1 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --tag-specifications <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>             <span style=color:#e6db74>&#39;ResourceType=instance,Tags=[{Key=Name,Value=my-test-ec2-1}]&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>             <span style=color:#e6db74>&#39;ResourceType=volume,Tags=[{Key=Name,Value=my-test-ec2-1}]&#39;</span>
+</code></pre></div><p>위 명령어 예시 옵션의 <code>--instance-type</code>와 <code>--block-device-mappings</code> 에 대한 값을 찾는 과정이다.</p>
+<h3 id=cpumemorygpunetwork>CPU/Memory/GPU/Network</h3>
+<p>AWS에서 생성할 수 있는 서버 사양(인스턴스 타입)을 아래 명령어로 확인해보자. (매우 많은 정보가 출력되기 때문에, 꼭 필요한 내용만 출력되도록 &ndash;query 옵션을 사용했다.)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 describe-instance-types <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --query <span style=color:#e6db74>&#39;sort_by(InstanceTypes, &amp;InstanceType)[].[InstanceType,VCpuInfo.DefaultVCpus,MemoryInfo.SizeInMiB,NetworkInfo.NetworkPerformance,GpuInfo.Gpus[0].Name,GpuInfo.Gpus[0].Manufacturer,GpuInfo.Gpus[0].Count,GpuInfo.Gpus[0].MemoryInfo.SizeInMiB]&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --output table
+</code></pre></div><p>명령어 실행 결과는 다음 순서대로 표시된다.</p>
+<ul>
+<li>인스턴스 타입</li>
+<li>CPU 코어 갯수</li>
+<li>메모리(MiB)</li>
+<li>네트워크 대역폭</li>
+<li>GPU 모델</li>
+<li>GPU 제조사</li>
+<li>GPU 갯수</li>
+<li>GPU 메모리</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>-------------------------------------------------------------------------------------
+|  c4.2xlarge   | 8  | 15360  | High             | None |  None   |  None  |  None  |
+|  c4.4xlarge   | 16 | 30720  | High             | None |  None   |  None  |  None  |
+|  c4.8xlarge   | 36 | 61440  | 10 Gigabit       | None |  None   |  None  |  None  |
+|  c4.large     | 2  | 3840   | Moderate         | None |  None   |  None  |  None  |
+...
+|  g3s.xlarge   | 4  | 31232  | Up to 10 Gigabit |  M60 |  NVIDIA |  1     |  8192  |
+|  g4dn.12xlarge| 48 | 196608 | 50 Gigabit       |  T4  |  NVIDIA |  4     |  16384 |
+</code></pre></div><p>물론 AWS 공식 사이트에서 확인할 수도 있다. (<a href=https://aws.amazon.com/ko/ec2/instance-types/>https://aws.amazon.com/ko/ec2/instance-types/</a>)</p>
+<p>사양에 비례해서 사용 요금이 올라가므로 자신의 사용 목적에 맞는 타입을 고르는 것이 중요하다.
+인스턴스를 생성해서 사용하다가 서버 부하가 심해서 사양을 좀 높이고 싶다면, 버튼 몇 번으로 인스턴스 타입을 변경할 수 있다.</p>
+<p><em><strong>다만</strong></em>,</p>
+<ul>
+<li>인스턴스를 중지하고 다시 시작해야 한다. (다운타임 발생)</li>
+<li>같은 계열의 인스턴스 타입으로만 변경 가능하다. GPU없는 인스턴스를 사용하다가 GPU 인스턴스 타입으로 변경이 불가능하다는 얘기다.
+<ul>
+<li>t3.small -> t3.2xlarge : 변경 가능</li>
+<li>t3.small -> g4dn.xlarge : 변경 불가능</li>
+</ul>
+</li>
+</ul>
+<p>여기서는 <code>t3a.micro</code> 타입을 사용하겠다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>#    타입        CPU    메모리          네트워크         GPU 관련
+|  t3a.micro  |  2  |  1024  |  Up to 5 Gigabit  |  None  |  None  |  None  |  None  |
+</code></pre></div><h3 id=ebs>Disk</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>--block-device-mappings \
+  &#39;DeviceName=/dev/sda1,Ebs={DeleteOnTermination=true,VolumeSize=30,VolumeType=gp3}&#39;
+</code></pre></div><p>위 옵션에 대한 내용이다. 디스크는 별도로 설정해줘야 하는데, 사용할 디스크 타입과 용량을 지정하면 된다.</p>
+<ul>
+<li>디스크 디바이스 이름(<code>DeviceName</code>) : 기본으로 <code>/dev/sda1</code> 사용하자.</li>
+<li>디스크 용량 설정(<code>VolumeSize</code>): 단위는 GB다. 필요한 만큼 설정하자.</li>
+<li>디스크 타입(<code>VolumeType</code>)
+<ul>
+<li>디스크 성능에 대한 특별한 요구사항이 없다면 범용 SSD 타입인 <code>gp3</code> 를 사용하자.</li>
+<li>타입별 요금 확인은 <a href=https://aws.amazon.com/ko/ebs/pricing/>https://aws.amazon.com/ko/ebs/pricing/</a></li>
+<li>디스크에 대한 특별한 요구사항이 있다면 아래 페이지를 참고하자. (일정 성능을 보장해야 한다던가, 자주 접근할 일 없는 많은 데이터를 저장해야 한다던가)
+<ul>
+<li><a href=https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html>https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>AWS에서 디스크는 EC2와 별개로 관리 된다.
+<ul>
+<li>때문에 A라는 EC2를 만들때 사용했던 디스크는 A EC2를 삭제하더라도 그대로 남아 있다.</li>
+<li>이렇게 남아 있는 디스크는 새로운 EC2 생성 시 재활용할 수도 있다.
+<ul>
+<li>이 점을 이용하여 EC2 타입 변경 시 활용 가능하다.</li>
+</ul>
+</li>
+<li>그러나 관리를 제대로 안하면, 속된 말로 <code>미아</code> 디스크가 발생한다. (어느 EC2에도 붙어있지 않은 디스크)</li>
+<li>이 디스크들은 차지하고 있는 용량만큼 계속 비용이 발생하기 때문에 잘 관리해야 한다.</li>
+<li>위와 같이 관리자 실수로 디스크를 삭제하지 않는 경우를 방지하기 위해 EC2 생성 시 옵션을 추가할 수 있는데 그게 바로 DeleteOnTermination 이다.</li>
+<li>위 옵션을 <code>true</code>로 설정하면 해당 디스크가 붙어있는 EC2가 삭제되면 디스크도 같이 삭제된다.</li>
+</ul>
+</li>
+</ul>
+<h2 id=ssh-접속-설정>ssh 접속 설정</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 run-instances <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --image-id ami-06e83aceba2cb0907 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --instance-type t3a.nano <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --block-device-mappings <span style=color:#e6db74>&#39;DeviceName=/dev/sda1,Ebs={DeleteOnTermination=true,VolumeSize=30,VolumeType=gp3}&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --key-name my-key-1 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --tag-specifications <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>             <span style=color:#e6db74>&#39;ResourceType=instance,Tags=[{Key=Name,Value=my-test-ec2-1}]&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>             <span style=color:#e6db74>&#39;ResourceType=volume,Tags=[{Key=Name,Value=my-test-ec2-1}]&#39;</span>
+</code></pre></div><p>위 명령어 예시의 <code>--key-namee</code> 옵션에 대한 설정 방법이다.</p>
+<p>보통 ssh 접속 시 ID/Password를 이용하여 접속하는데, AWS에서 제공하는 CentOS AMI에서는 ID/Password 접속 방식을 허용하지 않는다.(default, 접속 후 변경 가능)
+대신 ssh private key 파일을 이용해서 접속할 수 있다. (TODO:ssh private key 에 대한 설명은 추 후 포스팅 하겠다.)</p>
+<p>이 key 파일을 AWS 에서는 <code>key pair</code> 라는 이름으로 관리한다.
+ec2 인스턴스를 만들때마다 <code>key pair</code>를 새로 생성하면 관리하는 것도 일이기 때문에 1개만 만들어서 재사용하는 편을 권한다.</p>
+<h3 id=key-pair-creation>Key pair 생성</h3>
+<p>적절한 key 이름으로 <code>key pair</code>를 생성하자. 여기서는 <code>my-key-1</code> 이라는 이름을 사용했다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 create-key-pair --key-name my-key-1
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;KeyFingerprint&#34;</span>: <span style=color:#e6db74>&#34;77:b5:c0:02:bb:40:77:8a:e7:75:f6:be:85:1a:74:c2:74:46:c8:75&#34;</span>,
+    <span style=color:#f92672>&#34;KeyMaterial&#34;</span>: <span style=color:#e6db74>&#34;-----BEGIN RSA PRIVATE KEY-----\nMIIEogIBAAKCAQEApw2YpCbWP+1me8T7JjgExxt/F/K0Xnt1+zdUzxjRdO013xhw\nIlDd+V7fp/NNSEJxWKGvFzJV4cI+MIXXLUcaSSMGP8Pd9AgO7ONhUG8HVpGp/Sco\nI3UzKMOala/kXlWXdhsR2Abxc9ObNlzb57/AJnTQ5+H/nbFvwSuTK8s0/ZeNfIa4\nDqm6ZLx4szlUYh+NTexMY9tj9HGvJu0oK2HbqajaFA3cJsAHXsBEaaEpmP3t57jS\nAPtrVyWWx7TXUjn/PAHiczn1QjXhPSI60NP7Lz2MG9dRde6QVlVFiCNsIdg4OWJh\nZYunuvnScK/gRgw0Qm9frtjMJU8W2iTO+MjWowIDAQABAoIBADnlK2aQkyY6p47z\nmLsJJRbAP87T7ZDlJuF2rqzLhCQK5eW4uXwbHKMFL2wslTca19+IwX6/kiYYxKba\na9WkU8bPHaZRwoWFmW6d6ycOI7Pr7cbvoCiRwLY6/EMuX24WKdTj0s5Usa+bwaoY\nipoJyZVKXPBQUd+cFAgViv7dgTL1lxiMkZF5QcQFxw+tm9/Qk/9QHmd12Vp4Scuj\ndFSX0pFptvp2B0+iL6wklAs/9QLFnLZEzAlNcZ0rU5M3Kx8rUq7GIfy9x6KzjH7r\nzUxEowYgR4LaCOwqV2GsUbcR/UeDMh3vp3Dnf5/gvTB+3St3yTnJA7kRJYLKFBb2\nNMpGf+ECgYEA8ddC5wJCMjZTYp9g6BrFBYsdXnSEB9GwD+h7R5WPnMIVvLLhDRHu\n3RH7lW2hVAIkSq+YM0ni0OsuI/OZLEFqFeRSuNR2J88FNpIzal6BCcAv4Nl0aufF\nPpolm8RUiam7j09z+/whmW3QSjWebD85Dvm1d4VButrAIwSys59xgdMCgYEAsNVo\nT59HodHhTXhAe4vXxtLp005dZz7WLXDP/btRhFTvS+eVIvboxlJbHdN61Sn8r2eV\njdGZq1UtWYe3MawfYrJ2rLRIshEsuxh8ASuwWsDgxONmF8YbqfFA+JzqPFEKgZws\nta2X/aZYnziZZcD0s/32Ybs8iB95RK5GgHe5hfECgYB/aNgfWkpDp+lQWQU14vyP\nihYD8ECq2eb2ypVARmQtwvauvlLgjuUX5OR1ehd3adVy34XA55kuVeiuGiVFcoUQ\nWYTXSV+iY2ess2ORE47J802GGSpDNC3vaEiOAuZCzIA65TIGvHN7IKaOoib/gmNu\nJ1JaUIMrjRmSmWQIS+UB7wKBgHElCyovAvliPiOAdtnWH4lC+IPQl2jxRr8qeJqj\n2UOvyLErizwk+cmzdkN+RhDQXbKpt4JXg1iiFnM7qBarSCWxhMd6Ty1IWfOYdfeV\nybA3y1mPGorJone5OtYYKLPRMsS9dcoFOcP9RKUT5Oq7bJciPxxHXjLG2KP+UnPu\npxExAoGAJH9hb32fwZMfuVY2ip164hB4/M8kKjbNHihk3eK392qXh0mhp4KUAACF\nwfeQprZc7GB+4/iShWLuXOMhRliXDY95ajcNbe/rXcd212LnhzWT5cnH/PKuIoJJ\nq11XQLYzWLrHQL6a3KJk5OgexOC4e1zS9SMwzWhjTn0uHhf78cw=\n-----END RSA PRIVATE KEY-----&#34;</span>,
+    <span style=color:#f92672>&#34;KeyName&#34;</span>: <span style=color:#e6db74>&#34;my-key-1&#34;</span>,
+    <span style=color:#f92672>&#34;KeyPairId&#34;</span>: <span style=color:#e6db74>&#34;key-0a03c7b0023c36336&#34;</span>
+}
+</code></pre></div><p><code>key pair</code>를 생성하면 위와 같은 결과가 나오는데, <code>KeyMaterial</code>의 값을 복사하여 텍스트 파일로 저장해야 한다.
+이 파일은 ec2 생성 시에는 필요없고, ec2에 접속할 때 필요하다. 보통 파일 확장자는 <code>pem</code>을 사용하므로 아래 파일명을 추천한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>my-key-1.pem
+</code></pre></div><h3 id=key-pair-조회>Key pair 조회</h3>
+<p>팀 내에서 누군가, 혹은 자신이 이전에 만들어 놓은 key pair 목록을 조회할 수 있다.
+단, <code>key pair</code> 이름만 확인 가능하기 때문에 ec2 생성시 참조할 수만 있고 실제로 해당 key pair를 사용하여 접속하려면 key 파일을 공유 받아야 한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 describe-key-pairs --output json
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;KeyPairs&#34;</span>: [
+        {
+            <span style=color:#f92672>&#34;KeyPairId&#34;</span>: <span style=color:#e6db74>&#34;key-0a03c7b0023c36336&#34;</span>,
+            <span style=color:#f92672>&#34;KeyFingerprint&#34;</span>: <span style=color:#e6db74>&#34;77:b5:c0:02:bb:40:77:8a:e7:75:f6:be:85:1a:74:c2:74:46:c8:75&#34;</span>,
+            <span style=color:#f92672>&#34;KeyName&#34;</span>: <span style=color:#e6db74>&#34;my-key-1&#34;</span>,
+            <span style=color:#f92672>&#34;Tags&#34;</span>: []
+        }
+    ]
+}
+</code></pre></div><h2 id=machine-구입-및-부팅>Machine 구입 및 부팅</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 run-instances <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --image-id ami-06e83aceba2cb0907 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --instance-type t3a.nano <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --block-device-mappings <span style=color:#e6db74>&#39;DeviceName=/dev/sda1,Ebs={DeleteOnTermination=true,VolumeSize=30,VolumeType=gp3}&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --key-name my-key-1 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --tag-specifications <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>             <span style=color:#e6db74>&#39;ResourceType=instance,Tags=[{Key=Name,Value=my-test-ec2-1}]&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>             <span style=color:#e6db74>&#39;ResourceType=volume,Tags=[{Key=Name,Value=my-test-ec2-1}]&#39;</span>
+</code></pre></div><p>마지막으로 우리가 생성할 EC2에 이름을 붙여주자. (Tag를 붙이자.)
+Tag 안붙이면 기억하기도/알아보기도 어려운 InstanceId 를 사용해야 한다. 위 명령어의 마지막 3줄이 Tag를 붙이는 내용이다.
+혹시 EC2 생성 시 Disk도 별도로 생성되고 관리된다고 위에서 말한 것을 기억하는가?(<a href=#ebs>여기</a>)
+ResourceType <code>instance</code>는 EC2에 Tag를 붙이는 설정이고 ResourceType <code>volume</code>은 같이 생성된 Disk에 Tag를 붙이는 설정이다.</p>
+<p>정상적으로 EC2가 생성되면 아래와 같은 응답을 볼 수 있다. 방금 생성한 EC2의 상세 정보다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;Reservations&#34;</span>: [
+        {
+            <span style=color:#f92672>&#34;Groups&#34;</span>: [],
+            <span style=color:#f92672>&#34;Instances&#34;</span>: [
+                {
+                    <span style=color:#f92672>&#34;AmiLaunchIndex&#34;</span>: <span style=color:#ae81ff>0</span>,
+                    <span style=color:#f92672>&#34;ImageId&#34;</span>: <span style=color:#e6db74>&#34;ami-06e83aceba2cb0907&#34;</span>,
+                    <span style=color:#f92672>&#34;InstanceId&#34;</span>: <span style=color:#e6db74>&#34;i-11111111111111111&#34;</span>,
+                    <span style=color:#f92672>&#34;InstanceType&#34;</span>: <span style=color:#e6db74>&#34;t3a.nano&#34;</span>,
+                    <span style=color:#f92672>&#34;KeyName&#34;</span>: <span style=color:#e6db74>&#34;my-key-1&#34;</span>,
+                    <span style=color:#f92672>&#34;LaunchTime&#34;</span>: <span style=color:#e6db74>&#34;2021-10-11T14:33:16+00:00&#34;</span>,
+                    <span style=color:#f92672>&#34;Monitoring&#34;</span>: {
+                        <span style=color:#f92672>&#34;State&#34;</span>: <span style=color:#e6db74>&#34;disabled&#34;</span>
+                    },
+                    <span style=color:#f92672>&#34;Placement&#34;</span>: {
+                        <span style=color:#f92672>&#34;AvailabilityZone&#34;</span>: <span style=color:#e6db74>&#34;ap-northeast-2c&#34;</span>,
+                        <span style=color:#f92672>&#34;GroupName&#34;</span>: <span style=color:#e6db74>&#34;&#34;</span>,
+                        <span style=color:#f92672>&#34;Tenancy&#34;</span>: <span style=color:#e6db74>&#34;default&#34;</span>
+                    },
+                    <span style=color:#f92672>&#34;PrivateDnsName&#34;</span>: <span style=color:#e6db74>&#34;ip-172-31-36-48.ap-northeast-2.compute.internal&#34;</span>,
+                    <span style=color:#f92672>&#34;PrivateIpAddress&#34;</span>: <span style=color:#e6db74>&#34;172.31.36.48&#34;</span>,
+                    <span style=color:#f92672>&#34;ProductCodes&#34;</span>: [
+                        {
+                            <span style=color:#f92672>&#34;ProductCodeId&#34;</span>: <span style=color:#e6db74>&#34;aw0evgkw8e5c1q413zgy5pjce&#34;</span>,
+                            <span style=color:#f92672>&#34;ProductCodeType&#34;</span>: <span style=color:#e6db74>&#34;marketplace&#34;</span>
+                        }
+                    ],
+                    <span style=color:#f92672>&#34;PublicDnsName&#34;</span>: <span style=color:#e6db74>&#34;ec2-3-35-9-186.ap-northeast-2.compute.amazonaws.com&#34;</span>,
+                    <span style=color:#f92672>&#34;PublicIpAddress&#34;</span>: <span style=color:#e6db74>&#34;3.35.9.186&#34;</span>,
+                    <span style=color:#f92672>&#34;State&#34;</span>: {
+                        <span style=color:#f92672>&#34;Code&#34;</span>: <span style=color:#ae81ff>16</span>,
+                        <span style=color:#f92672>&#34;Name&#34;</span>: <span style=color:#e6db74>&#34;running&#34;</span>
+                    },
+                    <span style=color:#f92672>&#34;StateTransitionReason&#34;</span>: <span style=color:#e6db74>&#34;&#34;</span>,
+                    <span style=color:#f92672>&#34;SubnetId&#34;</span>: <span style=color:#e6db74>&#34;subnet-11111111&#34;</span>,
+                    <span style=color:#f92672>&#34;VpcId&#34;</span>: <span style=color:#e6db74>&#34;vpc-11111111&#34;</span>,
+                    <span style=color:#f92672>&#34;Architecture&#34;</span>: <span style=color:#e6db74>&#34;x86_64&#34;</span>,
+                    <span style=color:#f92672>&#34;BlockDeviceMappings&#34;</span>: [
+                        {
+                            <span style=color:#f92672>&#34;DeviceName&#34;</span>: <span style=color:#e6db74>&#34;/dev/sda1&#34;</span>,
+                            <span style=color:#f92672>&#34;Ebs&#34;</span>: {
+                                <span style=color:#f92672>&#34;AttachTime&#34;</span>: <span style=color:#e6db74>&#34;2021-10-11T14:33:17+00:00&#34;</span>,
+                                <span style=color:#f92672>&#34;DeleteOnTermination&#34;</span>: <span style=color:#66d9ef>true</span>,
+                                <span style=color:#f92672>&#34;Status&#34;</span>: <span style=color:#e6db74>&#34;attached&#34;</span>,
+                                <span style=color:#f92672>&#34;VolumeId&#34;</span>: <span style=color:#e6db74>&#34;vol-11111111111111111&#34;</span>
+                            }
+                        }
+                    ],
+                    <span style=color:#f92672>&#34;ClientToken&#34;</span>: <span style=color:#e6db74>&#34;11111111-1111-1111-1111-111111111111&#34;</span>,
+                    <span style=color:#f92672>&#34;EbsOptimized&#34;</span>: <span style=color:#66d9ef>false</span>,
+                    <span style=color:#f92672>&#34;EnaSupport&#34;</span>: <span style=color:#66d9ef>true</span>,
+                    <span style=color:#f92672>&#34;Hypervisor&#34;</span>: <span style=color:#e6db74>&#34;xen&#34;</span>,
+                    <span style=color:#f92672>&#34;NetworkInterfaces&#34;</span>: [
+                        {
+                            <span style=color:#f92672>&#34;Association&#34;</span>: {
+                                <span style=color:#f92672>&#34;IpOwnerId&#34;</span>: <span style=color:#e6db74>&#34;amazon&#34;</span>,
+                                <span style=color:#f92672>&#34;PublicDnsName&#34;</span>: <span style=color:#e6db74>&#34;ec2-3-35-9-186.ap-northeast-2.compute.amazonaws.com&#34;</span>,
+                                <span style=color:#f92672>&#34;PublicIp&#34;</span>: <span style=color:#e6db74>&#34;3.35.9.186&#34;</span>
+                            },
+                            <span style=color:#f92672>&#34;Attachment&#34;</span>: {
+                                <span style=color:#f92672>&#34;AttachTime&#34;</span>: <span style=color:#e6db74>&#34;2021-10-11T14:33:16+00:00&#34;</span>,
+                                <span style=color:#f92672>&#34;AttachmentId&#34;</span>: <span style=color:#e6db74>&#34;eni-attach-0d6ec68abde7b0739&#34;</span>,
+                                <span style=color:#f92672>&#34;DeleteOnTermination&#34;</span>: <span style=color:#66d9ef>true</span>,
+                                <span style=color:#f92672>&#34;DeviceIndex&#34;</span>: <span style=color:#ae81ff>0</span>,
+                                <span style=color:#f92672>&#34;Status&#34;</span>: <span style=color:#e6db74>&#34;attached&#34;</span>,
+                                <span style=color:#f92672>&#34;NetworkCardIndex&#34;</span>: <span style=color:#ae81ff>0</span>
+                            },
+                            <span style=color:#f92672>&#34;Description&#34;</span>: <span style=color:#e6db74>&#34;&#34;</span>,
+                            <span style=color:#f92672>&#34;Groups&#34;</span>: [
+                                {
+                                    <span style=color:#f92672>&#34;GroupName&#34;</span>: <span style=color:#e6db74>&#34;default&#34;</span>,
+                                    <span style=color:#f92672>&#34;GroupId&#34;</span>: <span style=color:#e6db74>&#34;sg-11111111&#34;</span>
+                                }
+                            ],
+                            <span style=color:#f92672>&#34;Ipv6Addresses&#34;</span>: [],
+                            <span style=color:#f92672>&#34;MacAddress&#34;</span>: <span style=color:#e6db74>&#34;0a:2c:b4:1c:2c:e2&#34;</span>,
+                            <span style=color:#f92672>&#34;NetworkInterfaceId&#34;</span>: <span style=color:#e6db74>&#34;eni-11111111111111111&#34;</span>,
+                            <span style=color:#f92672>&#34;OwnerId&#34;</span>: <span style=color:#e6db74>&#34;111111111111&#34;</span>,
+                            <span style=color:#f92672>&#34;PrivateDnsName&#34;</span>: <span style=color:#e6db74>&#34;ip-172-31-36-48.ap-northeast-2.compute.internal&#34;</span>,
+                            <span style=color:#f92672>&#34;PrivateIpAddress&#34;</span>: <span style=color:#e6db74>&#34;172.31.36.48&#34;</span>,
+                            <span style=color:#f92672>&#34;PrivateIpAddresses&#34;</span>: [
+                                {
+                                    <span style=color:#f92672>&#34;Association&#34;</span>: {
+                                        <span style=color:#f92672>&#34;IpOwnerId&#34;</span>: <span style=color:#e6db74>&#34;amazon&#34;</span>,
+                                        <span style=color:#f92672>&#34;PublicDnsName&#34;</span>: <span style=color:#e6db74>&#34;ec2-3-35-9-186.ap-northeast-2.compute.amazonaws.com&#34;</span>,
+                                        <span style=color:#f92672>&#34;PublicIp&#34;</span>: <span style=color:#e6db74>&#34;3.35.9.186&#34;</span>
+                                    },
+                                    <span style=color:#f92672>&#34;Primary&#34;</span>: <span style=color:#66d9ef>true</span>,
+                                    <span style=color:#f92672>&#34;PrivateDnsName&#34;</span>: <span style=color:#e6db74>&#34;ip-172-31-36-48.ap-northeast-2.compute.internal&#34;</span>,
+                                    <span style=color:#f92672>&#34;PrivateIpAddress&#34;</span>: <span style=color:#e6db74>&#34;172.31.36.48&#34;</span>
+                                }
+                            ],
+                            <span style=color:#f92672>&#34;SourceDestCheck&#34;</span>: <span style=color:#66d9ef>true</span>,
+                            <span style=color:#f92672>&#34;Status&#34;</span>: <span style=color:#e6db74>&#34;in-use&#34;</span>,
+                            <span style=color:#f92672>&#34;SubnetId&#34;</span>: <span style=color:#e6db74>&#34;subnet-11111111&#34;</span>,
+                            <span style=color:#f92672>&#34;VpcId&#34;</span>: <span style=color:#e6db74>&#34;vpc-11111111&#34;</span>,
+                            <span style=color:#f92672>&#34;InterfaceType&#34;</span>: <span style=color:#e6db74>&#34;interface&#34;</span>
+                        }
+                    ],
+                    <span style=color:#f92672>&#34;RootDeviceName&#34;</span>: <span style=color:#e6db74>&#34;/dev/sda1&#34;</span>,
+                    <span style=color:#f92672>&#34;RootDeviceType&#34;</span>: <span style=color:#e6db74>&#34;ebs&#34;</span>,
+                    <span style=color:#f92672>&#34;SecurityGroups&#34;</span>: [
+                        {
+                            <span style=color:#f92672>&#34;GroupName&#34;</span>: <span style=color:#e6db74>&#34;default&#34;</span>,
+                            <span style=color:#f92672>&#34;GroupId&#34;</span>: <span style=color:#e6db74>&#34;sg-11111111&#34;</span>
+                        }
+                    ],
+                    <span style=color:#f92672>&#34;SourceDestCheck&#34;</span>: <span style=color:#66d9ef>true</span>,
+                    <span style=color:#f92672>&#34;Tags&#34;</span>: [
+                        {
+                            <span style=color:#f92672>&#34;Key&#34;</span>: <span style=color:#e6db74>&#34;Name&#34;</span>,
+                            <span style=color:#f92672>&#34;Value&#34;</span>: <span style=color:#e6db74>&#34;my-test-ec2-1&#34;</span>
+                        }
+                    ],
+                    <span style=color:#f92672>&#34;VirtualizationType&#34;</span>: <span style=color:#e6db74>&#34;hvm&#34;</span>,
+                    <span style=color:#f92672>&#34;CpuOptions&#34;</span>: {
+                        <span style=color:#f92672>&#34;CoreCount&#34;</span>: <span style=color:#ae81ff>1</span>,
+                        <span style=color:#f92672>&#34;ThreadsPerCore&#34;</span>: <span style=color:#ae81ff>2</span>
+                    },
+                    <span style=color:#f92672>&#34;CapacityReservationSpecification&#34;</span>: {
+                        <span style=color:#f92672>&#34;CapacityReservationPreference&#34;</span>: <span style=color:#e6db74>&#34;open&#34;</span>
+                    },
+                    <span style=color:#f92672>&#34;HibernationOptions&#34;</span>: {
+                        <span style=color:#f92672>&#34;Configured&#34;</span>: <span style=color:#66d9ef>false</span>
+                    },
+                    <span style=color:#f92672>&#34;MetadataOptions&#34;</span>: {
+                        <span style=color:#f92672>&#34;State&#34;</span>: <span style=color:#e6db74>&#34;applied&#34;</span>,
+                        <span style=color:#f92672>&#34;HttpTokens&#34;</span>: <span style=color:#e6db74>&#34;optional&#34;</span>,
+                        <span style=color:#f92672>&#34;HttpPutResponseHopLimit&#34;</span>: <span style=color:#ae81ff>1</span>,
+                        <span style=color:#f92672>&#34;HttpEndpoint&#34;</span>: <span style=color:#e6db74>&#34;enabled&#34;</span>
+                    },
+                    <span style=color:#f92672>&#34;EnclaveOptions&#34;</span>: {
+                        <span style=color:#f92672>&#34;Enabled&#34;</span>: <span style=color:#66d9ef>false</span>
+                    }
+                }
+            ],
+            <span style=color:#f92672>&#34;OwnerId&#34;</span>: <span style=color:#e6db74>&#34;111111111111&#34;</span>,
+            <span style=color:#f92672>&#34;ReservationId&#34;</span>: <span style=color:#e6db74>&#34;r-11111111111111111&#34;</span>
+        }
+    ]
+}
+</code></pre></div><blockquote>
+<p>이 정보를 적어둘 필요는 없다. 언제든 다시 조회 가능하다. (<a href=#aws-cli-ec2-list>여기 참조</a>)</p>
+</blockquote>
+<p>여기서 지금 우리에게 필요한 값이 몇 가지 있다. 우선 EC2의 Public IP가 필요하다. IP를 알아야 접속을 할 수 있기 때문이다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>&#34;PublicIpAddress&#34;: &#34;3.35.16.146&#34;
+</code></pre></div><p>이제 해당 IP로 접속해보자.</p>
+<ul>
+<li>IP : 3.35.9.186</li>
+<li>계정명 : centos
+<ul>
+<li>CentOS AMI의 기본 계정은 <code>centos</code>이다.</li>
+<li>AMI마다 기본 계정이 다르기 때문에 다른 AMI를 사용한다면 AMI 상세 설명 페이지를 잘 살펴보자.</li>
+</ul>
+</li>
+<li>key 파일 : my-key-1.pem
+<ul>
+<li>위에서도 언급했지만, CentOS AMI는 ID/Password 접속을 허용하지 않기 때문에 EC2 생성 시 사용했던 key pair파일을 이용하여 접속해야 한다.</li>
+<li>혹시 처음 보는 느낌이 든다면 <a href=#key-pair-creation>이 부분</a>을 다시 읽어보자.</li>
+</ul>
+</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ ssh -i my-key-1.pem centos@3.35.9.186
+</code></pre></div><p>접속이 안된다. 왜일까?</p>
+<h2 id=security-group>Security Group</h2>
+<p>우리가 생성한 EC2는 Public IP를 갖고 있다. Public IP, 즉 전 세계 어디서든 인터넷만 되면 접속할 수 있다는 얘기다.
+악의적인 목적을 가진 누군가가 서버에 접속할 수는 없지만(key pair파일이 없기때문에), 접속하지 않고도 서버를 비정상적으로 만들수는 있다. (ex: DDos 공격 )
+때문에 AWS에서도 기본적으로 모든 접속이 차단되어 있다. 이 설정을 조금 수정해야 접속할 수 있다.</p>
+<p>EC2 생성 응답을 다시 한번 살펴보자. <code>SecurityGroups</code> 부분이 우리가 필요한 정보다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{ <span style=color:#f92672>&#34;SecurityGroups&#34;</span>: [
+        {
+            <span style=color:#f92672>&#34;GroupName&#34;</span>: <span style=color:#e6db74>&#34;default&#34;</span>,
+            <span style=color:#f92672>&#34;GroupId&#34;</span>: <span style=color:#e6db74>&#34;sg-11111111&#34;</span>
+        }
+]}
+</code></pre></div><p>AWS에서는 Security Group이라는 방화벽 설정이 존재한다. EC2 생성 시 Security Group을 설정하지 않으면 <code>default</code> Security Group이 적용된다.
+<code>default</code> Security Group은 아무런 설정도 되어 있지 않기 때문에 모든 네트워크 트래픽이 차단된다. 아래 명령어로 확인해보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 describe-security-groups --group-ids sg-11111111
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;SecurityGroups&#34;</span>: [
+        {
+            <span style=color:#f92672>&#34;Description&#34;</span>: <span style=color:#e6db74>&#34;default VPC security group&#34;</span>,
+            <span style=color:#f92672>&#34;GroupName&#34;</span>: <span style=color:#e6db74>&#34;default&#34;</span>,
+            <span style=color:#f92672>&#34;IpPermissions&#34;</span>: [
+                {
+                    <span style=color:#f92672>&#34;IpProtocol&#34;</span>: <span style=color:#e6db74>&#34;-1&#34;</span>,
+                    <span style=color:#f92672>&#34;IpRanges&#34;</span>: [],
+                    <span style=color:#f92672>&#34;Ipv6Ranges&#34;</span>: [],
+                    <span style=color:#f92672>&#34;PrefixListIds&#34;</span>: [],
+                    <span style=color:#f92672>&#34;UserIdGroupPairs&#34;</span>: [
+                        {
+                            <span style=color:#f92672>&#34;GroupId&#34;</span>: <span style=color:#e6db74>&#34;sg-11111111&#34;</span>,
+                            <span style=color:#f92672>&#34;UserId&#34;</span>: <span style=color:#e6db74>&#34;111111111111&#34;</span>
+                        }
+                    ]
+                }
+            ],
+            <span style=color:#f92672>&#34;OwnerId&#34;</span>: <span style=color:#e6db74>&#34;111111111111&#34;</span>,
+            <span style=color:#f92672>&#34;GroupId&#34;</span>: <span style=color:#e6db74>&#34;sg-11111111&#34;</span>,
+            <span style=color:#f92672>&#34;IpPermissionsEgress&#34;</span>: [
+                {
+                    <span style=color:#f92672>&#34;IpProtocol&#34;</span>: <span style=color:#e6db74>&#34;-1&#34;</span>,
+                    <span style=color:#f92672>&#34;IpRanges&#34;</span>: [
+                        {
+                            <span style=color:#f92672>&#34;CidrIp&#34;</span>: <span style=color:#e6db74>&#34;0.0.0.0/0&#34;</span>
+                        }
+                    ],
+                    <span style=color:#f92672>&#34;Ipv6Ranges&#34;</span>: [],
+                    <span style=color:#f92672>&#34;PrefixListIds&#34;</span>: [],
+                    <span style=color:#f92672>&#34;UserIdGroupPairs&#34;</span>: []
+                }
+            ],
+            <span style=color:#f92672>&#34;Tags&#34;</span>: [
+                {
+                    <span style=color:#f92672>&#34;Key&#34;</span>: <span style=color:#e6db74>&#34;Name&#34;</span>,
+                    <span style=color:#f92672>&#34;Value&#34;</span>: <span style=color:#e6db74>&#34;default&#34;</span>
+                }
+            ],
+            <span style=color:#f92672>&#34;VpcId&#34;</span>: <span style=color:#e6db74>&#34;vpc-11111111&#34;</span>
+        }
+    ]
+}
+</code></pre></div><p>자, 여기서 선택지는 2가지다.</p>
+<ol>
+<li><code>default</code> Security Group에 22번 포트(ssh 접속 시 사용하는) open</li>
+<li>새 Security Group 생성 후 EC2에 attach</li>
+</ol>
+<p><code>1.</code> 방법은 권장하지 않는다.
+이유는 위에도 설명했듯이 Security Group을 설정하지 않고 EC2를 생성하면 <code>default</code> Security Group이 자동으로 적용되기 때문이다.
+즉, 잘못하다간 의도치 않게 모든 EC2의 22번 포트를 open하게 된다. (<code>의도치 않게</code>가 포인트다.)</p>
+<p>좀 더 강력한 보안을 유지하기 위해 아래 2가지를 명심하자.</p>
+<ul>
+<li>명확하게 권한을 설정한다. 묵시적인 설정은 하지 않는다.</li>
+<li>필요한 권한만 설정한다.</li>
+</ul>
+<p>EC2는 여러 개의 Security Group을 적용할 수 있기 때문에 ssh 접속을 위한 Security Group을 생성한 후 EC2에 attach하자.</p>
+<p>Security Group을 생성하기 위해서는 EC2의 <code>VPC</code> ID를 알아야 한다.
+<code>VPC</code>란 Virtual Private Cloud의 약자로 네트워크에서 나만의 영역을 정의한다고 이해하자. 일단 지금은 이정도만 알고 넘어가자.
+VPC ID 또한 EC2 상세 정보에 포함되어 있다. 가장 하단에 <code>VpcId</code> 부분이 우리가 필요한 정보다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>aws ec2 create-security-group <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        --group-name ssh-from-anywhere <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        --description <span style=color:#e6db74>&#34;ssh-from-anywhere&#34;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        --vpc-id vpc-11111111
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;GroupId&#34;</span>: <span style=color:#e6db74>&#34;sg-22222222222222222&#34;</span>
+}
+</code></pre></div><p>생성된 Security Group의 22번 포트를 open 하자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 authorize-security-group-ingress <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        --group-id sg-22222222222222222 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        --protocol tcp --port <span style=color:#ae81ff>22</span> --cidr 0.0.0.0/0
+</code></pre></div><p>그리고 해당 Security Group을 EC2에 attach 하자.
+단, 주의할 점은 아래 명령어 실행 시 Security Group을 추가하는게 아니라 기존 Security Group 설정을 덮어써버리므로
+기존에 적용되어 있던 Security Group ID도 같이 명시해줘야 한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 modify-instance-attribute <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        --instance-id i-11111111111111111 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        --groups sg-11111111 sg-22222222222222222
+</code></pre></div><p>그리고 다시 접속 시도를 하면 정상적으로 접속되는 것을 확인할 수 있다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ ssh -i my-key-1.pem centos@3.35.9.186
+</code></pre></div><h2 id=마치며>마치며</h2>
+<p>CLI는 명령어가 매우 많고 복잡하기 때문에 절대 외우려 해서는 안된다. 대신, 반복적인 작업을 좀 더 간편하게 (혹은 자동으로) 하기 위해 활용하는 것을 추천한다.</p>
+<p>이 글에서는 매우 기본적인 EC2 생성 옵션에 대해서만 다뤘는데, EC2 생성 옵션은 상당히 많은 편이다.
+그 옵션을 모두 알 필요는 없다. 필요할 때 찾아서 사용할 수만 있으면 된다. 그러기 위해서는 큰 그림과 개념(EC2에 대한)에 대한 이해가 먼저다.</p>
+<p>AWS 서비스는 결국 기존에 우리가 물리적인 서버를 구입해서 해왔던 대부분의 일을 AWS에서 처리해주고, 꼭 필요한 부분만 사용자에게 오픈하는 컨셉이라고 생각하면 좀 더 이해하기 쉽다.
+EC2는 AWS 서비스 중 상당히 많은 부분을 사용자에게 오픈한 편이고, <code>Lambda</code>와 같은 서비스는 EC2 생성과 관리 또한 AWS에서 알아서 하기 때문에 사용자는 프로그램 소스 코드만 AWS에 업로드 하는 방식의 서비스인 식이다.</p>
+<h2 id=aws-cli-ec2-cheat-sheet>AWS CLI EC2 Cheat sheet</h2>
+<h3 id=aws-cli-ec2-list>EC2 목록 확인</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 describe-instances --output table <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --query <span style=color:#e6db74>&#39;Reservations[].Instances[].[Tags[?Key==`Name`].Value|[0],InstanceId,InstanceType,State.Name,VpcId,PrivateIpAddress,PublicIpAddress,Placement.AvailabilityZone,KeyName]&#39;</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>--------------------------------------------------------------------------------------------------------------------------------------------
+|                                                    DescribeInstances                                                                     |
++--------+----------------------+--------------+----------+---------------+----------------+--------------+-------------------+------------+
+|  None  |  i-11111111111111111 |  t3a.nano    |  running |  vpc-11111111 |  172.31.37.68  |  3.35.16.146 |  ap-northeast-2c  |  my-key-1  |
++--------+----------------------+--------------+----------+---------------+----------------+--------------+-------------------+------------+
+</code></pre></div><h3 id=aws-cli-ec2-detail>EC2 상세 정보 확인</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 describe-instances --instance-ids i-11111111111111111
+</code></pre></div><h3 id=aws-cli-ec2-creation>EC2 생성</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 run-instances <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --image-id ami-06e83aceba2cb0907 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --instance-type t3a.nano <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --block-device-mappings <span style=color:#e6db74>&#39;DeviceName=/dev/sda1,Ebs={DeleteOnTermination=true,VolumeSize=30,VolumeType=gp3}&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --key-name my-key-1 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --tag-specifications <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>             <span style=color:#e6db74>&#39;ResourceType=instance,Tags=[{Key=Name,Value=my-test-ec2-1}]&#39;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>             <span style=color:#e6db74>&#39;ResourceType=volume,Tags=[{Key=Name,Value=my-test-ec2-1}]&#39;</span>
+</code></pre></div><h3 id=ec2-tag-생성>EC2 Tag 생성</h3>
+<p>이미 생성되어 있는 EC2에 Tag를 추가하는 방법</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 create-tags <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --resources i-11111111111111111 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --tags Key<span style=color:#f92672>=</span>Name,Value<span style=color:#f92672>=</span>my-test-resource Key<span style=color:#f92672>=</span>Stage,Value<span style=color:#f92672>=</span>Production
+</code></pre></div><h3 id=key-pair-생성>Key Pair 생성</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 create-key-pair --key-name <span style=color:#e6db74>${</span>KEY_NAME<span style=color:#e6db74>}</span>
+</code></pre></div><h3 id=security-group-생성-및-포트-설정>Security Group 생성 및 포트 설정</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 create-security-group <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --group-name ssh-from-anywhere <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --description <span style=color:#e6db74>&#34;ssh-from-anywhere&#34;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --vpc-id vpc-11111111
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 authorize-security-group-ingress <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --group-id sg-22222222222222222 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --protocol tcp --port <span style=color:#ae81ff>22</span> --cidr 0.0.0.0/0
+</code></pre></div><h3 id=ec2-security-group-update>EC2 Security Group Update</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 create-tags <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --resources ami-1a2b3c4d i-1234567890abcdef0 <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>           --tags Key<span style=color:#f92672>=</span>webserver,Value<span style=color:#f92672>=</span>   Key<span style=color:#f92672>=</span>stack,Value<span style=color:#f92672>=</span>Production
+</code></pre></div><h3 id=security-group-삭제>Security Group 삭제</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ aws ec2 delete-security-group --group-id <span style=color:#e6db74>${</span>SECURITY_GROUP_ID<span style=color:#e6db74>}</span>
+</code></pre></div>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/aws-cli-configure/>AWS CLI 설치 및 기본 설정 방법</a>
+</div>
+<div class="column has-text-right">
+<p>Next post</p>
+<a href=/posts/how-are-images-stored-and-displayed-on-a-computer/>컴퓨터는 이미지를 어떻게 저장하고 표현할까?</a>
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#ec2-란>EC2 란?</a></li>
+<li><a href=#사용할-os-결정>사용할 OS 결정</a>
+<ul>
+<li><a href=#cli로-검색하기>CLI로 검색하기</a></li>
+<li><a href=#aws-market-place-에서-검색하기>AWS Market Place 에서 검색하기</a>
+<ul>
+<li><a href=#ami-검색-결과에-대해-알아둘-점>AMI 검색 결과에 대해 알아둘 점</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href=#사용할-machine-spec-결정>사용할 Machine Spec 결정</a>
+<ul>
+<li><a href=#cpumemorygpunetwork>CPU/Memory/GPU/Network</a></li>
+<li><a href=#ebs>Disk</a></li>
+</ul>
+</li>
+<li><a href=#ssh-접속-설정>ssh 접속 설정</a>
+<ul>
+<li><a href=#key-pair-creation>Key pair 생성</a></li>
+<li><a href=#key-pair-조회>Key pair 조회</a></li>
+</ul>
+</li>
+<li><a href=#machine-구입-및-부팅>Machine 구입 및 부팅</a></li>
+<li><a href=#security-group>Security Group</a></li>
+<li><a href=#마치며>마치며</a></li>
+<li><a href=#aws-cli-ec2-cheat-sheet>AWS CLI EC2 Cheat sheet</a>
+<ul>
+<li><a href=#aws-cli-ec2-list>EC2 목록 확인</a></li>
+<li><a href=#aws-cli-ec2-detail>EC2 상세 정보 확인</a></li>
+<li><a href=#aws-cli-ec2-creation>EC2 생성</a></li>
+<li><a href=#ec2-tag-생성>EC2 Tag 생성</a></li>
+<li><a href=#key-pair-생성>Key Pair 생성</a></li>
+<li><a href=#security-group-생성-및-포트-설정>Security Group 생성 및 포트 설정</a></li>
+<li><a href=#ec2-security-group-update>EC2 Security Group Update</a></li>
+<li><a href=#security-group-삭제>Security Group 삭제</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/aws-cli-configure/>AWS CLI 설치 및 기본 설정 방법</a></h1>
+<time class="has-text-grey-light is-size-7">19 September 2021</time>
+<h1><a href=https://hsyang.net/posts/python-google-spreadsheets/>[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기</a></h1>
+<time class="has-text-grey-light is-size-7">17 August 2021</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>자주 쓰는 - git branch 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2021 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>

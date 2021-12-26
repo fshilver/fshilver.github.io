@@ -1,0 +1,407 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>[Python] Requests 라이브러리의 Connection Timeout에 관하여 | 메모장</title>
+<meta name=description content="Python Requests 라이브러리의 Connection Timeout은 당신이 생각하는 Connection Timeout이 아니다.">
+<link rel=canonical href=https://hsyang.net/posts/python-requests-library-timeout/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="[Python] Requests 라이브러리의 Connection Timeout에 관하여">
+<meta property="og:description" content="Python Requests 라이브러리의 Connection Timeout은 당신이 생각하는 Connection Timeout이 아니다.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/python-requests-library-timeout/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-08-28T21:26:04+09:00">
+<meta property="article:modified_time" content="2021-09-26T14:50:44+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="[Python] Requests 라이브러리의 Connection Timeout에 관하여">
+<meta name=twitter:description content="Python Requests 라이브러리의 Connection Timeout은 당신이 생각하는 Connection Timeout이 아니다.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>August 28, 2021</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">[Python] Requests 라이브러리의 Connection Timeout에 관하여</h1>
+<div class="content mt-6">
+<h2 id=내가-겪은-이야기>내가 겪은 이야기</h2>
+<p>실무에서 <code>Requests</code> 라이브러리는 꽤 자주 사용하는 편인데 얼마전 겪었던 다소 황당했던(?) 일을 얘기해보려 한다.</p>
+<p>Production 환경에서는 네트워크 통신 시 항상 Timeout 관리를 해줘야 한다.
+인터넷이라는 공간은 꽤나 불안정한 곳이기에 Client가 보낸 요청을 Server에서 못받을 수도 있고 반대로 Server에서 응답한 내용을 Client가 못 받는 경우도 있다.
+때문에 항상 네트워크 통신 로직이 포함될 때는 너무 오랫동안 응답을 기다리다가 의도치 않게 전체 로직에 영향이 가지 않도록 적절한 Timeout 설정은 필수라 할 수 있다.</p>
+<p>Requests 라이브러리에서도 Timeout 설정을 지원하고 있는데 관련 내용을 살펴보면 아래와 같다.</p>
+<p><a href=https://docs.python-requests.org/en/master/user/advanced/#timeouts>https://docs.python-requests.org/en/master/user/advanced/#timeouts</a></p>
+<blockquote>
+<p>Most requests to external servers should have a timeout attached, in case the server is not responding in a timely manner. <strong>By default, requests do not time out unless a timeout value is set explicitly.</strong> Without a timeout, your code may hang for minutes or more.</p>
+</blockquote>
+<p>Timeout을 직접 설정 하지 않으면 time out이 발생하지 않는다고 한다. 이런 중요한 내용을 눈에 잘 띄게 해놓으면 더 좋았을 것이라는 아쉬움이 좀 남지만&mldr; 아무튼. 좀 더 내용을 살펴보면</p>
+<blockquote>
+<p>The <code>connect timeout</code> is the number of seconds Requests will wait for your client to establish a connection to a remote machine (corresponding to the connect()) call on the socket.
+Once your client has connected to the server and sent the HTTP request, the <code>read timeout</code> is the number of seconds the client will wait for the server to send a response. (Specifically, it’s the number of seconds that the client will wait between bytes sent from the server. In 99.9% of cases, this is the time before the server sends the first byte).</p>
+</blockquote>
+<p><code>connect timeout</code> 과 <code>read timeout</code> 을 설정할 수 있다고 한다. 설정 방법은 아래와 같다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#75715e># connect timeout 과 read timeout 둘 다 5초로 설정된다.</span>
+r <span style=color:#f92672>=</span> requests<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;https://github.com&#39;</span>, timeout<span style=color:#f92672>=</span><span style=color:#ae81ff>5</span>)
+
+<span style=color:#75715e># connect timeout 3.05초, read timeout 27로 각각 설정도 가능하다.</span>
+r <span style=color:#f92672>=</span> requests<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;https://github.com&#39;</span>, timeout<span style=color:#f92672>=</span>(<span style=color:#ae81ff>3.05</span>, <span style=color:#ae81ff>27</span>))
+</code></pre></div><p>connect timeout은 3초, read timeout은 50초 설정한 뒤 <strong>파일을 업로드</strong>하는 코드를 실행했는데 결과는&mldr;?(업로드 시 3초 이상 소요되는 파일 크기)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#75715e># client.py</span>
+<span style=color:#f92672>import</span> sys
+<span style=color:#f92672>import</span> requests
+
+url <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;http://10.120.1.111/&#39;</span>
+
+file <span style=color:#f92672>=</span> open(sys<span style=color:#f92672>.</span>argv[<span style=color:#ae81ff>1</span>], <span style=color:#e6db74>&#39;rb&#39;</span>)
+resp <span style=color:#f92672>=</span> requests<span style=color:#f92672>.</span>post(url, files<span style=color:#f92672>=</span>{<span style=color:#e6db74>&#39;file&#39;</span>: file}, timeout<span style=color:#f92672>=</span>(<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>50</span>))
+print(resp)
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ python3 client.py 100MB_file
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Traceback (most recent call last):
+...생략
+  File &#34;/Users/hsyang/.pyenv/versions/3.6.7/lib/python3.6/http/client.py&#34;, line 1065, in _send_output
+    self.send(chunk)
+  File &#34;/Users/hsyang/.pyenv/versions/3.6.7/lib/python3.6/http/client.py&#34;, line 986, in send
+    self.sock.sendall(data)
+socket.timeout: timed out
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+...생략
+  File &#34;/Users/hsyang/.pyenv/versions/3.6.7/lib/python3.6/http/client.py&#34;, line 1065, in _send_output
+    self.send(chunk)
+  File &#34;/Users/hsyang/.pyenv/versions/3.6.7/lib/python3.6/http/client.py&#34;, line 986, in send
+    self.sock.sendall(data)
+urllib3.exceptions.ProtocolError: (&#39;Connection aborted.&#39;, timeout(&#39;timed out&#39;,))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File &#34;client.py&#34;, line 6, in &lt;module&gt;
+    resp = requests.post(url, files={&#39;file&#39;: file}, timeout=(3, 50))
+...생략
+  File &#34;/Users/hsyang/.pyenv/versions/test/lib/python3.6/site-packages/requests/adapters.py&#34;, line 498, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: (&#39;Connection aborted.&#39;, timeout(&#39;timed out&#39;,))
+</code></pre></div><p>Connection aborted !?!?</p>
+<p>연결이 강제로 끊긴다. 아니 이게 무슨 상황이지&mldr;? Connection timeout에 대한 정의를 내가 잘못 알고 있는건가?</p>
+<h2 id=connection-timeout>Connection Timeout</h2>
+<p>Requests 라이브러리는 HTTP 요청(Client)을 위해 사용한다.
+HTTP는 TCP 기반에서 구현되는데 TCP는 그 특성상 Connection을 먼저 맺은 후 데이터를 주고받는다.
+Connection을 맺는 과정은, 아마 한번 쯤은 들어봤을 <code>Three-way-handshaking</code> 과정을 거친다.</p>
+<p><img src=tcp-three-way-handshaking.png alt="TCP Three-way-handshaking"></p>
+<p>보통 Connection Timeout 이라 함은 위 과정이 설정한 시간 안에 이뤄지지 않을 때 발생하는 것이라고 할 수 있다.</p>
+<h3 id=connection-timeout-재현-테스트>Connection Timeout 재현 테스트</h3>
+<p>우선 위 과정을 실제 눈으로 확인해보기 위해 간단한 Python http 서버 코드와 <code>telnet</code>, <code>tcpdump</code> 명령어를 활용해보자.</p>
+<blockquote>
+<p>tcpdump 명령어 활용법은 <a href=/posts/tcpdump/>이 글</a>을 참고하자.</p>
+</blockquote>
+<p>먼저 원격 Server 1대에 Python3 설치를 한 후 아래 코드를 작성하자.</p>
+<ul>
+<li>
+<p>server.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#75715e># server.py</span>
+<span style=color:#f92672>from</span> http.server <span style=color:#f92672>import</span> HTTPServer, BaseHTTPRequestHandler
+<span style=color:#f92672>from</span> http <span style=color:#f92672>import</span> HTTPStatus
+
+<span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MyHandler</span>(BaseHTTPRequestHandler):
+
+    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>do_POST</span>(self):
+        content_length <span style=color:#f92672>=</span> int(self<span style=color:#f92672>.</span>headers[<span style=color:#e6db74>&#39;Content-Length&#39;</span>])
+        read <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+        buf <span style=color:#f92672>=</span> bytearray()
+        <span style=color:#66d9ef>while</span> read <span style=color:#f92672>&lt;</span> content_length:
+            data <span style=color:#f92672>=</span> self<span style=color:#f92672>.</span>rfile<span style=color:#f92672>.</span>read(min(<span style=color:#ae81ff>65536</span>, content_length <span style=color:#f92672>-</span> read))
+            read_bytes <span style=color:#f92672>=</span> len(data)
+            print(<span style=color:#e6db74>f</span><span style=color:#e6db74>&#34;read </span><span style=color:#e6db74>{</span>read_bytes<span style=color:#e6db74>}</span><span style=color:#e6db74> bytes&#34;</span>)
+            read <span style=color:#f92672>+=</span> read_bytes
+            buf <span style=color:#f92672>+=</span> bytearray(data)
+
+        print(<span style=color:#e6db74>f</span><span style=color:#e6db74>&#34;read complete. </span><span style=color:#e6db74>{</span>len(buf)<span style=color:#e6db74>}</span><span style=color:#e6db74> bytes are read&#34;</span>)
+
+        self<span style=color:#f92672>.</span>send_response_only(HTTPStatus<span style=color:#f92672>.</span>CREATED)
+        self<span style=color:#f92672>.</span>end_headers()
+
+
+<span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+    server <span style=color:#f92672>=</span> HTTPServer((<span style=color:#e6db74>&#39;0.0.0.0&#39;</span>, <span style=color:#ae81ff>80</span>), MyHandler)
+    <span style=color:#66d9ef>try</span>:
+        server<span style=color:#f92672>.</span>serve_forever()
+    <span style=color:#66d9ef>except</span> <span style=color:#a6e22e>Exception</span> <span style=color:#66d9ef>as</span> e:
+        print(e)
+    server<span style=color:#f92672>.</span>server_close()
+</code></pre></div></li>
+</ul>
+<p>그리고 실행하자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># Server</span>
+~$ sudo python3 server.py
+</code></pre></div><p>그 뒤 Server 터미널을 하나 더 연결해서 tcpdump를 실행하여 네트워크 패킷을 캡쳐하자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># Server</span>
+~$ sudo tcpdump -i ens192 -nn port <span style=color:#ae81ff>80</span>
+</code></pre></div><p>그리고 로컬 PC에서 telnet 명령어를 이용하여 연결을 해보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># telnet &lt;Server IP&gt; &lt;Server Port&gt;</span>
+~$ telnet 10.120.1.111 <span style=color:#ae81ff>80</span>
+</code></pre></div><p>그러면 서버에서 실행해두었던 tcpdump 터미널에서 아래와 같이 Three-way-handshaking 패킷 3개를 확인할 수 있다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>22:16:44.342994 IP 10.120.1.254.56869 &gt; 10.120.1.111.80: Flags [S], seq 3554504166, win 65535, options [mss 1314,nop,wscale 6,nop,nop,TS val 394584072 ecr 0,sackOK,eol], length 0
+22:16:44.343055 IP 10.120.1.111.80 &gt; 10.120.1.254.56869: Flags [S.], seq 2399293706, ack 3554504167, win 28960, options [mss 1460,sackOK,TS val 1076530274 ecr 394584072,nop,wscale 7], length 0
+22:16:44.347394 IP 10.120.1.254.56869 &gt; 10.120.1.111.80: Flags [.], ack 1, win 2054, options [nop,nop,TS val 394584077 ecr 1076530274], length 0
+</code></pre></div><p>위 패킷 내용을 설명하자면 아래와 같다.</p>
+<p><img src=tcpdump-2.png alt=tcpdump-2></p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>10.120.1.254 : 로컬 IP
+10.120.1.111 : 원격 Server IP
+
+Flags [S]  : SYN 패킷
+Flags [S.] : SYN+ACK 패킷
+Flags [.]  : ACK 패킷
+</code></pre></div><p>자, 여기서 Connection Timeout을 발생시켜보기 위해 <code>SYN+ACK</code> 패킷이 전송되지 않도록 해보자.</p>
+<p>방금 전 사용한 telnet client에는 Connection Timeout 설정이 없으므로 Timeout 설정이 가능한 Python Client 코드를 간단하게 작성해보자.</p>
+<ul>
+<li>
+<p>client.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#75715e># client.py</span>
+<span style=color:#f92672>import</span> sys
+<span style=color:#f92672>import</span> requests
+
+<span style=color:#75715e># server ip : 10.120.1.111</span>
+url <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;http://10.120.1.111/&#39;</span>
+
+<span style=color:#75715e># connection timeout 3 seconds</span>
+<span style=color:#75715e># read timeout 50 seconds</span>
+resp <span style=color:#f92672>=</span> requests<span style=color:#f92672>.</span>get(url, timeout<span style=color:#f92672>=</span>(<span style=color:#ae81ff>3</span>, <span style=color:#ae81ff>50</span>))
+print(resp)
+</code></pre></div></li>
+</ul>
+<p>Server 터미널을 하나 더 연결해서 iptables 명령어로 packet 전송을 막아보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># Server 에서 외부로 나가는 tcp 패킷 중 아래 정보와 일치하는 패킷은 drop 한다.</span>
+<span style=color:#75715e>#   - destination IP = 10.120.1.254 </span>
+<span style=color:#75715e>#   - source port number = 80</span>
+~$ sudo iptables -A OUTPUT -p tcp -d 10.120.1.254 --sport <span style=color:#ae81ff>80</span> -j DROP
+</code></pre></div><p><img src=tcpdump-drop.png alt="tcpdump drop"></p>
+<p>그리고 로컬에서 client.py 를 실행해 보면 3초 뒤 아래와 같은 예외가 발생한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ python3 client.py
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>생략...
+  File &#34;/Users/hsyang/.pyenv/versions/test/lib/python3.6/site-packages/urllib3/util/connection.py&#34;, line 70, in create_connection
+    sock.connect(sa)
+socket.timeout: timed out
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+...생략
+  File &#34;/Users/hsyang/.pyenv/versions/test/lib/python3.6/site-packages/urllib3/connection.py&#34;, line 164, in _new_conn
+    (self.host, self.timeout))
+urllib3.exceptions.ConnectTimeoutError: (&lt;urllib3.connection.HTTPConnection object at 0x10b3c4940&gt;, &#39;Connection to 10.120.1.111 timed out. (connect timeout=3)&#39;)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+...생략
+  File &#34;/Users/hsyang/.pyenv/versions/test/lib/python3.6/site-packages/urllib3/util/retry.py&#34;, line 398, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host=&#39;10.120.1.111&#39;, port=80): Max retries exceeded with url: / (Caused by ConnectTimeoutError(&lt;urllib3.connection.HTTPConnection object at 0x10b3c4940&gt;, &#39;Connection to 10.120.1.111 timed out. (connect timeout=3)&#39;))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File &#34;get-client.py&#34;, line 6, in &lt;module&gt;
+    resp = requests.get(url, timeout=(3, 50))
+...생략
+  File &#34;/Users/hsyang/.pyenv/versions/test/lib/python3.6/site-packages/requests/adapters.py&#34;, line 504, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPConnectionPool(host=&#39;10.120.1.111&#39;, port=80): Max retries exceeded with url: / (Caused by ConnectTimeoutError(&lt;urllib3.connection.HTTPConnection object at 0x10b3c4940&gt;, &#39;Connection to 10.120.1.111 timed out. (connect timeout=3)&#39;))
+</code></pre></div><p>이 때 Server의 tcpdump 캡쳐 내용에는 SYN 패킷만 출력됨을 확인할 수 있다.
+즉, SYN+ACK 패킷을 밖으로 내보내지 않았음을 확인할 수 있다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>22:49:55.624835 IP 10.120.1.254.57298 &gt; 10.120.1.111.80: Flags [S], seq 3098430240, win 65535, options [mss 1314,nop,wscale 6,nop,nop,TS val 1742337210 ecr 0,sackOK,eol], length 0
+</code></pre></div><p>Connection Timeout 재현 성공 !</p>
+<h2 id=파일-업로드-중-발생했던-예외와-connection-timeout-재현-테스트-시-발생한-예외-비교>파일 업로드 중 발생했던 예외와 Connection Timeout 재현 테스트 시 발생한 예외 비교</h2>
+<p>client.py 에서 발생한 예외 내용을 보면 글 초반부에 보았던 내용과는 약간 다름을 알 수 있다.</p>
+<ul>
+<li>
+<p>업로드 중 예외 발생 시</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>File &#34;/Users/hsyang/.pyenv/versions/test/lib/python3.6/site-packages/requests/adapters.py&#34;, line 498, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: (&#39;Connection aborted.&#39;, timeout(&#39;timed out&#39;,))
+</code></pre></div></li>
+<li>
+<p>Connection 생성에 실패할 때 (client.py)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>File &#34;/Users/hsyang/.pyenv/versions/test/lib/python3.6/site-packages/requests/adapters.py&#34;, line 504, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPConnectionPool(host=&#39;10.120.1.111&#39;, port=80): Max retries exceeded with url: / (Caused by ConnectTimeoutError(&lt;urllib3.connection.HTTPConnection object at 0x10b3c4940&gt;, &#39;Connection to 10.120.1.111 timed out. (connect timeout=3)&#39;))
+</code></pre></div></li>
+</ul>
+<p>언뜻 보면 같아보이지만 에러 내용 자체는 구분되어 있음을 알 수 있다. (<em>필자도 이 포스팅을 작성하면서 알았다&mldr; 무슨 숨은 그림 찾기도 아니고 이름을 너무 비슷하게 해놔서 언뜻보면 같은 에러로 보인다 ㅠ</em>)</p>
+<ul>
+<li>requests.exceptions.ConnectionError</li>
+<li>requests.exceptions.ConnectTimeout</li>
+</ul>
+<p>이 말인 즉슨, 이 두 개를 구분할 수 있다는 얘기인데&mldr; Timeout 설정을 구분해서 할 수는 없을까? 싶어서 열심히 구글링해 본 결과, 필자와 동일한 황당함(?)을 겪은 한 유저가 requests 라이브러리 github 저장소 issue 등록을 해놨더라.
+connection timeout 과 send timeout을 구분하고 싶다는 얘기였는데 아쉽게도 requests 라이브러의 Maintainer가 그럴 계획 없음! 이라고 못을 박았놨다&mldr;</p>
+<p><a href=https://github.com/psf/requests/issues/3099#issuecomment-216991348>https://github.com/psf/requests/issues/3099#issuecomment-216991348</a></p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>So the timeout logic used in requests is fundamentally that of urllib3, so it should be sufficient
+to make the change there: feel free to open a feature request and we can help you through the
+change. And in the shorter term, feel free to investigate using setdefaulttimeout.
+</code></pre></div><p>요약하자면,</p>
+<blockquote>
+<p>requets 라이브러리는 Python built-in 라이브러리인 urllib3를 이용하기 때문에 send timeout 구현이 필요하다면 해당 라이브러리에서 구현하는게 좋은 것 같다!
+혹은 setdefaulttimeout으로 문제 해결에 활용할 수 있는지 알아봐라!</p>
+</blockquote>
+<p>란다. 위 대답을 들은 해당 유저가 urllib3 라이브러리 github 저장소에도 issue를 등록해 두었는데(무려 2016년&mldr;!!) 아직도 open 상태다.</p>
+<p><a href=https://github.com/urllib3/urllib3/issues/857>https://github.com/urllib3/urllib3/issues/857</a></p>
+<h2 id=결론>결론</h2>
+<p>자신의 코드에 파일 업로드 로직이 없다면 connection timeout을 사용하면 되지만
+필자와 같이 파일 업로드 로직이 있는 경우 connection timeout 이 실제로 (connection timeout + send timeout) 임을 감안하여
+connection timeout 값을 충분히 크게 설정하는 방법밖에 없는 것 같다. T.T</p>
+<p><a href=https://github.com/psf/requests/issues/3099#issuecomment-216991348>https://github.com/psf/requests/issues/3099#issuecomment-216991348</a></p>
+<p>위 github issue 코멘트를 보면, 아래 3가지 방법이 있는것 같은데 어느것 하나 쉬워 보이진 않는다.</p>
+<ol>
+<li>python3의 경우 C로 구현된 <code>io.BufferedReader</code> 클래스를 수정하거나</li>
+<li>standard library의 buffering 옵션을 끄고 buffering 관련 코드를 다시 작성하거나 (성능에 매우 안좋다.)</li>
+<li>setdefaulttimeout 활용 방법에 대해 조사하고 테스트 해본다.</li>
+</ol>
+<p>1,2 사실 좋은 방법이 아닌 것 같고(능력도 안되고;;;) 3번을 진행해보고 포스팅을 업데이트해야겠다.
+혹시 먼저 필자와 같은 삽질을 해본 분이 있으면&mldr; 좀 알려주십쇼.(꾸벅) 허헛.</p>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/tcpdump/>tcpdump 명령어 활용법</a>
+</div>
+<div class="column has-text-right">
+<p>Next post</p>
+<a href=/posts/how-to-fix-dll-file-not-found/>윈도우에서 DLL 파일을 찾을 수 없는 오류 해결 방법 (msvcp.dll, msvcr.dll 등등)</a>
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#내가-겪은-이야기>내가 겪은 이야기</a></li>
+<li><a href=#connection-timeout>Connection Timeout</a>
+<ul>
+<li><a href=#connection-timeout-재현-테스트>Connection Timeout 재현 테스트</a></li>
+</ul>
+</li>
+<li><a href=#파일-업로드-중-발생했던-예외와-connection-timeout-재현-테스트-시-발생한-예외-비교>파일 업로드 중 발생했던 예외와 Connection Timeout 재현 테스트 시 발생한 예외 비교</a></li>
+<li><a href=#결론>결론</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/how-smartphone-apps-edit-photos/>스마트폰 앱은 어떻게 이미지를 보정하는 걸까?</a></h1>
+<time class="has-text-grey-light is-size-7">15 November 2021</time>
+<h1><a href=https://hsyang.net/posts/how-are-images-stored-and-displayed-on-a-computer/>컴퓨터는 이미지를 어떻게 저장하고 표현할까?</a></h1>
+<time class="has-text-grey-light is-size-7">1 November 2021</time>
+<h1><a href=https://hsyang.net/posts/python-google-spreadsheets/>[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기</a></h1>
+<time class="has-text-grey-light is-size-7">17 August 2021</time>
+<h1><a href=https://hsyang.net/posts/python-docx/>[Python] MS Word 파일 수정하기</a></h1>
+<time class="has-text-grey-light is-size-7">7 August 2021</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>자주 쓰는 - git branch 명령어</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2021 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>
