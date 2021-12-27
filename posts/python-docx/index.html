@@ -15,7 +15,7 @@
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://hsyang.net/posts/python-docx/"><meta property="article:section" content="posts">
 <meta property="article:published_time" content="2021-08-07T22:11:17+09:00">
-<meta property="article:modified_time" content="2021-09-26T14:50:44+09:00"><meta property="og:site_name" content="메모장">
+<meta property="article:modified_time" content="2021-08-07T22:11:17+09:00"><meta property="og:site_name" content="메모장">
 <meta name=twitter:card content="summary">
 <meta name=twitter:title content="[Python] MS Word 파일 수정하기">
 <meta name=twitter:description content="파이썬으로 MS Word 파일에서 원하는 부분만 변경하는 방법을 알아보자.">
@@ -76,7 +76,7 @@
 <p>우선 라이브러리부터 설치하자.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ pip install docxtpl
 </code></pre></div><p>아래와 같은 <code>MS Word</code> 문서 양식이 있다. 해당 문서에서 <code>{{ doc_num }}</code> 와 <code>{{ name }}</code> 이라고 되어 있는 부분이 치환할 부분이다. 치환하고 싶은 부분을 <code>{{ }}</code> 로 감싼 뒤 괄호 안에 python 코드에서 넘겨줄 이름을 적어주면 된다.</p>
-<p><img src=docxtpl.png alt=certificates_template></p>
+<p><img src=/img/python-docx/docxtpl.png alt=certificates_template></p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> docxtpl <span style=color:#f92672>import</span> DocxTemplate
 
 doc <span style=color:#f92672>=</span> DocxTemplate(<span style=color:#e6db74>&#39;certificates_template.docx&#39;</span>)
@@ -89,7 +89,7 @@ context <span style=color:#f92672>=</span> {
 doc<span style=color:#f92672>.</span>render(context)
 doc<span style=color:#f92672>.</span>save(<span style=color:#e6db74>&#39;output.docx&#39;</span>)
 </code></pre></div><p>결과는 아래와 같이 의도한 대로 잘 나온다!</p>
-<p><img src=certificates.png alt=certificates_output></p>
+<p><img src=/img/python-docx/certificates.png alt=certificates_output></p>
 <h3 id=template-filter-사용하기>template filter 사용하기</h3>
 <p>추가로 <code>docxtpl</code> 사용 시 활용할 수 있는 <code>filter</code> 기능에 대해 알아보겠다. <code>filter</code>란 python 코드에서 넘어온 값을 문서에 렌더링 하기 전에 변환하는 기능인데 template 문서에서 간단하게 활용할 수 있다.</p>
 <p>여기서는 숫자값에 천단위 comma를 추가하는 <code>filter</code>를 작성해보자.</p>
@@ -116,9 +116,9 @@ doc<span style=color:#f92672>.</span>render(context, jinja_env)
 doc<span style=color:#f92672>.</span>save(<span style=color:#e6db74>&#39;output.docx&#39;</span>)
 </code></pre></div><p>MS Word 문서 template 에서는 아래와 같이 위에서 작성한 <code>filter</code> 이름을 <code>|</code> 와 함께 써주면 된다.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>{{ 변수명 | 필터명 }}
-</code></pre></div><p><img src=certificates_filter_template.png alt=certificates_filter_template></p>
+</code></pre></div><p><img src=/img/python-docx/certificates_filter_template.png alt=certificates_filter_template></p>
 <p>위 template과 코드를 실행하면 아래 결과와 같이 숫자 값에 천단위 <code>,</code> 가 추가됨을 확인할 수 있다.</p>
-<p><img src=certificates_filter.png alt=certificates_filter></p>
+<p><img src=/img/python-docx/certificates_filter.png alt=certificates_filter></p>
 <p>filter 기능을 활용하여 원래 값을 문서 출력 순간에 변환할 수 있는데, 어떻게 활용하면 좋을지는 각자의 몫에 맡기겠다.</p>
 </div>
 <section class=section>

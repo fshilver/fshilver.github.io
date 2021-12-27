@@ -15,7 +15,7 @@
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://hsyang.net/posts/python-requests-library-timeout/"><meta property="article:section" content="posts">
 <meta property="article:published_time" content="2021-08-28T21:26:04+09:00">
-<meta property="article:modified_time" content="2021-09-26T14:50:44+09:00"><meta property="og:site_name" content="메모장">
+<meta property="article:modified_time" content="2021-08-28T21:26:04+09:00"><meta property="og:site_name" content="메모장">
 <meta name=twitter:card content="summary">
 <meta name=twitter:title content="[Python] Requests 라이브러리의 Connection Timeout에 관하여">
 <meta name=twitter:description content="Python Requests 라이브러리의 Connection Timeout은 당신이 생각하는 Connection Timeout이 아니다.">
@@ -129,7 +129,7 @@ requests.exceptions.ConnectionError: (&#39;Connection aborted.&#39;, timeout(&#3
 <p>Requests 라이브러리는 HTTP 요청(Client)을 위해 사용한다.
 HTTP는 TCP 기반에서 구현되는데 TCP는 그 특성상 Connection을 먼저 맺은 후 데이터를 주고받는다.
 Connection을 맺는 과정은, 아마 한번 쯤은 들어봤을 <code>Three-way-handshaking</code> 과정을 거친다.</p>
-<p><img src=tcp-three-way-handshaking.png alt="TCP Three-way-handshaking"></p>
+<p><img src=/img/python-requests-library-timeout/tcp-three-way-handshaking.png alt="TCP Three-way-handshaking"></p>
 <p>보통 Connection Timeout 이라 함은 위 과정이 설정한 시간 안에 이뤄지지 않을 때 발생하는 것이라고 할 수 있다.</p>
 <h3 id=connection-timeout-재현-테스트>Connection Timeout 재현 테스트</h3>
 <p>우선 위 과정을 실제 눈으로 확인해보기 위해 간단한 Python http 서버 코드와 <code>telnet</code>, <code>tcpdump</code> 명령어를 활용해보자.</p>
@@ -186,7 +186,7 @@ Connection을 맺는 과정은, 아마 한번 쯤은 들어봤을 <code>Three-wa
 22:16:44.343055 IP 10.120.1.111.80 &gt; 10.120.1.254.56869: Flags [S.], seq 2399293706, ack 3554504167, win 28960, options [mss 1460,sackOK,TS val 1076530274 ecr 394584072,nop,wscale 7], length 0
 22:16:44.347394 IP 10.120.1.254.56869 &gt; 10.120.1.111.80: Flags [.], ack 1, win 2054, options [nop,nop,TS val 394584077 ecr 1076530274], length 0
 </code></pre></div><p>위 패킷 내용을 설명하자면 아래와 같다.</p>
-<p><img src=tcpdump-2.png alt=tcpdump-2></p>
+<p><img src=/img/python-requests-library-timeout/tcpdump-2.png alt=tcpdump-2></p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>10.120.1.254 : 로컬 IP
 10.120.1.111 : 원격 Server IP
 
@@ -216,7 +216,7 @@ print(resp)
 <span style=color:#75715e>#   - destination IP = 10.120.1.254 </span>
 <span style=color:#75715e>#   - source port number = 80</span>
 ~$ sudo iptables -A OUTPUT -p tcp -d 10.120.1.254 --sport <span style=color:#ae81ff>80</span> -j DROP
-</code></pre></div><p><img src=tcpdump-drop.png alt="tcpdump drop"></p>
+</code></pre></div><p><img src=/img/python-requests-library-timeout/tcpdump-drop.png alt="tcpdump drop"></p>
 <p>그리고 로컬에서 client.py 를 실행해 보면 3초 뒤 아래와 같은 예외가 발생한다.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ python3 client.py
 </code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>생략...
