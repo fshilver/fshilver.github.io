@@ -1,0 +1,321 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>리눅스 명령어 - iptables | 메모장</title>
+<meta name=description content="리눅스의 iptables 명령어 활용법에 대해 알아보자.">
+<link rel=canonical href=https://hsyang.net/posts/iptables/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="리눅스 명령어 - iptables">
+<meta property="og:description" content="리눅스의 iptables 명령어 활용법에 대해 알아보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/iptables/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-01-10T23:27:03+09:00">
+<meta property="article:modified_time" content="2022-01-11T00:23:44+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="리눅스 명령어 - iptables">
+<meta name=twitter:description content="리눅스의 iptables 명령어 활용법에 대해 알아보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>January 10, 2022</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">리눅스 명령어 - iptables</h1>
+<div class="content mt-6">
+<h2 id=기본-개념>기본 개념</h2>
+<ul>
+<li>
+<p>순서대로 규칙이 적용되기 때문에 설정 순서가 중요하다.</p>
+</li>
+<li>
+<p>기본적으로 <code>INPUT</code>, <code>OUTPUT</code>, <code>FORWAD</code> Chain이 존재한다.</p>
+</li>
+<li>
+<p>각 Chain에 대한 기본 정책 설정</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo iptables -P INPUT DROP
+~$ sudo iptables -P OUTPUT ACCEPT
+</code></pre></div></li>
+</ul>
+<h2 id=설정-확인>설정 확인</h2>
+<ul>
+<li>
+<p>알려진 호스트나 포트는 사람이 알아보기 쉬운 이름으로 바꿔서 출력한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo iptables -L
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Chain INPUT (policy DROP)
+target     prot opt source   destination
+ACCEPT     tcp  --  anywhere  anywhere    tcp dpt:snmp
+</code></pre></div></li>
+<li>
+<p><code>-n</code> 옵션을 붙이면 숫자로 출력된다. 이름 변환 과정이 없어서 출력이 더 빠르다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo iptables -nL
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Chain INPUT (policy DROP)
+target     prot opt source    destination
+ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:161
+</code></pre></div></li>
+<li>
+<p><code>--line-numbers</code> 옵션을 붙이면 각 규칙 번호가 함께 출력된다. 이 번호를 이용하여 해당 규칙을 삭제하거나, 새로운 규칙을 기존 규칙 사이에 끼워넣는게 가능하다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo iptables -nL --line-numbers
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Chain INPUT (policy DROP)
+num  target     prot opt source    destination
+1    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:161
+2    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:80
+3    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:443
+</code></pre></div></li>
+</ul>
+<h2 id=기본-설정법>기본 설정법</h2>
+<h3 id=규칙-추가>규칙 추가</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># 목적지 포트 번호가 161 인 tcp 패킷 허용</span>
+~$ sudo iptables -A INPUT -p tcp --dport <span style=color:#ae81ff>161</span> -j ACCEPT
+
+<span style=color:#75715e># 192.168.10.0/24 에서 오는 tcp 패킷 중 목적지 포트가 161인 패킷 허용</span>
+~$ sudo iptables -A INPUT -p tcp -s 192.168.10.0/24 --dport <span style=color:#ae81ff>161</span> -j ACCEPT
+
+<span style=color:#75715e>#  특정 network interface(eth0)에서 수신하는 모든 패킷 허용</span>
+~$ sudo iptables -A INPUT -i eth0 -j ACCEPT
+
+<span style=color:#75715e># 목적지 포트번호가 8000 ~ 8010 사이인 udp 패킷 허용</span>
+~$ sudo iptables -A INPUT -p udp --dport 8000:8010 -j ACCEPT
+
+<span style=color:#75715e># icmp(ping) 허용</span>
+~$ sudo iptables -A INPUT -p icmp --icmp-type any -j ACCEPT
+
+<span style=color:#75715e># multicast 패킷 드랍</span>
+~$ sudo iptables -A INPUT -p udp -m pkttype --pkt-type multicast -d 239.1.1.0/24 -j DROP
+</code></pre></div><h3 id=규칙-추가-특정-라인>규칙 추가 (특정 라인)</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo iptables -nl --line-numbers
+Chain INPUT <span style=color:#f92672>(</span>policy DROP<span style=color:#f92672>)</span>
+num  target     prot opt source    destination
+<span style=color:#ae81ff>1</span>    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:161
+<span style=color:#ae81ff>2</span>    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:80
+<span style=color:#ae81ff>3</span>    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:443
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># 2번째 라인에 추가</span>
+~$ sudo iptables -I INPUT <span style=color:#ae81ff>2</span> -p tcp --dport <span style=color:#ae81ff>22</span> -j ACCEPT
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>Chain INPUT <span style=color:#f92672>(</span>policy DROP<span style=color:#f92672>)</span>
+num  target     prot opt source    destination
+<span style=color:#ae81ff>1</span>    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:161
+<span style=color:#ae81ff>2</span>    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:22
+<span style=color:#ae81ff>3</span>    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:80
+<span style=color:#ae81ff>4</span>    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:443
+</code></pre></div><h3 id=규칙-삭제>규칙 삭제</h3>
+<p>아래 규칙을 삭제해보겠다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Chain INPUT (policy DROP)
+target     prot opt source     destination
+ACCEPT     tcp  --  0.0.0.0/0   0.0.0.0/0   tcp dpt:161
+</code></pre></div><p>삭제하는 방법에는 2가지가 있다.</p>
+<ul>
+<li>
+<p>-D 옵션과 삭제할 규칙 설정을 그대로 쓰는 방법 (귀찮다. 다음 방법이 더 간단하다.)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo iptables -D INPUT -p tcp --dport <span style=color:#ae81ff>161</span> -j ACCEPT
+</code></pre></div></li>
+<li>
+<p>-D 옵션과 삭제할 규칙의 순서 번호를 쓰는 방법</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Chain INPUT (policy DROP)
+num  target     prot opt source    destination
+1    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:161
+2    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:80
+3    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:443
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo iptables -D INPUT <span style=color:#ae81ff>1</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Chain INPUT (policy DROP)
+num  target     prot opt source    destination
+1    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:80
+2    ACCEPT     tcp  --  0.0.0.0/0  0.0.0.0/0   tcp dpt:443
+</code></pre></div></li>
+<li>
+<p>모든 규칙 삭제</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo iptables -F
+</code></pre></div></li>
+</ul>
+<h2 id=설정-저장복원>설정 저장/복원</h2>
+<ul>
+<li>Ubuntu
+<ul>
+<li><code>iptables-persistent</code> 라는 패키지에 의해 관리됨</li>
+<li>config file : <code>/etc/iptables/rules.v4</code></li>
+</ul>
+</li>
+</ul>
+<h3 id=설정-저장>설정 저장</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># CentOS 7</span>
+~$ sudo iptables-save &gt; /etc/sysconfig/iptables
+
+<span style=color:#75715e># Ubuntu 20.04</span>
+~$ sudo iptables-save &gt; /etc/iptables/rules.v4
+</code></pre></div><h3 id=설정-복원>설정 복원</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># CentOS 7</span>
+~$ sudo iptables-restore &lt; /etc/sysconfig/iptables
+
+<span style=color:#75715e># Ubuntu 20.04</span>
+~$ sudo iptables-restore /etc/iptables/rules.v4
+</code></pre></div><h2 id=로그-설정>로그 설정</h2>
+<h3 id=rsyslog>rsyslog</h3>
+<ol>
+<li>
+<p>iptables 로깅 룰에 prefix 지정</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo iptables -A INPUT -j LOG --log-prefix <span style=color:#e6db74>&#34;iptables:INPUT:DROP:&#34;</span> --log-level <span style=color:#ae81ff>6</span>
+</code></pre></div></li>
+<li>
+<p>/etc/rsyslog.d/iptables.conf</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>:msg, startswith, &#34;iptables:INPUT:DROP:&#34; -/var/log/iptables.log
+&amp; ~
+</code></pre></div><ul>
+<li>
+<p>우분투인 경우 <code>/etc/rsyslog.d/10-iptables.conf</code> 파일 생성한 후 설정</p>
+<blockquote>
+<p>기본설정 파일인 <code>50-default.conf</code> 보다 먼저 읽어들이기 위해 <code>50</code> 보다 작은 값을 파일명 앞에 써줘야 함</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>:msg, contains, &#34;iptables:INPUT:DROP:&#34; {
+*.* /var/log/iptables.log
+stop
+}
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>rsyslog 재시작</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ systemctl restart rsyslog
+</code></pre></div></li>
+</ol>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/cli-dcmdump/>[리눅스 명령어] dcmdump / dicom file dump</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#기본-개념>기본 개념</a></li>
+<li><a href=#설정-확인>설정 확인</a></li>
+<li><a href=#기본-설정법>기본 설정법</a>
+<ul>
+<li><a href=#규칙-추가>규칙 추가</a></li>
+<li><a href=#규칙-추가-특정-라인>규칙 추가 (특정 라인)</a></li>
+<li><a href=#규칙-삭제>규칙 삭제</a></li>
+</ul>
+</li>
+<li><a href=#설정-저장복원>설정 저장/복원</a>
+<ul>
+<li><a href=#설정-저장>설정 저장</a></li>
+<li><a href=#설정-복원>설정 복원</a></li>
+</ul>
+</li>
+<li><a href=#로그-설정>로그 설정</a>
+<ul>
+<li><a href=#rsyslog>rsyslog</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/iptables/>리눅스 명령어 - iptables</a></h1>
+<time class="has-text-grey-light is-size-7">10 January 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-dcmdump/>[리눅스 명령어] dcmdump / dicom file dump</a></h1>
+<time class="has-text-grey-light is-size-7">29 December 2021</time>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>리눅스 명령어 - xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2022 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>
