@@ -1,0 +1,295 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Nginx docker container 안전하게 실행하기(security) | 메모장</title>
+<meta name=description content="nginx docker container를 안전하게 실행하는 방법을 알아보자. (rootless, read-only, capabilities)">
+<link rel=canonical href=https://hsyang.net/posts/docker-security-nginx/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="Nginx docker container 안전하게 실행하기(security)">
+<meta property="og:description" content="nginx docker container를 안전하게 실행하는 방법을 알아보자. (rootless, read-only, capabilities)">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/docker-security-nginx/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-01-18T00:16:14+09:00">
+<meta property="article:modified_time" content="2022-01-18T01:20:59+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="Nginx docker container 안전하게 실행하기(security)">
+<meta name=twitter:description content="nginx docker container를 안전하게 실행하는 방법을 알아보자. (rootless, read-only, capabilities)">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<div class="navbar-item has-dropdown is-hoverable">
+<a class=navbar-link>Language</a>
+<div class=navbar-dropdown>
+<a class=navbar-item rel=alternate href=/en/posts/docker-security-nginx/ hreflang=en lang=en>en</a>
+</div>
+</div>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>January 18, 2022</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">Nginx docker container 안전하게 실행하기(security)</h1>
+<div class="content mt-6">
+<h2 id=목표>목표</h2>
+<ul>
+<li>Rootless mode</li>
+<li>Read only file system</li>
+<li>Linux Capabilities
+<ul>
+<li><a href=https://man7.org/linux/man-pages/man7/capabilities.7.html>https://man7.org/linux/man-pages/man7/capabilities.7.html</a></li>
+</ul>
+</li>
+</ul>
+<h2 id=설정-파일-준비>설정 파일 준비</h2>
+<h3 id=nginxconf>nginx.conf</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-nginx data-lang=nginx><span style=color:#66d9ef>worker_processes</span>  <span style=color:#ae81ff>1</span>;
+
+<span style=color:#66d9ef>error_log</span>  <span style=color:#e6db74>/dev/stderr</span> <span style=color:#e6db74>warn</span>;
+<span style=color:#66d9ef>pid</span>        <span style=color:#e6db74>/tmp/nginx.pid</span>;
+
+
+<span style=color:#66d9ef>events</span> {
+    <span style=color:#f92672>worker_connections</span>  <span style=color:#ae81ff>1024</span>;
+}
+
+
+<span style=color:#66d9ef>http</span> {
+    <span style=color:#f92672>include</span>       <span style=color:#e6db74>/etc/nginx/mime.types</span>;
+    <span style=color:#f92672>default_type</span>  <span style=color:#e6db74>application/octet-stream</span>;
+
+    <span style=color:#f92672>log_format</span>  <span style=color:#e6db74>main</span>  <span style=color:#e6db74>&#39;</span>$remote_addr $status $request_time <span style=color:#e6db74>&#34;</span>$request&#34; <span style=color:#e6db74>&#39;</span>
+                      <span style=color:#e6db74>&#39;</span>$body_bytes_sent <span style=color:#e6db74>&#34;</span>$http_referer&#34; <span style=color:#e6db74>&#39;</span>
+                      <span style=color:#e6db74>&#39;&#34;</span>$http_user_agent&#34; <span style=color:#e6db74>&#34;</span>$http_x_forwarded_for&#34;&#39;;
+
+
+    <span style=color:#f92672>access_log</span>  <span style=color:#e6db74>/dev/stdout</span>  <span style=color:#e6db74>main</span>;
+
+    <span style=color:#f92672>sendfile</span>        <span style=color:#66d9ef>on</span>;
+
+    <span style=color:#f92672>keepalive_timeout</span>  <span style=color:#ae81ff>65</span>;
+
+    <span style=color:#f92672>error_page</span> <span style=color:#ae81ff>400</span> <span style=color:#ae81ff>401</span> <span style=color:#ae81ff>402</span> <span style=color:#ae81ff>403</span> <span style=color:#ae81ff>404</span> <span style=color:#ae81ff>405</span> <span style=color:#ae81ff>406</span> <span style=color:#ae81ff>407</span> <span style=color:#ae81ff>408</span> <span style=color:#ae81ff>409</span> <span style=color:#ae81ff>410</span> <span style=color:#ae81ff>411</span> <span style=color:#ae81ff>412</span> <span style=color:#ae81ff>413</span> <span style=color:#ae81ff>414</span> <span style=color:#e6db74>/error.html</span>;
+    <span style=color:#f92672>error_page</span> <span style=color:#ae81ff>415</span> <span style=color:#ae81ff>416</span> <span style=color:#ae81ff>417</span> <span style=color:#ae81ff>418</span> <span style=color:#ae81ff>421</span> <span style=color:#ae81ff>422</span> <span style=color:#ae81ff>423</span> <span style=color:#ae81ff>424</span> <span style=color:#ae81ff>425</span> <span style=color:#ae81ff>426</span> <span style=color:#ae81ff>428</span> <span style=color:#ae81ff>429</span> <span style=color:#ae81ff>431</span> <span style=color:#ae81ff>451</span> <span style=color:#e6db74>/error.html</span>;
+    <span style=color:#f92672>error_page</span> <span style=color:#ae81ff>500</span> <span style=color:#ae81ff>501</span> <span style=color:#ae81ff>502</span> <span style=color:#ae81ff>503</span> <span style=color:#ae81ff>504</span> <span style=color:#ae81ff>505</span> <span style=color:#ae81ff>506</span> <span style=color:#ae81ff>507</span> <span style=color:#ae81ff>508</span> <span style=color:#ae81ff>510</span> <span style=color:#ae81ff>511</span> <span style=color:#e6db74>/error.html</span>;
+
+    <span style=color:#f92672>client_body_temp_path</span> <span style=color:#e6db74>/tmp/client_temp</span>;
+    <span style=color:#f92672>proxy_temp_path</span>       <span style=color:#e6db74>/tmp/proxy_temp_path</span>;
+    <span style=color:#f92672>fastcgi_temp_path</span>     <span style=color:#e6db74>/tmp/fastcgi_temp</span>;
+    <span style=color:#f92672>uwsgi_temp_path</span>       <span style=color:#e6db74>/tmp/uwsgi_temp</span>;
+    <span style=color:#f92672>scgi_temp_path</span>        <span style=color:#e6db74>/tmp/scgi_temp</span>;
+
+    <span style=color:#f92672>include</span> <span style=color:#e6db74>/etc/nginx/conf.d/*.conf</span>;
+}
+</code></pre></div><h3 id=appconf>app.conf</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-nginx data-lang=nginx><span style=color:#66d9ef>server</span> {
+
+    <span style=color:#f92672>listen</span> <span style=color:#ae81ff>8000</span> <span style=color:#e6db74>default_server</span>;
+    <span style=color:#f92672>server_tokens</span> <span style=color:#66d9ef>off</span>;
+
+    <span style=color:#f92672>location</span> <span style=color:#e6db74>/error.html</span> {
+        <span style=color:#f92672>root</span> <span style=color:#e6db74>/usr/share/nginx/html</span>;
+        <span style=color:#f92672>internal</span>;
+    }
+
+    <span style=color:#f92672>location</span> <span style=color:#e6db74>/</span> {
+        <span style=color:#f92672>proxy_pass</span> <span style=color:#e6db74>http://app:8000</span>;
+        <span style=color:#f92672>proxy_redirect</span> <span style=color:#66d9ef>off</span>;
+        <span style=color:#f92672>proxy_read_timeout</span> <span style=color:#e6db74>300s</span>;
+        <span style=color:#f92672>proxy_set_header</span> <span style=color:#e6db74>Host</span> $http_host;
+        <span style=color:#f92672>proxy_set_header</span> <span style=color:#e6db74>X-Real-IP</span> $remote_addr;
+        <span style=color:#f92672>proxy_set_header</span> <span style=color:#e6db74>X-Forwarded-For</span> $proxy_add_x_forwarded_for;
+        <span style=color:#f92672>proxy_set_header</span> <span style=color:#e6db74>X-Forwarded-Proto</span> $scheme;
+
+        <span style=color:#f92672>limit_except</span> <span style=color:#e6db74>GET</span> <span style=color:#e6db74>POST</span> <span style=color:#e6db74>PUT</span> <span style=color:#e6db74>DELETE</span> {
+            <span style=color:#f92672>deny</span> <span style=color:#e6db74>all</span>;
+        }
+
+        <span style=color:#f92672>sendfile</span> <span style=color:#66d9ef>on</span>;
+        <span style=color:#f92672>tcp_nopush</span> <span style=color:#66d9ef>on</span>;
+        <span style=color:#f92672>tcp_nodelay</span> <span style=color:#66d9ef>on</span>;
+    }
+}
+</code></pre></div><h3 id=errorhtml>error.html</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-html data-lang=html><span style=color:#75715e>&lt;!DOCTYPE html&gt;</span>
+&lt;<span style=color:#f92672>html</span>&gt;
+    &lt;<span style=color:#f92672>head</span>&gt;&lt;/<span style=color:#f92672>head</span>&gt;
+    &lt;<span style=color:#f92672>body</span>&gt;
+        &lt;<span style=color:#f92672>h1</span>&gt;Oops!&lt;/<span style=color:#f92672>h1</span>&gt;
+        &lt;<span style=color:#f92672>p</span>&gt;Something went wrong&lt;/<span style=color:#f92672>p</span>&gt;
+    &lt;/<span style=color:#f92672>body</span>&gt;
+&lt;/<span style=color:#f92672>html</span>&gt;
+</code></pre></div><h2 id=이미지-빌드>이미지 빌드</h2>
+<h3 id=dockerfile>Dockerfile</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-Dockerfile data-lang=Dockerfile><span style=color:#66d9ef>FROM</span><span style=color:#e6db74> nginx:1.20.1</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>COPY</span> ./nginx.conf /etc/nginx/nginx.conf<span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>COPY</span> ./app.conf /etc/nginx/conf.d/default.conf<span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>COPY</span> ./error.html /usr/share/nginx/html/error.html<span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>USER</span><span style=color:#e6db74> nginx</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>CMD</span> nginx -g <span style=color:#e6db74>&#39;daemon off;&#39;</span><span style=color:#960050;background-color:#1e0010>
+</span></code></pre></div><h3 id=빌드>빌드</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ docker build -t secure-nginx:1.20.1-1 .
+</code></pre></div><h2 id=docker-composeyml>docker-compose.yml</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yml data-lang=yml><span style=color:#f92672>version</span>: <span style=color:#e6db74>&#39;3&#39;</span>
+<span style=color:#f92672>services</span>:
+  <span style=color:#f92672>nginx</span>:
+    <span style=color:#f92672>image</span>: <span style=color:#ae81ff>secure-nginx:1.20.1-1</span>
+    <span style=color:#f92672>read_only</span>: <span style=color:#66d9ef>true</span>
+    <span style=color:#f92672>user</span>: <span style=color:#ae81ff>nginx</span>
+    <span style=color:#f92672>ports</span>:
+      - <span style=color:#ae81ff>80</span>:<span style=color:#ae81ff>8000</span>
+    <span style=color:#f92672>tmpfs</span>:
+      - <span style=color:#ae81ff>/tmp</span>
+    <span style=color:#f92672>cap_drop</span>:
+      - <span style=color:#ae81ff>ALL</span>
+    <span style=color:#f92672>cap_add</span>:
+      - <span style=color:#ae81ff>cap_net_bind_service</span>
+</code></pre></div><h2 id=레퍼런스>레퍼런스</h2>
+<ul>
+<li><a href=https://hub.docker.com/_/nginx>https://hub.docker.com/_/nginx</a></li>
+<li><a href=https://hub.docker.com/r/nginxinc/nginx-unprivileged>https://hub.docker.com/r/nginxinc/nginx-unprivileged</a></li>
+<li><a href=https://www.rockyourcode.com/run-docker-nginx-as-non-root-user/>https://www.rockyourcode.com/run-docker-nginx-as-non-root-user/</a></li>
+<li><a href=https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick>https://www.redhat.com/en/blog/secure-your-containers-one-weird-trick</a></li>
+<li><a href=https://man7.org/linux/man-pages/man7/capabilities.7.html>https://man7.org/linux/man-pages/man7/capabilities.7.html</a></li>
+<li><a href=https://docs.docker.com/compose/compose-file/compose-file-v3/#cap_add-cap_drop>https://docs.docker.com/compose/compose-file/compose-file-v3/#cap_add-cap_drop</a></li>
+<li><a href=https://docs.docker.com/compose/compose-file/compose-file-v3/#tmpfs>https://docs.docker.com/compose/compose-file/compose-file-v3/#tmpfs</a></li>
+</ul>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/iptables/>리눅스 명령어 - iptables</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#목표>목표</a></li>
+<li><a href=#설정-파일-준비>설정 파일 준비</a>
+<ul>
+<li><a href=#nginxconf>nginx.conf</a></li>
+<li><a href=#appconf>app.conf</a></li>
+<li><a href=#errorhtml>error.html</a></li>
+</ul>
+</li>
+<li><a href=#이미지-빌드>이미지 빌드</a>
+<ul>
+<li><a href=#dockerfile>Dockerfile</a></li>
+<li><a href=#빌드>빌드</a></li>
+</ul>
+</li>
+<li><a href=#docker-composeyml>docker-compose.yml</a></li>
+<li><a href=#레퍼런스>레퍼런스</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_command/>linux_command</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/docker-security-nginx/>Nginx docker container 안전하게 실행하기(security)</a></h1>
+<time class="has-text-grey-light is-size-7">18 January 2022</time>
+<h1><a href=https://hsyang.net/posts/iptables/>리눅스 명령어 - iptables</a></h1>
+<time class="has-text-grey-light is-size-7">10 January 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-dcmdump/>리눅스 명령어 - dcmdump / dicom file dump</a></h1>
+<time class="has-text-grey-light is-size-7">29 December 2021</time>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-ha-cluster-with-pacemaker-and-drbd-and-docker-compose/>CentOS 7 HA 클러스터 생성 방법(pacemaker, drbd, docker-compose)</a></h1>
+<time class="has-text-grey-light is-size-7">21 December 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2022 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>
