@@ -1,0 +1,294 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>[명령어] rpm | 메모장</title>
+<meta name=description content="RPM 명령어 사용법에 대해 알아보자.">
+<link rel=canonical href=https://hsyang.net/posts/rpm/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="[명령어] rpm">
+<meta property="og:description" content="RPM 명령어 사용법에 대해 알아보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/rpm/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-01-24T22:49:28+09:00">
+<meta property="article:modified_time" content="2022-01-24T23:43:17+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="[명령어] rpm">
+<meta name=twitter:description content="RPM 명령어 사용법에 대해 알아보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>January 24, 2022</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">[명령어] rpm</h1>
+<div class="content mt-6">
+<p>모든 옵션에 <code>-p</code> 를 붙여서 아직 설치되지 않는 rpm 파일에 대한 정보를 알 수 있다. 예를 들면 이런 식이다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ rpm -ql docker-ce
+~$ rpm -qlp docker-ce-20.10.12-3.el7.x86_64.rpm
+
+~$ rpm -qi docker-ce
+~$ rpm -qip docker-ce-20.10.12-3.el7.x86_64.rpm
+</code></pre></div><h2 id=rpm-설치>rpm 설치</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ rpm -ivh docker-ce-20.10.12-3.el7.x86_64.rpm
+</code></pre></div><h2 id=rpm-버전-업그레이드>rpm 버전 업그레이드</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ rpm -Uvh docker-ce-20.10.12-3.el7.x86_64.rpm
+</code></pre></div><h2 id=rpm-버전-다운그레이드>rpm 버전 다운그레이드</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ rpm -Uvh --oldpackage docker-ce-20.10.12-3.el7.x86_64.rpm
+</code></pre></div><h2 id=rpm-에-포함된-파일-리스트-확인>rpm 에 포함된 파일 리스트 확인</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ rpm -ql docker-ce
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>/usr/bin/docker-init
+/usr/bin/docker-proxy
+/usr/bin/dockerd
+/usr/lib/systemd/system/docker.service
+/usr/lib/systemd/system/docker.socket
+</code></pre></div><h2 id=rpm-메타-정보-확인>rpm 메타 정보 확인</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ rpm -qi docker-ce
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Name        : docker-ce
+Epoch       : 3
+Version     : 20.10.12
+Release     : 3.el7
+Architecture: x86_64
+Install Date: 2022년 01월 09일 (일) 오후 03시 46분 01초
+Group       : Tools/Docker
+Size        : 100894038
+License     : ASL 2.0
+Signature   : RSA/SHA512, 2021년 12월 13일 (월) 오후 11시 22분 11초, Key ID c52feb6b621e9f35
+Source RPM  : docker-ce-20.10.12-3.el7.src.rpm
+Build Date  : 2021년 12월 13일 (월) 오후 08시 45분 30초
+Build Host  : dde032a932d2
+Relocations : (not relocatable)
+Packager    : Docker &lt;support@docker.com&gt;
+Vendor      : Docker
+URL         : https://www.docker.com
+Summary     : The open-source application container engine
+Description :
+Docker is a product for you to build, ship and run any application as a
+lightweight container.
+
+Docker containers are both hardware-agnostic and platform-agnostic. This means
+they can run anywhere, from your laptop to the largest cloud compute instance and
+everything in between - and they don&#39;t require you to use a particular
+language, framework or packaging system. That makes them great building blocks
+for deploying and scaling web apps, databases, and backend services without
+depending on a particular stack or provider.
+</code></pre></div><h2 id=특정-파일의-rpm-확인>특정 파일의 rpm 확인</h2>
+<p>docker 라는 파일이 어떤 rpm에 포함되어 있는지 확인하고 싶을 때, docker 파일의 절대 경로를 인자로 넘긴다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># docker 명령어 파일의 절대 경로 확인</span>
+~$ which docker
+/usr/bin/docker
+
+<span style=color:#75715e># rpm -qf /usr/bin/docker 또는 아래와 같이 실행</span>
+~$ rpm -qf <span style=color:#66d9ef>$(</span>which docker<span style=color:#66d9ef>)</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>docker-ce-cli-20.10.12-3.el7.x86_64
+</code></pre></div><h2 id=rpm-dependancy-확인>rpm dependancy 확인</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ rpm -qR docker-ce
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>/bin/sh
+/bin/sh
+/bin/sh
+/usr/sbin/groupadd
+container-selinux &gt;= 2:2.74
+containerd.io &gt;= 1.4.1
+docker-ce-cli
+docker-ce-rootless-extras
+iptables
+libc.so.6()(64bit)
+libc.so.6(GLIBC_2.2.5)(64bit)
+libc.so.6(GLIBC_2.3)(64bit)
+libcgroup
+libdevmapper.so.1.02()(64bit)
+libdevmapper.so.1.02(Base)(64bit)
+libdevmapper.so.1.02(DM_1_02_97)(64bit)
+libdl.so.2()(64bit)
+libdl.so.2(GLIBC_2.2.5)(64bit)
+libpthread.so.0()(64bit)
+libpthread.so.0(GLIBC_2.2.5)(64bit)
+libpthread.so.0(GLIBC_2.3.2)(64bit)
+libseccomp &gt;= 2.3
+libsystemd.so.0()(64bit)
+libsystemd.so.0(LIBSYSTEMD_209)(64bit)
+rpmlib(CompressedFileNames) &lt;= 3.0.4-1
+rpmlib(FileDigests) &lt;= 4.6.0-1
+rpmlib(PayloadFilesHavePrefix) &lt;= 4.0-1
+rtld(GNU_HASH)
+systemd
+tar
+xz
+rpmlib(PayloadIsXz) &lt;= 5.2-1
+</code></pre></div><h2 id=rpm에-포함된-설치삭제-스크립트-내용-확인>rpm에 포함된 설치/삭제 스크립트 내용 확인</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ rpm -q --scripts docker-ce
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>postinstall scriptlet (using /bin/sh):
+
+if [ $1 -eq 1 ] ; then
+        # Initial installation
+        systemctl preset docker.service &gt;/dev/null 2&gt;&amp;1 || :
+fi
+
+if ! getent group docker &gt; /dev/null; then
+    groupadd --system docker
+fi
+preuninstall scriptlet (using /bin/sh):
+
+if [ $1 -eq 0 ] ; then
+        # Package removal, not upgrade
+        systemctl --no-reload disable docker.service &gt; /dev/null 2&gt;&amp;1 || :
+        systemctl stop docker.service &gt; /dev/null 2&gt;&amp;1 || :
+fi
+postuninstall scriptlet (using /bin/sh):
+
+systemctl daemon-reload &gt;/dev/null 2&gt;&amp;1 || :
+if [ $1 -ge 1 ] ; then
+        # Package upgrade, not uninstall
+        systemctl try-restart docker.service &gt;/dev/null 2&gt;&amp;1 || :
+fi
+</code></pre></div>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/docker-security-nginx/>Nginx docker container 안전하게 실행하기(security)</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#rpm-설치>rpm 설치</a></li>
+<li><a href=#rpm-버전-업그레이드>rpm 버전 업그레이드</a></li>
+<li><a href=#rpm-버전-다운그레이드>rpm 버전 다운그레이드</a></li>
+<li><a href=#rpm-에-포함된-파일-리스트-확인>rpm 에 포함된 파일 리스트 확인</a></li>
+<li><a href=#rpm-메타-정보-확인>rpm 메타 정보 확인</a></li>
+<li><a href=#특정-파일의-rpm-확인>특정 파일의 rpm 확인</a></li>
+<li><a href=#rpm-dependancy-확인>rpm dependancy 확인</a></li>
+<li><a href=#rpm에-포함된-설치삭제-스크립트-내용-확인>rpm에 포함된 설치/삭제 스크립트 내용 확인</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/command/>command</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/iptables/>[명령어] iptables</a></h1>
+<time class="has-text-grey-light is-size-7">10 January 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-dcmdump/>[명령어] dcmdump</a></h1>
+<time class="has-text-grey-light is-size-7">29 December 2021</time>
+<h1><a href=https://hsyang.net/posts/xxd/>[명령어] xxd (파일 hex/binary view)</a></h1>
+<time class="has-text-grey-light is-size-7">12 December 2021</time>
+<h1><a href=https://hsyang.net/posts/git-branch/>[명령어] git branch</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+<h1><a href=https://hsyang.net/posts/tcpdump/>[명령어] tcpdump</a></h1>
+<time class="has-text-grey-light is-size-7">23 August 2021</time>
+<h1><a href=https://hsyang.net/posts/git-commit/>[명령어] git commit</a></h1>
+<time class="has-text-grey-light is-size-7">15 November 2020</time>
+<h1><a href=https://hsyang.net/posts/git-tag/>[명령어] git tag</a></h1>
+<time class="has-text-grey-light is-size-7">14 November 2020</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/rpm/>[명령어] rpm</a></h1>
+<time class="has-text-grey-light is-size-7">24 January 2022</time>
+<h1><a href=https://hsyang.net/posts/docker-security-nginx/>Nginx docker container 안전하게 실행하기(security)</a></h1>
+<time class="has-text-grey-light is-size-7">18 January 2022</time>
+<h1><a href=https://hsyang.net/posts/iptables/>[명령어] iptables</a></h1>
+<time class="has-text-grey-light is-size-7">10 January 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-dcmdump/>[명령어] dcmdump</a></h1>
+<time class="has-text-grey-light is-size-7">29 December 2021</time>
+<h1><a href=https://hsyang.net/snippets/django-oauth2/>[Django] Oauth2 구현하기 (google oauth2)</a></h1>
+<time class="has-text-grey-light is-size-7">24 December 2021</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2022 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>
