@@ -1,0 +1,455 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Docker | 메모장</title>
+<meta name=description content="Docker Tip">
+<link rel=canonical href=https://hsyang.net/posts/docker/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="Docker">
+<meta property="og:description" content="Docker Tip">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/docker/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-02-15T06:47:01+09:00">
+<meta property="article:modified_time" content="2022-02-15T07:51:14+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="Docker">
+<meta name=twitter:description content="Docker Tip">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>February 15, 2022</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">Docker</h1>
+<div class="content mt-6">
+<blockquote>
+<p>docker-ce 20.10.12 기준으로 작성된 내용</p>
+</blockquote>
+<h2 id=설치>설치</h2>
+<h3 id=centos-7>CentOS 7</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ yum install yum-utils device-mapper-persistent-data lvm2
+~$ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+~$ yum install docker-ce
+~$ systemctl enable --now docker
+</code></pre></div><h2 id=설정>설정</h2>
+<ul>
+<li>설정 파일 : /etc/docker/daemon.json</li>
+</ul>
+<h3 id=데이터-저장-위치-변경>데이터 저장 위치 변경</h3>
+<ul>
+<li>default : /var/lib/docker</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;data-root&#34;</span>: <span style=color:#e6db74>&#34;/home/docker&#34;</span>,
+}
+</code></pre></div><h2 id=docker0-ip-변경>docker0 IP 변경</h2>
+<ul>
+<li>default : 172.17.0.1/255.255.0.0</li>
+<li>가끔 호스트 대역과 겹치는 일이 발생하여 IP 대역을 바꿔야 할 경우 사용</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;bip&#34;</span>: <span style=color:#e6db74>&#34;254.254.0.1/24&#34;</span>,
+}
+</code></pre></div><h2 id=docker-container-network-변경>docker container network 변경</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;default-address-pools&#34;</span>:[
+        {
+            <span style=color:#f92672>&#34;base&#34;</span>:<span style=color:#e6db74>&#34;254.254.0.0/16&#34;</span>,
+            <span style=color:#f92672>&#34;size&#34;</span>:<span style=color:#ae81ff>24</span>
+        }
+    ]
+}
+</code></pre></div><h2 id=runtime-추가>runtime 추가</h2>
+<h3 id=nvidia-runtime>nvidia runtime</h3>
+<blockquote>
+<p>docker 19.03 이전 버전까지는 nvidia 사용을 위해 nvidia runtime을 설정해야 했다. 이를 위해선 nvidia-docker2 패키지도 설치해야 한다.
+docker 19.03 버전부터는 docker native gpu 를 지원하므로 nvidia runtime을 추가할 필요가 없다.</p>
+</blockquote>
+<ol>
+<li>
+<p>nvidia-docker2 설치</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ distribution<span style=color:#f92672>=</span><span style=color:#66d9ef>$(</span>. /etc/os-release;echo $ID$VERSION_ID<span style=color:#66d9ef>)</span>
+~$ curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.repo | sudo tee /etc/yum.repos.d/nvidia-docker.repo
+~$ sudo yum install nvidia-docker2
+</code></pre></div></li>
+<li>
+<p>runtime 추가</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+    <span style=color:#f92672>&#34;runtimes&#34;</span>: {
+        <span style=color:#f92672>&#34;nvidia&#34;</span>: {
+            <span style=color:#f92672>&#34;path&#34;</span>: <span style=color:#e6db74>&#34;/usr/bin/nvidia-container-runtime&#34;</span>,
+            <span style=color:#f92672>&#34;runtimeArgs&#34;</span>: []
+        }
+    }
+}
+</code></pre></div></li>
+</ol>
+<h2 id=명령어>명령어</h2>
+<h3 id=이미지-찾기>이미지 찾기</h3>
+<p>아래 명령어로는 각 이미지의 tag를 검색할 수 없다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># docker search &lt;image&gt;</span>
+~$ docker search centos
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>NAME                              DESCRIPTION                                     STARS     OFFICIAL   AUTOMATED
+centos                            The official build of CentOS.                   7018      [OK]
+ansible/centos7-ansible           Ansible on Centos7                              135                  [OK]
+consol/centos-xfce-vnc            Centos container with &#34;headless&#34; VNC session…   135                  [OK]
+jdeathe/centos-ssh                OpenSSH / Supervisor / EPEL/IUS/SCL Repos - …   121                  [OK]
+centos/systemd                    systemd enabled base container.                 105                  [OK]
+imagine10255/centos6-lnmp-php56   centos6-lnmp-php56                              58                   [OK]
+tutum/centos                      Simple CentOS docker image with SSH access      48
+centos/postgresql-96-centos7      PostgreSQL is an advanced Object-Relational …   45
+jdeathe/centos-ssh-apache-php     Apache PHP - CentOS.                            31                   [OK]
+kinogmt/centos-ssh                CentOS with SSH                                 29                   [OK]
+guyton/centos6                    From official centos6 container with full up…   10                   [OK]
+nathonfowlie/centos-jre           Latest CentOS image with the JRE pre-install…   8                    [OK]
+centos/tools                      Docker image that has systems administration…   7                    [OK]
+drecom/centos-ruby                centos ruby                                     6                    [OK]
+roboxes/centos8                   A generic CentOS 8 base image.                  5
+mamohr/centos-java                Oracle Java 8 Docker image based on Centos 7    4                    [OK]
+darksheer/centos                  Base Centos Image -- Updated hourly             3                    [OK]
+amd64/centos                      The official build of CentOS.                   2
+miko2u/centos6                    CentOS6 日本語環境                                   2                    [OK]
+dokken/centos-7                   CentOS 7 image for kitchen-dokken               2
+blacklabelops/centos              CentOS Base Image! Built and Updates Daily!     1                    [OK]
+mcnaughton/centos-base            centos base image                               1                    [OK]
+starlabio/centos-native-build     Our CentOS image for native builds              0                    [OK]
+jelastic/centosvps                An image of the CentOS Elastic VPS maintaine…   0
+smartentry/centos                 centos with smartentry                          0                    [OK]
+</code></pre></div><h3 id=이미지-받기>이미지 받기</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># docker pull &lt;image&gt;:&lt;tag&gt;</span>
+~$ docker pull centos:7
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>7: Pulling from library/centos
+Digest: sha256:c73f515d06b0fa07bb18d8202035e739a494ce760aa73129f60f4bf2bd22b407
+Status: Downloaded newer image for centos:7
+docker.io/library/centos:7
+</code></pre></div><h3 id=다운받은-이미지-리스트-확인>다운받은 이미지 리스트 확인</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># 두 명령어 모두 사용 가능</span>
+~$ docker images
+~$ docker image ls
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
+centos        7         eeb6ee3f44bd   5 months ago    204MB
+golang        1.12.5    1ef078f0da9e   2 years ago     774MB
+postgres      11.3      4e045cb8eecd   2 years ago     312MB
+</code></pre></div><h3 id=container-생성과-시작>container 생성과 시작</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># docker run -it --name &lt;container name&gt; &lt;image&gt;:&lt;tag&gt; &lt;command&gt;</span>
+~$ docker run -it --name hello centos:7 /bin/bash
+</code></pre></div><p>실행 시 아래와 같이 container 내부의 bash 쉘이 실행된 상태가 된다. hostname은 container ID다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>[root@fb53ec6b4d0d /]#
+</code></pre></div><h3 id=container-빠져나오기>container 빠져나오기</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ docker run -it --name hello centos:7 /bin/bash
+</code></pre></div><p>위와 같이 bash 명령어로 container를 실행한 경우 exit 명령어를 입력하면 container도 같이 종료된다.
+exit 명령어는 현재 실행 중인 bash shell을 종료하고, bash shell이 종료되면 container는 더 이상 실행할 명령어가 없기 때문이다.</p>
+<p>만약 container를 중지하지 않고 container 외부로 빠져나오고 싶은 경우, 아래 커맨드를 입력한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>Ctrl+P , Ctrl+Q
+</code></pre></div><h3 id=container-접속>container 접속</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>docker attach &lt;container name&gt;
+docker attach hello
+</code></pre></div><ul>
+<li>container 실행 시 /bin/bash 를 실행했으므로 명령 프롬프트가 뜸</li>
+<li>container 실행 시 application 을 실행했다면 출력만 볼 수 있음</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>docker exec -it &lt;container name&gt; /bin/bash
+</code></pre></div><h3 id=container-목록>container 목록</h3>
+<ul>
+<li>
+<p>실행 중인 container 목록</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ docker ps
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>NAMES                IMAGE         STATUS                      PORTS
+hello                centos:7      Up 5 minutes
+</code></pre></div></li>
+<li>
+<p>실행 중지된 conatiner 포함 목록</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ docker ps -a
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>NAMES                IMAGE         STATUS                      PORTS
+hello                centos:7      Up 5 minutes
+nostalgic_robinson   eeed133b351f  Exited (7) 14 hours ago
+</code></pre></div></li>
+</ul>
+<h3 id=container-시작>container 시작</h3>
+<p>container 이름과 ID 중 하나를 사용하면 된다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># docker start &lt;container id&gt;</span>
+~$ docker start 478a9a66b354
+
+<span style=color:#75715e># docker start &lt;container name&gt;</span>
+~$ docker start hello
+</code></pre></div><h3 id=container-재시작>container 재시작</h3>
+<p>container 이름과 ID 중 하나를 사용하면 된다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># docker restart &lt;container name / container ID&gt;</span>
+~$ docker restart hello
+</code></pre></div><h3 id=외부에서-container-안의-명령-실행하기>외부에서 container 안의 명령 실행하기</h3>
+<ul>
+<li>
+<p>패키지 설치등을 할때 사용하면 유용</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># docker exec &lt;container name&gt; &lt;command&gt; &lt;arguments&gt;</span>
+~$ docker exec hello yum install openssh-clients
+</code></pre></div></li>
+<li>
+<p>만약, bash shell 처럼 사용자 입력이 필요한 명령어를 실행할 경우 <code>-it</code> 옵션을 사용해야 한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># docker exec -it &lt;container name&gt; &lt;command&gt;</span>
+~$ docker exec -it hello /bin/bash
+</code></pre></div></li>
+</ul>
+<h3 id=container-중지>container 중지</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># docker stop &lt;container name / container ID&gt;</span>
+~$ docker stop hello
+</code></pre></div><ul>
+<li>
+<p>특정 이미지로 만들어진 container 모두 종료</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># ancestor : 이미지 명</span>
+~$ docker stop <span style=color:#66d9ef>$(</span>docker ps -q --filter ancestor<span style=color:#f92672>=</span>centos:7<span style=color:#66d9ef>)</span>
+</code></pre></div></li>
+</ul>
+<h3 id=container-삭제>container 삭제</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># docker rm &lt;container name&gt;</span>
+~$ docker rm hello
+</code></pre></div><ul>
+<li>
+<p>특정 이미지로 만들어진 container 모두 종료</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># ancestor : 이미지 명</span>
+~$ docker rm <span style=color:#66d9ef>$(</span>docker ps -a -q --filter ancestor<span style=color:#f92672>=</span>centos:7<span style=color:#66d9ef>)</span>
+</code></pre></div></li>
+</ul>
+<h3 id=이미지-삭제>이미지 삭제</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># docker rmi &lt;image&gt;:&lt;tag&gt;`</span>
+~$ docker rmi centos:7<span style=color:#e6db74>`</span>
+
+<span style=color:#75715e># 이미지의 모든 태그 삭제</span>
+<span style=color:#75715e># docker rmi &lt;image&gt;`</span>
+~$ docker rmi centos<span style=color:#e6db74>`</span>
+</code></pre></div><h3 id=전체-container-ip-확인>전체 container ip 확인</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ docker inspect -f <span style=color:#e6db74>&#39;{{.Name}} - {{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}&#39;</span> <span style=color:#66d9ef>$(</span>docker ps -qa<span style=color:#66d9ef>)</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>/hello - 172.21.0.4
+/hello2 - 172.21.0.3
+</code></pre></div><h2 id=docker-container-terminal-resize>docker container terminal resize</h2>
+<p>종종 host 터미널 창 크기보다 container 내부의 터미널 창 크기가 작아서 글씨가 잘리는 경우가 있다.
+그럴 때 사용하자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>~$ docker exec -it -e COLUMNS<span style=color:#f92672>=</span>$COLUMNS hello /bin/bash
+</code></pre></div><p><code>-e</code>는 환경 변수를 설정하는 옵션이고, 사용 가능한 환경 변수 중 터미널과 연관된 환경 변수는 다음과 같다.</p>
+<ul>
+<li>COLUMNS : 터미널 가로 크기</li>
+<li>LINES : 터미널 세로 크기</li>
+</ul>
+<h2 id=docker-이미지-생성>Docker 이미지 생성</h2>
+<ol>
+<li>
+<p>Dockerfile 생성</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-docker data-lang=docker><span style=color:#66d9ef>FROM</span><span style=color:#e6db74> centos:7</span><span style=color:#960050;background-color:#1e0010>
+</span></code></pre></div></li>
+<li>
+<p>docker 이미지 생성</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ docker build --tag &lt;tag&gt; .
+~$ docker build --tag vod:0.1 .
+~$ docker build --tag build-cdn:1.0 -f Dockerfile.castis.build.cdn .
+</code></pre></div></li>
+</ol>
+<h2 id=docker-tip>Docker tip</h2>
+<h3 id=docker-conatiner-내부에서-한글-사용해야-할-때-ubuntu-기준>docker conatiner 내부에서 한글 사용해야 할 때 (ubuntu 기준)</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-docker data-lang=docker><span style=color:#66d9ef>RUN</span> apt-get update<span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> apt-get install  -y language-pack-ko<span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> locale-gen ko_KR.UTF-8<span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>ENV</span> LANG ko_KR.UTF-8<span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>ENV</span> LANGUAGE ko_KR.UTF-8<span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>ENV</span> LC_ALL ko_KR.UTF-8<span style=color:#960050;background-color:#1e0010>
+</span></code></pre></div><h3 id=container-내부에서-netstat-명령어-없이-listen-port-확인>Container 내부에서 netstat 명령어 없이 listen port 확인</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh>~$ docker exec -it <span style=color:#e6db74>${</span>CONTAINER_NAME<span style=color:#e6db74>}</span> bash
+~$ awk <span style=color:#e6db74>&#39;function hextodec(str,ret,n,i,k,c){
+</span><span style=color:#e6db74>    ret = 0
+</span><span style=color:#e6db74>    n = length(str)
+</span><span style=color:#e6db74>    for (i = 1; i &lt;= n; i++) {
+</span><span style=color:#e6db74>        c = tolower(substr(str, i, 1))
+</span><span style=color:#e6db74>        k = index(&#34;123456789abcdef&#34;, c)
+</span><span style=color:#e6db74>        ret = ret * 16 + k
+</span><span style=color:#e6db74>    }
+</span><span style=color:#e6db74>    return ret
+</span><span style=color:#e6db74>}
+</span><span style=color:#e6db74>function getIP(str,ret){
+</span><span style=color:#e6db74>    ret=hextodec(substr(str,index(str,&#34;:&#34;)-2,2)); 
+</span><span style=color:#e6db74>    for (i=5; i&gt;0; i-=2) {
+</span><span style=color:#e6db74>        ret = ret&#34;.&#34;hextodec(substr(str,i,2))
+</span><span style=color:#e6db74>    }
+</span><span style=color:#e6db74>    ret = ret&#34;:&#34;hextodec(substr(str,index(str,&#34;:&#34;)+1,4))
+</span><span style=color:#e6db74>    return ret
+</span><span style=color:#e6db74>} 
+</span><span style=color:#e6db74>NR &gt; 1 {{if(NR==2)print &#34;Local - Remote&#34;;local=getIP($2);remote=getIP($3)}{print local&#34; - &#34;remote}}&#39;</span> /proc/net/tcp 
+</code></pre></div><h2 id=docker-compose>docker-compose</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=color:#75715e># 이미지 새로 빌드</span>
+docker-compose up -d --force-recreate --build
+</code></pre></div>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/linux-kernel-tuning/>Linux Kernel Tuning</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#설치>설치</a>
+<ul>
+<li><a href=#centos-7>CentOS 7</a></li>
+</ul>
+</li>
+<li><a href=#설정>설정</a>
+<ul>
+<li><a href=#데이터-저장-위치-변경>데이터 저장 위치 변경</a></li>
+</ul>
+</li>
+<li><a href=#docker0-ip-변경>docker0 IP 변경</a></li>
+<li><a href=#docker-container-network-변경>docker container network 변경</a></li>
+<li><a href=#runtime-추가>runtime 추가</a>
+<ul>
+<li><a href=#nvidia-runtime>nvidia runtime</a></li>
+</ul>
+</li>
+<li><a href=#명령어>명령어</a>
+<ul>
+<li><a href=#이미지-찾기>이미지 찾기</a></li>
+<li><a href=#이미지-받기>이미지 받기</a></li>
+<li><a href=#다운받은-이미지-리스트-확인>다운받은 이미지 리스트 확인</a></li>
+<li><a href=#container-생성과-시작>container 생성과 시작</a></li>
+<li><a href=#container-빠져나오기>container 빠져나오기</a></li>
+<li><a href=#container-접속>container 접속</a></li>
+<li><a href=#container-목록>container 목록</a></li>
+<li><a href=#container-시작>container 시작</a></li>
+<li><a href=#container-재시작>container 재시작</a></li>
+<li><a href=#외부에서-container-안의-명령-실행하기>외부에서 container 안의 명령 실행하기</a></li>
+<li><a href=#container-중지>container 중지</a></li>
+<li><a href=#container-삭제>container 삭제</a></li>
+<li><a href=#이미지-삭제>이미지 삭제</a></li>
+<li><a href=#전체-container-ip-확인>전체 container ip 확인</a></li>
+</ul>
+</li>
+<li><a href=#docker-container-terminal-resize>docker container terminal resize</a></li>
+<li><a href=#docker-이미지-생성>Docker 이미지 생성</a></li>
+<li><a href=#docker-tip>Docker tip</a>
+<ul>
+<li><a href=#docker-conatiner-내부에서-한글-사용해야-할-때-ubuntu-기준>docker conatiner 내부에서 한글 사용해야 할 때 (ubuntu 기준)</a></li>
+<li><a href=#container-내부에서-netstat-명령어-없이-listen-port-확인>Container 내부에서 netstat 명령어 없이 listen port 확인</a></li>
+</ul>
+</li>
+<li><a href=#docker-compose>docker-compose</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/command/>command</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux_kernel/>linux_kernel</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/docker-security-nginx/>Nginx docker container 안전하게 실행하기(security)</a></h1>
+<time class="has-text-grey-light is-size-7">18 January 2022</time>
+<h1><a href=https://hsyang.net/posts/docker-ps-format/>Docker ps 내용 바꾸기</a></h1>
+<time class="has-text-grey-light is-size-7">2 December 2021</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/docker/>Docker</a></h1>
+<time class="has-text-grey-light is-size-7">15 February 2022</time>
+<h1><a href=https://hsyang.net/posts/linux-kernel-tuning/>Linux Kernel Tuning</a></h1>
+<time class="has-text-grey-light is-size-7">7 February 2022</time>
+<h1><a href=https://hsyang.net/posts/rpm/>[명령어] rpm</a></h1>
+<time class="has-text-grey-light is-size-7">24 January 2022</time>
+<h1><a href=https://hsyang.net/posts/docker-security-nginx/>Nginx docker container 안전하게 실행하기(security)</a></h1>
+<time class="has-text-grey-light is-size-7">18 January 2022</time>
+<h1><a href=https://hsyang.net/posts/iptables/>[명령어] iptables</a></h1>
+<time class="has-text-grey-light is-size-7">10 January 2022</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2022 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>
