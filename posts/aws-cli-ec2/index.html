@@ -1,7 +1,7 @@
 <!doctype html><html lang=ko><head>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
-<title>AWS CLI - EC2 생성하기 | 메모장</title>
+<title>AWS CLI [EC2] - 생성하기 | 메모장</title>
 <meta name=description content="AWS CLI를 이용하여 EC2 인스턴스를 생성하는 방법을 알아보자.">
 <link rel=canonical href=https://hsyang.net/posts/aws-cli-ec2/>
 <link rel=stylesheet href=/css/bulma.min.css>
@@ -10,14 +10,14 @@
 <link rel=preconnect href=https://fonts.googleapis.com>
 <link rel=preconnect href=https://fonts.gstatic.com crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
-<meta property="og:title" content="AWS CLI - EC2 생성하기">
+<meta property="og:title" content="AWS CLI [EC2] - 생성하기">
 <meta property="og:description" content="AWS CLI를 이용하여 EC2 인스턴스를 생성하는 방법을 알아보자.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://hsyang.net/posts/aws-cli-ec2/"><meta property="article:section" content="posts">
 <meta property="article:published_time" content="2021-10-11T11:58:00+09:00">
-<meta property="article:modified_time" content="2021-12-27T23:08:41+09:00"><meta property="og:site_name" content="메모장">
+<meta property="article:modified_time" content="2022-02-28T01:03:41+09:00"><meta property="og:site_name" content="메모장">
 <meta name=twitter:card content="summary">
-<meta name=twitter:title content="AWS CLI - EC2 생성하기">
+<meta name=twitter:title content="AWS CLI [EC2] - 생성하기">
 <meta name=twitter:description content="AWS CLI를 이용하여 EC2 인스턴스를 생성하는 방법을 알아보자.">
 <script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
 <script async src=https://www.google-analytics.com/analytics.js></script>
@@ -62,7 +62,7 @@
 <p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
 <p class="mb-4 has-text-grey-light"><time>October 11, 2021</time></p>
 </div>
-<h1 class="title is-size-3 has-text-centered">AWS CLI - EC2 생성하기</h1>
+<h1 class="title is-size-3 has-text-centered">AWS CLI [EC2] - 생성하기</h1>
 <div class="content mt-6">
 <h2 id=ec2-란>EC2 란?</h2>
 <p>AWS를 처음 사용할 때 가장 쉽게 접할 수 있는 서비스가 <code>EC2</code>다. 일반 서버를 다루는 것과 비슷하다.
@@ -739,7 +739,7 @@ EC2는 AWS 서비스 중 상당히 많은 부분을 사용자에게 오픈한 �
 <div class="columns is-mobile">
 <div class="column has-text-left">
 <p>Previous post</p>
-<a href=/posts/aws-cli-configure/>AWS CLI 설치 및 기본 설정 방법</a>
+<a href=/posts/aws-cli-configure/>AWS CLI - 설치 및 기본 설정 방법</a>
 </div>
 <div class="column has-text-right">
 <p>Next post</p>
@@ -814,6 +814,7 @@ EC2는 AWS 서비스 중 상당히 많은 부분을 사용자에게 오픈한 �
 <a class="tag is-dark" href=/tags/bash/>bash</a>
 <a class="tag is-dark" href=/tags/c/>c</a>
 <a class="tag is-dark" href=/tags/centos/>centos</a>
+<a class="tag is-dark" href=/tags/cloudfront/>cloudfront</a>
 <a class="tag is-dark" href=/tags/command/>command</a>
 <a class="tag is-dark" href=/tags/dicom/>dicom</a>
 <a class="tag is-dark" href=/tags/docker/>docker</a>
@@ -834,7 +835,9 @@ EC2는 AWS 서비스 중 상당히 많은 부분을 사용자에게 오픈한 �
 <div class="card mb-3">
 <div class=card-content>
 <h1 class="title is-5">관련 글</h1>
-<h1><a href=https://hsyang.net/posts/aws-cli-configure/>AWS CLI 설치 및 기본 설정 방법</a></h1>
+<h1><a href=https://hsyang.net/posts/aws-cloudfront/>AWS CLI [CloudFront] - Cache 삭제 방법</a></h1>
+<time class="has-text-grey-light is-size-7">28 February 2022</time>
+<h1><a href=https://hsyang.net/posts/aws-cli-configure/>AWS CLI - 설치 및 기본 설정 방법</a></h1>
 <time class="has-text-grey-light is-size-7">19 September 2021</time>
 <h1><a href=https://hsyang.net/posts/python-google-spreadsheets/>[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기</a></h1>
 <time class="has-text-grey-light is-size-7">17 August 2021</time>
@@ -843,6 +846,8 @@ EC2는 AWS 서비스 중 상당히 많은 부분을 사용자에게 오픈한 �
 <div class="card mb-3">
 <div class=card-content>
 <h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/aws-cloudfront/>AWS CLI [CloudFront] - Cache 삭제 방법</a></h1>
+<time class="has-text-grey-light is-size-7">28 February 2022</time>
 <h1><a href=https://hsyang.net/posts/how-to-create-deb-repository/>DEB(APT) Repository 만들기</a></h1>
 <time class="has-text-grey-light is-size-7">27 February 2022</time>
 <h1><a href=https://hsyang.net/posts/gpg/>GPG 공개키/개인키 쌍 만들기</a></h1>
@@ -851,8 +856,6 @@ EC2는 AWS 서비스 중 상당히 많은 부분을 사용자에게 오픈한 �
 <time class="has-text-grey-light is-size-7">27 February 2022</time>
 <h1><a href=https://hsyang.net/posts/vsftpd-upload-only-account/>CentOS/Redhat 7 - ftp 서버 업로드 전용 계정 생성 방법</a></h1>
 <time class="has-text-grey-light is-size-7">20 February 2022</time>
-<h1><a href=https://hsyang.net/posts/docker/>Docker</a></h1>
-<time class="has-text-grey-light is-size-7">15 February 2022</time>
 </div>
 </div>
 </div>
