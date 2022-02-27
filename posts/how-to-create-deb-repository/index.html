@@ -1,0 +1,399 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>DEB(APT) Repository 만들기 | 메모장</title>
+<meta name=description content="DEB 패키지 저장소를 구성하여 apt 명령어로 쉽게 설치해보자">
+<link rel=canonical href=https://hsyang.net/posts/how-to-create-deb-repository/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="DEB(APT) Repository 만들기">
+<meta property="og:description" content="DEB 패키지 저장소를 구성하여 apt 명령어로 쉽게 설치해보자">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/how-to-create-deb-repository/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-02-27T14:08:39+09:00">
+<meta property="article:modified_time" content="2022-02-28T00:40:07+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="DEB(APT) Repository 만들기">
+<meta name=twitter:description content="DEB 패키지 저장소를 구성하여 apt 명령어로 쉽게 설치해보자">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>February 27, 2022</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">DEB(APT) Repository 만들기</h1>
+<div class="content mt-6">
+<p>일단 아무런 설명 없이 그대로 따라서 만들어 보자. 자세한 내용은 뒤에서 설명한다.</p>
+<h2 id=apt-repository-생성>APT Repository 생성</h2>
+<ol>
+<li>
+<p>아래와 같은 폴더 구조를 만든다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>.
+├── deb
+│   ├── dists
+│   │   └── stable
+│   │       └── main
+│   │           ├── binary-amd64
+│   │           └── binary-arm64
+│   └── pool
+│       └── main
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ mkdir -p deb/dists/stable/main/binary-amd64
+~$ mkdir -p deb/dists/stable/main/binary-arm64
+~$ mkdir -p deb/pool/main
+</code></pre></div></li>
+<li>
+<p><code>deb/pool/main</code> 폴더에 deb 파일들을 복사한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ cp *.deb deb/pool/main
+</code></pre></div></li>
+<li>
+<p>Repository 생성 시 필요한 유틸리티를 설치한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo apt install apt-utils dpkg-dev
+</code></pre></div></li>
+<li>
+<p>Packages 파일을 생성한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ cd deb/
+~$ dpkg-scanpackages -m --arch amd64 pool/ &gt; dists/stable/main/binary-amd64/Packages
+~$ dpkg-scanpackages -m --arch amd64 pool/ | gzip -9 &gt; dists/stable/main/binary-amd64/Packages.gz
+~$ dpkg-scanpackages -m --arch arm64 pool/ &gt; dists/stable/main/binary-arm64/Packages
+~$ dpkg-scanpackages -m --arch arm64 pool/ | gzip -9 &gt; dists/stable/main/binary-arm64/Packages.gz
+</code></pre></div></li>
+<li>
+<p>Release 파일을 생성한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ cd dists/stable/
+~$ cat &gt; Release <span style=color:#e6db74>&lt;&lt; EOF
+</span><span style=color:#e6db74>Origin: My Home
+</span><span style=color:#e6db74>Label: My Home
+</span><span style=color:#e6db74>Suite: stable
+</span><span style=color:#e6db74>Version: 1.0
+</span><span style=color:#e6db74>Architectures: amd64 arm64
+</span><span style=color:#e6db74>Components: main
+</span><span style=color:#e6db74>Description: my software repository
+</span><span style=color:#e6db74>EOF</span>
+~$ apt-ftparchive release . &gt;&gt; Release
+</code></pre></div></li>
+<li>
+<p>GPG Key Pair를 생성한다.</p>
+<ul>
+<li><a href=https://hsyang.net/posts/gpg/>GPG 공개키/개인키 쌍 만들기</a> 문서를 참고하자.</li>
+</ul>
+</li>
+<li>
+<p>생성한 GPG Key 를 이용하여 Release 파일에 서명한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># 5번 과정에서 Key Pair 생성 시 입력한 Real name 값이 mykey 인 경우</span>
+~$ cd deb/dists/stable
+~$ gpg --clearsign -o InRelease --default-key mykey Release
+~$ gpg -abs -o Release.gpg --default-key mykey Release
+</code></pre></div></li>
+<li>
+<p>5번에서 생성한 GPG Key 의 공개키를 추출한 후 deb 저장소 최상단에 복사한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># 5번 과정에서 Key Pair 생성 시 입력한 Real name 값이 mykey 인 경우</span>
+~$ gpg --armor --export mykey &gt; pub.key
+
+~$ mv pub.key deb/
+</code></pre></div></li>
+<li>
+<p>Web 서버를 실행한다. (여기서는 간단하게 python3를 이용)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ cd deb/
+~$ python3 -m http.server
+Serving HTTP on 0.0.0.0 port <span style=color:#ae81ff>8000</span> <span style=color:#f92672>(</span>http://0.0.0.0:8000/<span style=color:#f92672>)</span> ...
+</code></pre></div></li>
+</ol>
+<h2 id=apt-repository-추가>APT Repository 추가</h2>
+<p>위에서 생성한 Repository를 서버에 추가하는 과정이다. Repository 서버의 IP 주소가 1.1.1.1 이라고 가정하였다.</p>
+<ol>
+<li>
+<p>public key 등록</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ curl http://1.1.1.1:8000/pub.key | sudo apt-key add -
+</code></pre></div></li>
+<li>
+<p>sources.list 추가</p>
+<ul>
+<li>만약 arm64 기반이라면 [arch=arm64] 로 변경</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo cat &gt; /etc/apt/sources.list.d/my.list <span style=color:#e6db74>&lt;&lt;EOF
+</span><span style=color:#e6db74>deb [arch=amd64] https://1.1.1.1:8000 stable main
+</span><span style=color:#e6db74>EOF</span>
+</code></pre></div></li>
+<li>
+<p>apt 캐쉬 업데이트</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ sudo apt update
+</code></pre></div></li>
+</ol>
+<h2 id=개념>개념</h2>
+<h3 id=sourceslist-format>sources.list format</h3>
+<p>/etc/apt/sources.list 파일을 열어보면 다음과 같이 저장소가 정의되어 있다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>deb http://archive.ubuntu.com/ubuntu focal main restricted
+</code></pre></div><p>위 파일의 포맷은 <code>man sources.list</code> 명령어로 확인할 수 있는데, 아래와 같이 설명되어 있다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>deb [ option1=value1 option2=value2 ] uri suite [component1] [component2] [...]
+deb-src [ option1=value1 option2=value2 ] uri suite [component1] [component2] [...]
+</code></pre></div><h4 id=types>Types</h4>
+<p>첫 번째 항목으로, deb / deb-src 값 중 하나를 쓸 수 있다.</p>
+<ul>
+<li>deb : binary package 저장소</li>
+<li>deb-src : source code package 저장소</li>
+</ul>
+<h4 id=types-options>Types Options</h4>
+<p>두 번째 항목으로, 생략 시 default option이 적용된다. 각 옵션은 공백으로 구분한다. 아래와 같이 <code>[]</code> 안에 옵션 값을 설정한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>deb [arch=amd64 trusted=yes] https://download.docker.com/linux/ubuntu   focal stable
+</code></pre></div><p>자주 접하는 옵션만 설명한다. 모든 옵션은 man sources.list 에서 확인하자.</p>
+<ul>
+<li>arch
+<ul>
+<li>string</li>
+<li>어떤 architecture에 대한 저장소인지 설정한다. 생략 시 모든 architecture에 대한 저장소로 설정된다.</li>
+</ul>
+</li>
+<li>allow-insecure
+<ul>
+<li>boolean (yes/no)</li>
+<li>저장소에 Release 파일이 없거나 서명되지 않은 Release 파일이 있는 경우, apt update 명령 실행 시 데이터를 다운로드 받지 않는다.
+그러나 해당 옵션 적용 시 warning 메시지만 띄우고 데이터를 다운로드 한다.</li>
+</ul>
+</li>
+<li>trusted
+<ul>
+<li>boolean (yes/no)</li>
+<li>저장소에 Release 파일이 없거나 서명되지 않은 Release 파일이 있는 경우에도 warning 메시지 없이 데이터를 다운로드 한다.</li>
+</ul>
+</li>
+</ul>
+<h4 id=uri>URI</h4>
+<p>세 번째 항목으로, 저장소의 root url을 지정한다. 사용가능한 URI 타입은 다음과 같다.</p>
+<ul>
+<li>
+<p>http</p>
+</li>
+<li>
+<p>https</p>
+</li>
+<li>
+<p>mirror, mirror+scheme</p>
+</li>
+<li>
+<p>file</p>
+<ul>
+<li>
+<p>디스크의 특정 경로를 저장소로 사용할 경우 사용한다. 아래와 같이 설정한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>file:/home/apt/debian
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>cdrom</p>
+</li>
+<li>
+<p>ftp</p>
+</li>
+<li>
+<p>copy</p>
+</li>
+<li>
+<p>rsh, ssh</p>
+</li>
+</ul>
+<h4 id=suites-component>Suites, Component</h4>
+<p>Suites가 네 번째, 그 이후 Component는 몇 개든 쓸 수 있다.
+Suties 값은 보통 배포판의 <code>codename</code>을 사용하거나 <code>stable</code>과 같은 값을 사용한다.
+실제로는 저장소 root 의 하위 폴더 이름을 의미한다.
+아래 예를 보자.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>deb http://archive.ubuntu.com/ubuntu focal main restricted
+</code></pre></div><p>위 예에서 Suites는 <code>focal</code>, Component는 <code>main</code>과 <code>restricted</code>이다. 실제 서버의 폴더 구조는 아래와 같다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>.
+└── ubuntu                    &lt;&lt; URI Root
+    └── dists
+        └── focal             &lt;&lt; Suites
+            ├── main          &lt;&lt; Component1
+            └── restricted    &lt;&lt; Component2
+</code></pre></div><p>Suites과 Component는 모든 패키지 파일을 한 폴더에서 관리하지 않고 폴더 별로 나눠서 관리하기 위한 방법이라 생각하자.</p>
+<h3 id=meta-data>Meta data</h3>
+<h4 id=release-inrelease>Release, InRelease</h4>
+<p>apt 명령어로 패키지를 다운로드할 때, 가장 먼저 이 파일을 다운로드 받는다. 이 파일은 아래 위치(Suites 하위)에 존재해야 한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>deb http://archive.ubuntu.com/ubuntu focal main restricted
+
+.
+└── ubuntu                    &lt;&lt; URI Root
+    └── dists
+        └── focal             &lt;&lt; Suites
+            ├── InRelease
+            ├── Release
+            ├── main          &lt;&lt; Component1
+            └── restricted    &lt;&lt; Component2
+</code></pre></div><p><code>Release</code> 파일은 저장소의 파일들의 hash 정보를 기록한 텍스트 파일이다. (다운로드한 파일의 무결성 체크를 위해 사용)
+<code>Release</code> 파일은 <code>Release.gpg</code> 파일 또한 함께 제공되어야 하는데, <code>Release</code> 파일에 대한 서명 정보이다.
+<code>InRelease</code> 파일은 <code>Relase</code> + <code>Release.gpg</code> 라고 생각하면 된다. (두 개의 파일을 하나로 합침)</p>
+<h4 id=packages>Packages</h4>
+<p>Packages 파일은 실제 deb 파일들에 대한 Meta 정보가 포함되어 있는 텍스트 파일이다. apt 명령어 실행 시 이 파일을 읽어서 패키지 정보를 알아내는 것으로 추정한다.
+Packages 파일은 아래 위치한다.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>.
+├── dists
+│   └── stable
+│       ├── InRelease
+│       ├── main
+│       │   ├── binary-amd64
+│       │   │   ├── Packages      &lt;&lt;---
+│       │   │   └── Packages.gz   &lt;&lt;---
+│       │   └── binary-arm64
+│       │       ├── Packages      &lt;&lt;---
+│       │       └── Packages.gz   &lt;&lt;---
+│       ├── Release
+│       └── Release.gpg
+├── pool
+    └── main
+</code></pre></div><h2 id=reference>Reference</h2>
+<ul>
+<li><a href=https://wiki.debian.org/DebianRepository/Format>https://wiki.debian.org/DebianRepository/Format</a></li>
+<li><a href=https://help.ubuntu.com/community/CreateAuthenticatedRepository>https://help.ubuntu.com/community/CreateAuthenticatedRepository</a></li>
+<li><a href=https://wiki.debian.org/SecureApt>https://wiki.debian.org/SecureApt</a></li>
+<li><a href=https://earthly.dev/blog/creating-and-hosting-your-own-deb-packages-and-apt-repo/>https://earthly.dev/blog/creating-and-hosting-your-own-deb-packages-and-apt-repo/</a></li>
+<li><a href=https://bgstack15.wordpress.com/2016/06/22/building-an-apt-repository-on-centos/>https://bgstack15.wordpress.com/2016/06/22/building-an-apt-repository-on-centos/</a></li>
+</ul>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/gpg/>GPG 공개키/개인키 쌍 만들기</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#apt-repository-생성>APT Repository 생성</a></li>
+<li><a href=#apt-repository-추가>APT Repository 추가</a></li>
+<li><a href=#개념>개념</a>
+<ul>
+<li><a href=#sourceslist-format>sources.list format</a>
+<ul>
+<li><a href=#types>Types</a></li>
+<li><a href=#types-options>Types Options</a></li>
+<li><a href=#uri>URI</a></li>
+<li><a href=#suites-component>Suites, Component</a></li>
+</ul>
+</li>
+<li><a href=#meta-data>Meta data</a>
+<ul>
+<li><a href=#release-inrelease>Release, InRelease</a></li>
+<li><a href=#packages>Packages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href=#reference>Reference</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/apt/>apt</a>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/centos/>centos</a>
+<a class="tag is-dark" href=/tags/command/>command</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux/>linux</a>
+<a class="tag is-dark" href=/tags/linux_kernel/>linux_kernel</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/ubuntu/>ubuntu</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+<a class="tag is-dark" href=/tags/yum/>yum</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/how-to-create-deb-repository/>DEB(APT) Repository 만들기</a></h1>
+<time class="has-text-grey-light is-size-7">27 February 2022</time>
+<h1><a href=https://hsyang.net/posts/gpg/>GPG 공개키/개인키 쌍 만들기</a></h1>
+<time class="has-text-grey-light is-size-7">27 February 2022</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-rpm-repository/>RPM(YUM) Repository 만들기</a></h1>
+<time class="has-text-grey-light is-size-7">27 February 2022</time>
+<h1><a href=https://hsyang.net/posts/vsftpd-upload-only-account/>CentOS/Redhat 7 - ftp 서버 업로드 전용 계정 생성 방법</a></h1>
+<time class="has-text-grey-light is-size-7">20 February 2022</time>
+<h1><a href=https://hsyang.net/posts/docker/>Docker</a></h1>
+<time class="has-text-grey-light is-size-7">15 February 2022</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2022 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>
