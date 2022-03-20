@@ -1,0 +1,323 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>[문제 해결] Qt Quick 2 / QML - TypeError: Cannot read property | 메모장</title>
+<meta name=description content="ListView 사용 시 발생할 수 있는 cannot read property 에러의 원인과 해결 방안에 대해 알아보자">
+<link rel=canonical href=https://hsyang.net/troubleshootings/qt-type-error-cannot-read-property/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="[문제 해결] Qt Quick 2 / QML - TypeError: Cannot read property">
+<meta property="og:description" content="ListView 사용 시 발생할 수 있는 cannot read property 에러의 원인과 해결 방안에 대해 알아보자">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/troubleshootings/qt-type-error-cannot-read-property/"><meta property="article:section" content="troubleshootings">
+<meta property="article:published_time" content="2022-03-20T11:20:08+09:00">
+<meta property="article:modified_time" content="2022-03-20T12:27:25+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="[문제 해결] Qt Quick 2 / QML - TypeError: Cannot read property">
+<meta name=twitter:description content="ListView 사용 시 발생할 수 있는 cannot read property 에러의 원인과 해결 방안에 대해 알아보자">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+<a class=navbar-item href=/troubleshootings>문제해결</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>March 20, 2022</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">[문제 해결] Qt Quick 2 / QML - TypeError: Cannot read property</h1>
+<div class="content mt-6">
+<h2 id=현상>현상</h2>
+<p>아래 코드 실행 후 동적으로 List Item을 추가한 후, 삭제 시 다음과 같은 에러 메시지가 출력됨</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>main.qml:45: TypeError: Cannot read property &#39;width&#39; of null
+</code></pre></div><ul>
+<li>
+<p>main.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>import</span> os
+<span style=color:#f92672>from</span> pathlib <span style=color:#f92672>import</span> Path
+<span style=color:#f92672>import</span> sys
+
+<span style=color:#f92672>from</span> PySide2.QtGui <span style=color:#f92672>import</span> QGuiApplication
+<span style=color:#f92672>from</span> PySide2.QtQml <span style=color:#f92672>import</span> QQmlApplicationEngine
+
+
+<span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#34;__main__&#34;</span>:
+    app <span style=color:#f92672>=</span> QGuiApplication(sys<span style=color:#f92672>.</span>argv)
+    engine <span style=color:#f92672>=</span> QQmlApplicationEngine()
+    engine<span style=color:#f92672>.</span>load(os<span style=color:#f92672>.</span>fspath(Path(__file__)<span style=color:#f92672>.</span>resolve()<span style=color:#f92672>.</span>parent <span style=color:#f92672>/</span> <span style=color:#e6db74>&#34;main.qml&#34;</span>))
+    <span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> engine<span style=color:#f92672>.</span>rootObjects():
+        sys<span style=color:#f92672>.</span>exit(<span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>)
+    sys<span style=color:#f92672>.</span>exit(app<span style=color:#f92672>.</span>exec_())
+</code></pre></div></li>
+<li>
+<p>main.qml</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-qml data-lang=qml><span style=color:#66d9ef>import</span> <span style=color:#a6e22e>QtQuick</span> <span style=color:#ae81ff>2.15</span>
+<span style=color:#66d9ef>import</span> <span style=color:#a6e22e>QtQuick</span>.<span style=color:#a6e22e>Window</span> <span style=color:#ae81ff>2.15</span>
+<span style=color:#66d9ef>import</span> <span style=color:#a6e22e>QtQuick</span>.<span style=color:#a6e22e>Controls</span> <span style=color:#ae81ff>2.15</span>
+
+<span style=color:#a6e22e>Window</span> {
+    <span style=color:#66d9ef>id: root</span>
+
+    <span style=color:#66d9ef>width:</span> <span style=color:#ae81ff>640</span>
+    <span style=color:#66d9ef>height:</span> <span style=color:#ae81ff>480</span>
+    <span style=color:#66d9ef>title:</span> <span style=color:#e6db74>&#34;Hello, world&#34;</span>
+    <span style=color:#66d9ef>visible:</span> <span style=color:#66d9ef>true</span>
+
+    <span style=color:#a6e22e>ListModel</span> {
+        <span style=color:#66d9ef>id: myModel</span>
+        <span style=color:#a6e22e>property</span> <span style=color:#66d9ef>int</span> <span style=color:#66d9ef>autoIndex:</span> <span style=color:#ae81ff>1</span>
+    }
+
+    <span style=color:#a6e22e>Column</span> {
+        <span style=color:#66d9ef>anchors.fill:</span> <span style=color:#a6e22e>parent</span>
+
+        <span style=color:#66d9ef>spacing:</span> <span style=color:#ae81ff>10</span>
+
+        <span style=color:#a6e22e>Button</span> {
+            <span style=color:#66d9ef>anchors.right:</span> <span style=color:#a6e22e>parent</span>.<span style=color:#a6e22e>right</span>
+            <span style=color:#66d9ef>text:</span> <span style=color:#e6db74>&#34;Add Item&#34;</span>
+            <span style=color:#66d9ef>onClicked:</span> {
+                <span style=color:#a6e22e>myModel</span>.<span style=color:#a6e22e>append</span>({<span style=color:#e6db74>&#39;number&#39;</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>myModel</span>.<span style=color:#a6e22e>autoIndex</span>})
+                <span style=color:#a6e22e>myModel</span>.<span style=color:#a6e22e>autoIndex</span> <span style=color:#f92672>+=</span> <span style=color:#ae81ff>1</span>
+            }
+        }
+
+        <span style=color:#a6e22e>ListView</span> {
+            <span style=color:#66d9ef>id: listView</span>
+
+            <span style=color:#66d9ef>width:</span> <span style=color:#ae81ff>350</span>
+            <span style=color:#66d9ef>height:</span> <span style=color:#ae81ff>400</span>
+            <span style=color:#66d9ef>anchors.horizontalCenter:</span> <span style=color:#a6e22e>parent</span>.<span style=color:#a6e22e>horizontalCenter</span>
+            <span style=color:#66d9ef>spacing:</span> <span style=color:#ae81ff>10</span>
+            <span style=color:#66d9ef>clip:</span> <span style=color:#66d9ef>true</span>
+
+            <span style=color:#66d9ef>model:</span> <span style=color:#a6e22e>myModel</span>
+
+            <span style=color:#66d9ef>delegate:</span> <span style=color:#a6e22e>Rectangle</span> {
+                <span style=color:#66d9ef>width:</span> <span style=color:#a6e22e>parent</span>.<span style=color:#a6e22e>width</span>
+                <span style=color:#66d9ef>height:</span> <span style=color:#ae81ff>50</span>
+                <span style=color:#66d9ef>color:</span> <span style=color:#e6db74>&#34;white&#34;</span>
+
+                <span style=color:#a6e22e>Button</span> {
+                    <span style=color:#66d9ef>anchors.right:</span> <span style=color:#a6e22e>parent</span>.<span style=color:#a6e22e>right</span>
+                    <span style=color:#66d9ef>anchors.rightMargin:</span> <span style=color:#ae81ff>15</span>
+                    <span style=color:#66d9ef>anchors.horizontalCenter:</span> <span style=color:#a6e22e>parent</span>.<span style=color:#a6e22e>horizontalCenter</span>
+
+                    <span style=color:#66d9ef>text:</span> <span style=color:#a6e22e>qsTr</span>(<span style=color:#e6db74>&#34;remove: &#34;</span>) <span style=color:#f92672>+</span> <span style=color:#a6e22e>number</span>
+                    <span style=color:#66d9ef>onClicked:</span> {
+                        <span style=color:#a6e22e>myModel</span>.<span style=color:#a6e22e>remove</span>(<span style=color:#a6e22e>index</span>)
+                    }
+                }
+            }
+        }
+    }
+}
+</code></pre></div></li>
+</ul>
+<h2 id=원인>원인</h2>
+<p><a href=https://doc.qt.io/qt-5/qml-qtquick-listview.html#example-usage>https://doc.qt.io/qt-5/qml-qtquick-listview.html#example-usage</a></p>
+<p>Delegates are instantiated as needed and may be destroyed at any time. As such, state should never be stored in a delegate. Delegates are usually parented to ListView&rsquo;s contentItem, but typically depending on whether it&rsquo;s visible in the view or not, the parent can change, and sometimes be null. Because of that, binding to the parent&rsquo;s properties from within the delegate is not recommended. If you want the delegate to fill out the width of the ListView, consider using one of the following approaches instead:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-qml data-lang=qml><span style=color:#a6e22e>ListView</span> {
+   <span style=color:#66d9ef>id: listView</span>
+    <span style=color:#75715e>// ...
+</span><span style=color:#75715e></span>
+    <span style=color:#66d9ef>delegate:</span> <span style=color:#a6e22e>Item</span> {
+        <span style=color:#75715e>// Incorrect.
+</span><span style=color:#75715e></span>        <span style=color:#66d9ef>width:</span> <span style=color:#a6e22e>parent</span>.<span style=color:#a6e22e>width</span>
+
+        <span style=color:#75715e>// Correct.
+</span><span style=color:#75715e></span>        <span style=color:#66d9ef>width:</span> <span style=color:#a6e22e>listView</span>.<span style=color:#a6e22e>width</span>
+        <span style=color:#66d9ef>width:</span> <span style=color:#a6e22e>ListView</span>.<span style=color:#a6e22e>view</span>.<span style=color:#a6e22e>width</span>
+        <span style=color:#75715e>// ...
+</span><span style=color:#75715e></span>    }
+}
+</code></pre></div><h2 id=해결-방안>해결 방안</h2>
+<p>delegate item(Rectangle)의 width 속성을 상위 컴포넌트와 동일하게 설정하고 싶은 경우, <code>parent</code> 키워드 대신 상위 컴포넌트의 id를 사용한다.</p>
+<ul>
+<li>
+<p>main.qml</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-qml data-lang=qml><span style=color:#66d9ef>import</span> <span style=color:#a6e22e>QtQuick</span> <span style=color:#ae81ff>2.15</span>
+<span style=color:#66d9ef>import</span> <span style=color:#a6e22e>QtQuick</span>.<span style=color:#a6e22e>Window</span> <span style=color:#ae81ff>2.15</span>
+<span style=color:#66d9ef>import</span> <span style=color:#a6e22e>QtQuick</span>.<span style=color:#a6e22e>Controls</span> <span style=color:#ae81ff>2.15</span>
+
+<span style=color:#a6e22e>Window</span> {
+    <span style=color:#75715e>// ...생략
+</span><span style=color:#75715e></span>    <span style=color:#a6e22e>Column</span> {
+        <span style=color:#75715e>// ...생략
+</span><span style=color:#75715e></span>        <span style=color:#a6e22e>Button</span> {
+            <span style=color:#75715e>// ...생략
+</span><span style=color:#75715e></span>        }
+        <span style=color:#a6e22e>ListView</span> {
+            <span style=color:#66d9ef>id: listView</span>
+            <span style=color:#75715e>// ...생략
+</span><span style=color:#75715e></span>            <span style=color:#66d9ef>model:</span> <span style=color:#a6e22e>myModel</span>
+
+            <span style=color:#66d9ef>delegate:</span> <span style=color:#a6e22e>Rectangle</span> {
+                <span style=color:#66d9ef>width:</span> <span style=color:#a6e22e>listView</span>.<span style=color:#a6e22e>width</span>       <span style=color:#75715e>// parent.width -&gt; listView.width 변경
+</span><span style=color:#75715e></span>                <span style=color:#75715e>// ...생략
+</span><span style=color:#75715e></span>
+                <span style=color:#a6e22e>Button</span> {
+                    <span style=color:#75715e>// ...생략
+</span><span style=color:#75715e></span>                }
+            }
+        }
+    }
+}
+</code></pre></div></li>
+</ul>
+<h2 id=참고>참고</h2>
+<ul>
+<li><a href=https://stackoverflow.com/a/63776812>https://stackoverflow.com/a/63776812</a></li>
+</ul>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/troubleshootings/pyinstaller-python-library-not-found/>[문제 해결] pyinstaller - OSError: Python library not found</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#현상>현상</a></li>
+<li><a href=#원인>원인</a></li>
+<li><a href=#해결-방안>해결 방안</a></li>
+<li><a href=#참고>참고</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/apt/>apt</a>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/centos/>centos</a>
+<a class="tag is-dark" href=/tags/cloudfront/>cloudfront</a>
+<a class="tag is-dark" href=/tags/command/>command</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux/>linux</a>
+<a class="tag is-dark" href=/tags/linux_kernel/>linux_kernel</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/qml/>qml</a>
+<a class="tag is-dark" href=/tags/qt5/>qt5</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/ubuntu/>ubuntu</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+<a class="tag is-dark" href=/tags/yum/>yum</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/troubleshootings/pyinstaller-python-library-not-found/>[문제 해결] pyinstaller - OSError: Python library not found</a></h1>
+<time class="has-text-grey-light is-size-7">18 March 2022</time>
+<h1><a href=https://hsyang.net/troubleshootings/qt-unable-to-assign-qquickwindowqmlimpl-to-qquickitem/>[문제 해결] Qt Quick 2 / QML - Unable to assign QQuickWindowQmlImpl to QQuickItem</a></h1>
+<time class="has-text-grey-light is-size-7">18 March 2022</time>
+<h1><a href=https://hsyang.net/posts/how-smartphone-apps-edit-photos/>스마트폰 앱은 어떻게 이미지를 보정하는 걸까?</a></h1>
+<time class="has-text-grey-light is-size-7">15 November 2021</time>
+<h1><a href=https://hsyang.net/posts/how-are-images-stored-and-displayed-on-a-computer/>컴퓨터는 이미지를 어떻게 저장하고 표현할까?</a></h1>
+<time class="has-text-grey-light is-size-7">1 November 2021</time>
+<h1><a href=https://hsyang.net/posts/python-requests-library-timeout/>[Python] Requests 라이브러리의 Connection Timeout에 관하여</a></h1>
+<time class="has-text-grey-light is-size-7">28 August 2021</time>
+<h1><a href=https://hsyang.net/posts/python-google-spreadsheets/>[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기</a></h1>
+<time class="has-text-grey-light is-size-7">17 August 2021</time>
+<h1><a href=https://hsyang.net/posts/python-docx/>[Python] MS Word 파일 수정하기</a></h1>
+<time class="has-text-grey-light is-size-7">7 August 2021</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/troubleshootings/qt-type-error-cannot-read-property/>[문제 해결] Qt Quick 2 / QML - TypeError: Cannot read property</a></h1>
+<time class="has-text-grey-light is-size-7">20 March 2022</time>
+<h1><a href=https://hsyang.net/troubleshootings/qt-unable-to-assign-qquickwindowqmlimpl-to-qquickitem/>[문제 해결] Qt Quick 2 / QML - Unable to assign QQuickWindowQmlImpl to QQuickItem</a></h1>
+<time class="has-text-grey-light is-size-7">18 March 2022</time>
+<h1><a href=https://hsyang.net/troubleshootings/pyinstaller-python-library-not-found/>[문제 해결] pyinstaller - OSError: Python library not found</a></h1>
+<time class="has-text-grey-light is-size-7">18 March 2022</time>
+<h1><a href=https://hsyang.net/posts/aws-cloudfront/>AWS CLI [CloudFront] - Cache 삭제 방법</a></h1>
+<time class="has-text-grey-light is-size-7">28 February 2022</time>
+<h1><a href=https://hsyang.net/posts/how-to-create-deb-repository/>DEB(APT) Repository 만들기</a></h1>
+<time class="has-text-grey-light is-size-7">27 February 2022</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2022 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>
