@@ -1,22 +1,24 @@
 <!doctype html><html lang=ko><head>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
-<title>linux | 메모장</title>
-<meta name=description content="Live to learn">
-<link rel=canonical href=https://hsyang.net/tags/linux/>
+<title>[문제 해결] AWS was not able to validate the provided access credentials | 메모장</title>
+<meta name=description content="AWS was not able to validate the provided access credentials 에러 발생 원인과 해결 방법을 알아보자.">
+<link rel=canonical href=https://hsyang.net/troubleshootings/aws-credential-error/>
 <link rel=stylesheet href=/css/bulma.min.css>
 <link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
 <link rel=stylesheet href=/css/style.css>
 <link rel=preconnect href=https://fonts.googleapis.com>
 <link rel=preconnect href=https://fonts.gstatic.com crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
-<meta property="og:title" content="linux">
-<meta property="og:description" content="Live to learn">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://hsyang.net/tags/linux/"><meta property="og:site_name" content="메모장">
+<meta property="og:title" content="[문제 해결] AWS was not able to validate the provided access credentials">
+<meta property="og:description" content="AWS was not able to validate the provided access credentials 에러 발생 원인과 해결 방법을 알아보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/troubleshootings/aws-credential-error/"><meta property="article:section" content="troubleshootings">
+<meta property="article:published_time" content="2022-04-18T21:55:40+09:00">
+<meta property="article:modified_time" content="2022-04-18T22:03:17+09:00"><meta property="og:site_name" content="메모장">
 <meta name=twitter:card content="summary">
-<meta name=twitter:title content="linux">
-<meta name=twitter:description content="Live to learn">
+<meta name=twitter:title content="[문제 해결] AWS was not able to validate the provided access credentials">
+<meta name=twitter:description content="AWS was not able to validate the provided access credentials 에러 발생 원인과 해결 방법을 알아보자.">
 <script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
 <script async src=https://www.google-analytics.com/analytics.js></script>
 <script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
@@ -56,28 +58,76 @@
 <div class=container>
 <section class=section>
 <div class=columns>
-<div class="column is-9">
-<h2>tag - linux</h2>
-<div class=content>
-<hr>
-<a href=/posts/vsftpd-upload-only-account/ class=box>
-<article class=media>
-<div class=media-content>
-<div class=content>
-<p class="title is-4">CentOS/Redhat 7 - ftp 서버 업로드 전용 계정 생성 방법</p>
-<p class="subtitle is-size-6 has-text-grey-light">
-Published at February 20, 2022 &#183;
-<i class="far fa-clock"></i>&nbsp;1 min read
-</p>
-<p>sftp 서버 운영 시 업로드만 가능한 계정 생성이 필요할 때가 있다. vsftpd를 이용하여 이를 구현해보자.</p>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>April 18, 2022</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">[문제 해결] AWS was not able to validate the provided access credentials</h1>
+<div class="content mt-6">
+<h2 id=현상>현상</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Traceback (most recent call last):
+  File &#34;./aws.py&#34;, line 19, in &lt;module&gt;
+    {&#39;Name&#39;: &#39;instance-state-name&#39;, &#39;Values&#39;: [&#39;running&#39;]}
+  File &#34;/lib64/python3.6/site-packages/botocore/client.py&#34;, line 386, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File &#34;/lib64/python3.6/site-packages/botocore/client.py&#34;, line 705, in _make_api_call
+    raise error_class(parsed_response, operation_name)
+botocore.exceptions.ClientError: An error occurred (AuthFailure) when calling the DescribeInstances operation: AWS was not able to validate the provided access credentials
+</code></pre></div><h2 id=원인>원인</h2>
+<ul>
+<li>시스템 시간 동기화가 되어 있지 않을 경우&mldr;!
+<ul>
+<li>이 케이스인 경우가 생각보다 많으니 꼭 시스템 시간 체크를 해볼 것</li>
+</ul>
+</li>
+<li>Access key / Secret key 가 비활성화 또는 삭제 또는 틀릴 경우</li>
+</ul>
+<h2 id=해결-방안>해결 방안</h2>
+<ul>
+<li>시스템 시간 동기화가 되어 있지 않을 경우 : 시간 동기화</li>
+<li>Access key / Secret key 재발급</li>
+</ul>
+<h2 id=참고>참고</h2>
+<ul>
+<li><a href=https://stackoverflow.com/a/33296525>https://stackoverflow.com/a/33296525</a></li>
+</ul>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/troubleshootings/qt-type-error-cannot-read-property/>[문제 해결] Qt Quick 2 / QML - TypeError: Cannot read property</a>
+</div>
+<div class="column has-text-right">
 </div>
 </div>
+</section>
 </article>
-</a>
-<br>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#현상>현상</a></li>
+<li><a href=#원인>원인</a></li>
+<li><a href=#해결-방안>해결 방안</a></li>
+<li><a href=#참고>참고</a></li>
+</ul>
+</nav>
 </div>
 </div>
-<div class="column is-3">
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
 <div class="card mb-3">
 <div class=card-content>
 <h1 class="title is-5">태그</h1>
@@ -108,7 +158,19 @@ Published at February 20, 2022 &#183;
 </div>
 </div>
 </div>
-<br>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/aws-cloudfront/>AWS CLI [CloudFront] - Cache 삭제 방법</a></h1>
+<time class="has-text-grey-light is-size-7">28 February 2022</time>
+<h1><a href=https://hsyang.net/posts/aws-cli-ec2/>AWS CLI [EC2] - 생성하기</a></h1>
+<time class="has-text-grey-light is-size-7">11 October 2021</time>
+<h1><a href=https://hsyang.net/posts/aws-cli-configure/>AWS CLI - 설치 및 기본 설정 방법</a></h1>
+<time class="has-text-grey-light is-size-7">19 September 2021</time>
+<h1><a href=https://hsyang.net/posts/python-google-spreadsheets/>[Python] AWS EC2 정보를 Google Spreadsheets 문서에 정리하기</a></h1>
+<time class="has-text-grey-light is-size-7">17 August 2021</time>
+</div>
+</div>
 <div class="card mb-3">
 <div class=card-content>
 <h1 class="title is-5">최근 글</h1>
@@ -124,7 +186,6 @@ Published at February 20, 2022 &#183;
 <time class="has-text-grey-light is-size-7">18 March 2022</time>
 </div>
 </div>
-<br>
 </div>
 </div>
 </section>
