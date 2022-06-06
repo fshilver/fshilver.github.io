@@ -1,0 +1,294 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>[명령어] tmux | 메모장</title>
+<meta name=description content="tmux 명령어 사용법을 알아보자">
+<link rel=canonical href=https://hsyang.net/posts/cli-tmux/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="[명령어] tmux">
+<meta property="og:description" content="tmux 명령어 사용법을 알아보자">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/cli-tmux/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-06-06T22:55:33+09:00">
+<meta property="article:modified_time" content="2022-06-06T23:35:29+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="[명령어] tmux">
+<meta name=twitter:description content="tmux 명령어 사용법을 알아보자">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7742242963859745" crossorigin=anonymous></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+<a class=navbar-item href=/troubleshootings>문제해결</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>June 6, 2022</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">[명령어] tmux</h1>
+<div class="content mt-6">
+<h2 id=tmux-란>tmux 란?</h2>
+<p>ssh 접속을 하거나 로컬 터미널에 접근하면 한번에 하나의 터미널만 사용할 수 있다.
+tmux는 여러개의 터미널을 동시에 사용할 수 있게 해주는 툴이다.</p>
+<p>예를 들면,</p>
+<ul>
+<li>원격 서버의 로그를 보면서</li>
+<li>동시에 해당 서버에서 다른 명령어를 사용해야 하는 경우</li>
+</ul>
+<p>두 개의 ssh session(두 번 접속)을 만들지 않고 한 개의 ssh session으로 여러개의 터미널을 만들어서 위와 같은 일들을 동시에 할 수 있게 해주는 툴이라는 의미이다.</p>
+<p>또한 ssh 접속 후 생성한 tmux session은 ssh 접속을 종료한 이후에도 서버상에 계속 존재하게 된다. (서버 재부팅 전까지)
+이를 활용하여 자신만의 터미널 환경을 셋팅해두고, 서버 접속 시마다 해당 터미널 환경을 계속 이용할 수도 있다.</p>
+<h2 id=기본-개념>기본 개념</h2>
+<ul>
+<li><code>tmux</code>는 크게 <code>Session</code>, <code>Window</code>, <code>Pane</code> 로 구성되어 있다.
+<ul>
+<li><code>1개</code>의 <code>Session</code>은 <code>N개</code>의 <code>Window</code>를 가질 수 있다.</li>
+<li><code>1개</code>의 <code>Window</code>는 <code>N개</code>의 <code>Pane</code>을 가질 수 있다.</li>
+</ul>
+</li>
+<li><code>tmux</code>의 모든 명령은 <code>Ctrl+b</code> 키를 누른 후 다른 키를 입력하는 방식이다.
+<ul>
+<li><code>Ctrl+b</code> 는 prefix key라고 부르며, 변경 가능하다.</li>
+</ul>
+</li>
+</ul>
+<h2 id=session>Session</h2>
+<h3 id=create>create</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># session name이 임의로 정해짐</span>
+~$ tmux
+
+<span style=color:#75715e># session name을 지정하여 tmux session 생성</span>
+<span style=color:#75715e># 아례 예는 test_session 이라는 이름으로 tmux session 생성</span>
+~$ tmux n -s test_session
+
+<span style=color:#75715e># session name과 기본 window 이름을 지정하여 tmux session 생성</span>
+<span style=color:#75715e># 아례 예는 test_session 이라는 이름으로 tmux session 생성하면서</span>
+<span style=color:#75715e># 해당 session의 기본 window명을 test_window로 설정</span>
+~$ tmux n -s test_session -n test_window
+</code></pre></div><h3 id=list>list</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>~$ tmux ls
+2: 1 windows (created Mon Feb 19 15:17:33 2018) [272x62]
+test-session: 2 windows (created Mon Feb 19 15:10:25 2018) [270x69] (attached)
+</code></pre></div><h3 id=attachdetach>attach/detach</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># attach</span>
+~$ tmux a -t <span style=color:#e6db74>${</span>session_name<span style=color:#e6db74>}</span>
+
+<span style=color:#75715e># detach</span>
+<span style=color:#75715e># tmux session에 접속한 상태에서 아래 키를 순차적으로 입력</span>
+Ctrl+b, d
+</code></pre></div><h3 id=rename>rename</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># tmux session에 접속한 상태에서 아래 키를 순차적으로 입력</span>
+~$ Ctrl+b, $
+</code></pre></div><h3 id=switch>switch</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># 서버에 생성되어 있는 tmux session 리스트가 출력된다.</span>
+<span style=color:#75715e># 변경하고 싶은 session으로 이동한 후 엔터를 누르면 변경된다.</span>
+~$ Ctrl+b, s
+</code></pre></div><h2 id=window>Window</h2>
+<ul>
+<li><code>Ctrl+b, c</code>: 생성</li>
+<li><code>Ctrl+b, w</code>: 목록 보기, 화살표 키로 이동 가능</li>
+<li><code>Ctrl+b, ,</code>: 윈도우 이름 수정</li>
+<li><code>Ctrl+b, 숫자</code>: 윈도우 변경</li>
+<li><code>Ctrl+b, n</code>: 다음 윈도우</li>
+<li><code>Ctrl+b, p</code>: 이전 윈도</li>
+</ul>
+<h2 id=pane>Pane</h2>
+<ul>
+<li><code>Ctrl+b, "</code>: 가로 분할</li>
+<li><code>Ctrl+b, %</code>: 세로 분할</li>
+<li><code>Ctrl+b, q</code>: 각 Pane 에 번호 표시, 해당 번호를 누르면 이동</li>
+<li><code>Ctrl+b, 방향키</code>: 이동</li>
+<li><code>Ctrl+b, o</code>: 순서대로 이동</li>
+<li><code>Ctrl+d</code>: 삭제</li>
+<li><code>Ctrl+b, Alt+방향키</code>: 크기 조정</li>
+<li><code>Ctrl+b, {</code>: 현재 Pane을 왼쪽으로 이동</li>
+<li><code>Ctrl+b, }</code>: 현재 Pane을 오른쪽으로 이동</li>
+<li><code>Ctrl+b, space</code>: 크기 균등 분할, 입력시마다 분할 Layout 변경됨</li>
+</ul>
+<h2 id=copy--paste>Copy & Paste</h2>
+<ul>
+<li><code>Ctrl+b, [</code> : 복사 모드로 전환</li>
+<li>vi key-binding을 했을 경우(setw -g mode-keys vi)
+<ul>
+<li>space를 누르면 visual block mode 로 진입</li>
+<li>block 지정 완료 후 enter 입력. (복사 완료)</li>
+</ul>
+</li>
+<li><code>Ctrl+b, ]</code> : 붙여 넣기</li>
+</ul>
+<h2 id=모든-pane-동시-입력-onoff>모든 Pane 동시 입력 on/off</h2>
+<ul>
+<li><code>Ctrl+b, :setw synchronize-panes</code></li>
+</ul>
+<h2 id=설정-파일-읽기>설정 파일 읽기</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># Reload config</span>
+~$ Ctrl+b, :source-file ~/.tmux.conf <span style=color:#75715e># inside tmux session</span>
+~$ tmux source-file ~/.tmux.conf     <span style=color:#75715e># outsite tmux session</span>
+</code></pre></div>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/cli-firewalld/>[명령어] firewalld</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#tmux-란>tmux 란?</a></li>
+<li><a href=#기본-개념>기본 개념</a></li>
+<li><a href=#session>Session</a>
+<ul>
+<li><a href=#create>create</a></li>
+<li><a href=#list>list</a></li>
+<li><a href=#attachdetach>attach/detach</a></li>
+<li><a href=#rename>rename</a></li>
+<li><a href=#switch>switch</a></li>
+</ul>
+</li>
+<li><a href=#window>Window</a></li>
+<li><a href=#pane>Pane</a></li>
+<li><a href=#copy--paste>Copy & Paste</a></li>
+<li><a href=#모든-pane-동시-입력-onoff>모든 Pane 동시 입력 on/off</a></li>
+<li><a href=#설정-파일-읽기>설정 파일 읽기</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/apt/>apt</a>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/centos/>centos</a>
+<a class="tag is-dark" href=/tags/cloudfront/>cloudfront</a>
+<a class="tag is-dark" href=/tags/command/>command</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/go/>go</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux/>linux</a>
+<a class="tag is-dark" href=/tags/linux_kernel/>linux_kernel</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/qml/>qml</a>
+<a class="tag is-dark" href=/tags/qt5/>qt5</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/tmux/>tmux</a>
+<a class="tag is-dark" href=/tags/ubuntu/>ubuntu</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+<a class="tag is-dark" href=/tags/yum/>yum</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/cli-firewalld/>[명령어] firewalld</a></h1>
+<time class="has-text-grey-light is-size-7">31 May 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-dcmodify/>[명령어] dcmodify</a></h1>
+<time class="has-text-grey-light is-size-7">24 May 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-ip/>[명령어] ip</a></h1>
+<time class="has-text-grey-light is-size-7">10 May 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-column/>[명령어] column</a></h1>
+<time class="has-text-grey-light is-size-7">23 April 2022</time>
+<h1><a href=https://hsyang.net/posts/rpm/>[명령어] rpm</a></h1>
+<time class="has-text-grey-light is-size-7">24 January 2022</time>
+<h1><a href=https://hsyang.net/posts/iptables/>[명령어] iptables</a></h1>
+<time class="has-text-grey-light is-size-7">10 January 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-dcmdump/>[명령어] dcmdump</a></h1>
+<time class="has-text-grey-light is-size-7">29 December 2021</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/cli-tmux/>[명령어] tmux</a></h1>
+<time class="has-text-grey-light is-size-7">6 June 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-firewalld/>[명령어] firewalld</a></h1>
+<time class="has-text-grey-light is-size-7">31 May 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-dcmodify/>[명령어] dcmodify</a></h1>
+<time class="has-text-grey-light is-size-7">24 May 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-ip/>[명령어] ip</a></h1>
+<time class="has-text-grey-light is-size-7">10 May 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-column/>[명령어] column</a></h1>
+<time class="has-text-grey-light is-size-7">23 April 2022</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2022 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>

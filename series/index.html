@@ -1,7 +1,7 @@
 <!doctype html><html lang=ko><head>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
-<title>Series | 메모장</title>
+<title>시리즈 | 메모장</title>
 <meta name=description content="Live to learn">
 <link rel=canonical href=https://hsyang.net/series/>
 <link rel=stylesheet href=/css/bulma.min.css>
@@ -10,12 +10,12 @@
 <link rel=preconnect href=https://fonts.googleapis.com>
 <link rel=preconnect href=https://fonts.gstatic.com crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
-<meta property="og:title" content="Series">
+<meta property="og:title" content="시리즈">
 <meta property="og:description" content="Live to learn">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hsyang.net/series/"><meta property="og:site_name" content="메모장">
 <meta name=twitter:card content="summary">
-<meta name=twitter:title content="Series">
+<meta name=twitter:title content="시리즈">
 <meta name=twitter:description content="Live to learn">
 <script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
 <script async src=https://www.google-analytics.com/analytics.js></script>
@@ -45,6 +45,12 @@
 <a class=navbar-item href=/troubleshootings>문제해결</a>
 </div>
 <div class=navbar-end>
+<div class="navbar-item has-dropdown is-hoverable">
+<a class=navbar-link>Language</a>
+<div class=navbar-dropdown>
+<a class=navbar-item rel=alternate href=/en/series/ hreflang=en lang=en>en</a>
+</div>
+</div>
 <a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
 <span class=icon><i class="fab fa-github"></i></span>
 </a>
@@ -58,48 +64,18 @@
 <div class=columns>
 <div class="column is-9">
 <div class=content>
-<a href=/series/hugo/03-template-structure/ class=box>
-<article class=media>
-<div class=media-content>
-<div class=content>
-<p class="title is-4">Hugo - 03. 템플릿 구조</p>
-<p class="subtitle is-size-6 has-text-grey-light">
-Published at September 4, 2021 &#183;
-<i class="far fa-clock"></i>&nbsp;4 min read
-</p>
-<p>서론 템플릿 구조를 이해하기 위해 이전에 설치했던 ananke 테마를 사용하지 않고 layouts 폴더에 html 템플릿 파일을 생성하며 하나하나 그 구조를 파헤쳐보자. config.toml baseURL = "http://example.org/" languageCode = "en-us" title = "My...</p>
+<h2>시리즈</h2>
+<p></p>
+<hr>
+<div class="columns is-multiline">
+<div class="column is-4">
+<a class=card href=/series/hugo/>
+<div class=card-content>
+블로그 만들기 (feat. Hugo)
 </div>
-</div>
-</article>
 </a>
-<a href=/series/hugo/02-page-bundles/ class=box>
-<article class=media>
-<div class=media-content>
-<div class=content>
-<p class="title is-4">Hugo - 02. 이미지 파일 첨부하기</p>
-<p class="subtitle is-size-6 has-text-grey-light">
-Published at January 16, 2021 &#183;
-<i class="far fa-clock"></i>&nbsp;2 min read
-</p>
-<p>Hugo에서 각 포스팅에 포함되는 이미지를 어떻게 관리할 수 있는지 알아보자.</p>
 </div>
 </div>
-</article>
-</a>
-<a href=/series/hugo/01-getting-started/ class=box>
-<article class=media>
-<div class=media-content>
-<div class=content>
-<p class="title is-4">Hugo - 01. 시작하기</p>
-<p class="subtitle is-size-6 has-text-grey-light">
-Published at November 14, 2020 &#183;
-<i class="far fa-clock"></i>&nbsp;5 min read
-</p>
-<p>Hugo로 블로그 시작하기</p>
-</div>
-</div>
-</article>
-</a>
 </div>
 </div>
 <div class="column is-3">
@@ -127,6 +103,7 @@ Published at November 14, 2020 &#183;
 <a class="tag is-dark" href=/tags/qml/>qml</a>
 <a class="tag is-dark" href=/tags/qt5/>qt5</a>
 <a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/tmux/>tmux</a>
 <a class="tag is-dark" href=/tags/ubuntu/>ubuntu</a>
 <a class="tag is-dark" href=/tags/vim/>vim</a>
 <a class="tag is-dark" href=/tags/yum/>yum</a>
@@ -137,6 +114,8 @@ Published at November 14, 2020 &#183;
 <div class="card mb-3">
 <div class=card-content>
 <h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/cli-tmux/>[명령어] tmux</a></h1>
+<time class="has-text-grey-light is-size-7">6 June 2022</time>
 <h1><a href=https://hsyang.net/posts/cli-firewalld/>[명령어] firewalld</a></h1>
 <time class="has-text-grey-light is-size-7">31 May 2022</time>
 <h1><a href=https://hsyang.net/posts/cli-dcmodify/>[명령어] dcmodify</a></h1>
@@ -145,22 +124,9 @@ Published at November 14, 2020 &#183;
 <time class="has-text-grey-light is-size-7">10 May 2022</time>
 <h1><a href=https://hsyang.net/posts/cli-column/>[명령어] column</a></h1>
 <time class="has-text-grey-light is-size-7">23 April 2022</time>
-<h1><a href=https://hsyang.net/troubleshootings/aws-credential-error/>[문제 해결] AWS was not able to validate the provided access credentials</a></h1>
-<time class="has-text-grey-light is-size-7">18 April 2022</time>
 </div>
 </div>
 <br>
-</div>
-</div>
-<div class=columns>
-<div class="column is-9">
-<nav class="pagination is-centered is-rounded" role=navigation aria-label=pagination>
-<ul class=pagination-list>
-<li class=pagination__item>
-<a class="pagination-link is-current" aria-label="Goto page 1" href=/series/>1</a>
-</li>
-</ul>
-</nav>
 </div>
 </div>
 </section>
