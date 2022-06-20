@@ -1,0 +1,351 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Makefile 정리 | 메모장</title>
+<meta name=description content="Makefile 기본 동작 원리와 문법, 사용 예제">
+<link rel=canonical href=https://hsyang.net/posts/makefile/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="Makefile 정리">
+<meta property="og:description" content="Makefile 기본 동작 원리와 문법, 사용 예제">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/makefile/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-06-21T00:21:03+09:00">
+<meta property="article:modified_time" content="2022-06-21T00:25:29+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="Makefile 정리">
+<meta name=twitter:description content="Makefile 기본 동작 원리와 문법, 사용 예제">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7742242963859745" crossorigin=anonymous></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+<a class=navbar-item href=/troubleshootings>문제해결</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>June 21, 2022</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">Makefile 정리</h1>
+<div class="content mt-6">
+<h2 id=기본-개념>기본 개념</h2>
+<ul>
+<li>target, dependency, command 3개로 이루어져 있음</li>
+<li>target 을 만들기 위한 command 정의</li>
+<li>command 실행을 위한 dependency 정의</li>
+<li>target 에는 결과 파일만 올 수 있지 않고 <code>make clean</code> 처럼 간단한 Label도 가능(여기서는 <code>clean</code>)</li>
+<li>command 는 앞에 <code>TAB</code> 문자가 있어야만 함. 공백일 경우 에러</li>
+</ul>
+<h2 id=tip>Tip</h2>
+<ul>
+<li>
+<p><code>make</code> 대신 <code>$(MAKE)</code> 를 사용하는 이유</p>
+<ul>
+<li>Makefile 내에서 <code>make</code> 명령어를 사용하는 경우 (재귀적 사용이라고 부름), <code>$(MAKE)</code> 변수를 사용하는 것이 좋음</li>
+<li><a href=http://korea.gnu.org/manual/4check/make-3.77/ko/make_5.html#SEC50>http://korea.gnu.org/manual/4check/make-3.77/ko/make_5.html#SEC50</a></li>
+<li><a href=https://www.gnu.org/software/make/manual/html_node/MAKE-Variable.html>https://www.gnu.org/software/make/manual/html_node/MAKE-Variable.html</a></li>
+</ul>
+</li>
+<li>
+<p><code>make</code> 를 인자없이 실행할 경우 가장 처음 만나는 target 을 실행한다.</p>
+<ul>
+<li>그렇기 때문에 <code>make</code> 와 <code>make all</code> 은 다르다.</li>
+<li>보통 <code>all</code> target 을 가장 처음에 써주기때문에 <code>make</code> 와 <code>make all</code> 이 같다고 오해하는 경우가 있는 듯</li>
+<li><a href=https://stackoverflow.com/questions/6856263/what-is-the-difference-between-make-and-make-all/6856463>https://stackoverflow.com/questions/6856263/what-is-the-difference-between-make-and-make-all/6856463</a></li>
+</ul>
+</li>
+<li>
+<p>명령어 앞에 <code>-</code> 문자를 붙이는 이유</p>
+<ul>
+<li>make 는 기본적으로 명령어 여러개가 있을 경우, 앞의 명령어가 에러가 발생하면 실행을 멈춘다.</li>
+<li><code>-</code> 를 붙이면 에러가 발생하더라도 다음 명령어를 실행한다.</li>
+<li><a href=https://stackoverflow.com/questions/2989465/rm-rf-versus-rm-rf>https://stackoverflow.com/questions/2989465/rm-rf-versus-rm-rf</a></li>
+</ul>
+</li>
+</ul>
+<h2 id=gcc-옵션>gcc 옵션</h2>
+<ul>
+<li>
+<p><code>-M</code> : 전체 시스템 헤더 파일들의 의존성 출력</p>
+</li>
+<li>
+<p><code>-MM</code> : 현재 Makefile 에 정의되어 있는 헤더 파일들의 의존성만 출력</p>
+</li>
+<li>
+<p><code>-MD</code> 또는 <code>-MDD</code> : 의존성 출력 결과가 <code>(소스 파일명).d</code> 로 생성됨</p>
+<ul>
+<li>실행 예</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ gcc -M main.c
+main.o: main.c io.h /usr/include/stdio.h /usr/include/features.h <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span> /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span> /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span> /usr/lib/gcc/x86_64-redhat-linux/4.4.7/include/stddef.h <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span> /usr/include/bits/types.h /usr/include/bits/typesizes.h <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span> /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span> /usr/lib/gcc/x86_64-redhat-linux/4.4.7/include/stdarg.h <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span> /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h
+
+~$ gcc -MM main.c
+main.o: main.c io.h
+</code></pre></div></li>
+</ul>
+<h2 id=간단한-예제>간단한 예제</h2>
+<ul>
+<li><code>main.c</code> <code>read.c</code> <code>write.c</code> 3개의 파일이 있고 모두 <code>io.h</code> 헤더 파일을 참조</li>
+<li>이들을 각각 컴파일 하여 <code>test_program</code> 이라는 실행 파일 생성</li>
+</ul>
+<h3 id=step-1>Step 1</h3>
+<p>직접 일일이 컴파일 하는 단계</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ gcc -c main.c
+~$ gcc -c read.c
+~$ gcc -c write.c
+~$ gcc -o test_program main.o read.o write.o
+</code></pre></div><h3 id=step-2>Step 2</h3>
+<p>기본적인 Makefile 을 작성</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-makefile data-lang=makefile><span style=color:#75715e># target : dependency
+</span><span style=color:#75715e>#   command
+</span><span style=color:#75715e></span>
+<span style=color:#a6e22e>test_program </span><span style=color:#f92672>:</span> main.o read.o write.o
+    gcc -o test_program main.o read.o write.o
+
+<span style=color:#a6e22e>main.o </span><span style=color:#f92672>:</span> io.h main.c
+    gcc -c main.c
+<span style=color:#a6e22e>read.o </span><span style=color:#f92672>:</span> io.h read.c
+    gcc -c read.c
+<span style=color:#a6e22e>write.o </span><span style=color:#f92672>:</span> io.h write.c
+    gcc -c write.c
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ make
+gcc -c main.c
+gcc -c read.c
+gcc -c write.c
+gcc -o test_make main.o read.o write.o
+~$ ls
+Makefile  io.h  main.c  main.o  read.c  read.o  test_make  write.c  write.o
+</code></pre></div><h3 id=step-3>Step 3</h3>
+<p>소스 파일이 추가될 때마다 변경사항이 많으므로 다음과 같이 매크로를 사용</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-makefile data-lang=makefile>OBJS <span style=color:#f92672>=</span> main.o read.o write.o
+
+<span style=color:#a6e22e>test_program</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>$(</span>OBJS<span style=color:#66d9ef>)</span>
+    gcc -o test_program <span style=color:#66d9ef>$(</span>OBJS<span style=color:#66d9ef>)</span>
+
+<span style=color:#a6e22e>main.o </span><span style=color:#f92672>:</span> io.h main.c
+    gcc -c main.c
+<span style=color:#a6e22e>read.o </span><span style=color:#f92672>:</span> io.h read.c
+    gcc -c read.c
+<span style=color:#a6e22e>write.o </span><span style=color:#f92672>:</span> io.h write.c
+    gcc -c write.c
+</code></pre></div><h3 id=step-4>Step 4</h3>
+<p>target 에 파일이 아닌 <code>clean</code> 과 같은 Label 생성</p>
+<blockquote>
+<p>Label 은 dependency 정의를 하지 않아도 된다.</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-makefile data-lang=makefile>OBJS <span style=color:#f92672>=</span> main.o read.o write.o
+
+<span style=color:#a6e22e>test_program</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>$(</span>OBJS<span style=color:#66d9ef>)</span>
+    gcc -o test_program <span style=color:#66d9ef>$(</span>OBJS<span style=color:#66d9ef>)</span>
+
+<span style=color:#a6e22e>main.o </span><span style=color:#f92672>:</span> io.h main.c
+    gcc -c main.c
+<span style=color:#a6e22e>read.o </span><span style=color:#f92672>:</span> io.h read.c
+    gcc -c read.c
+<span style=color:#a6e22e>write.o </span><span style=color:#f92672>:</span> io.h write.c
+    gcc -c write.c
+
+<span style=color:#a6e22e>clean </span><span style=color:#f92672>:</span>
+    rm <span style=color:#66d9ef>$(</span>OBJS<span style=color:#66d9ef>)</span>
+</code></pre></div><h3 id=step-5>Step 5</h3>
+<p>미리 정의된 매크로 활용 (<code>make -p</code> 명령으로 확인 가능)</p>
+<ul>
+<li><code>CC</code> : 컴파일러</li>
+<li><code>CFLAGS</code> : 컴파일 옵션</li>
+<li><code>$*</code> : 확장자가 없는 현재 Target</li>
+<li><code>$@</code> : 현재 Target</li>
+<li><code>$&lt;</code> : 현재의 Target 보다 더 최근에 갱신된 파일 이름</li>
+<li><code>$?</code> : 현재의 Target 보다 더 최근에 갱신된 파일 이름(?)</li>
+<li>Macro 치환
+<ul>
+<li><code>$(MACRO_NAME:OLD=NEW)</code> 와 같은 식으로 일부 값만 변경 가능</li>
+<li>이를 활용하는 예 (obj 에 해당하는 c 파일을 일일히 열거하기 귀찮을 때)
+<ul>
+<li><code>OBJS = main.o read.o write.o</code></li>
+<li><code>SRCS = $(OBJS:.o=.c)</code> : <code>main.o</code> 중에 <code>.o</code> 부분을 <code>.c</code>로 치환</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>.SUFFIXES</code>
+<ul>
+<li>확장자에 따라 미리 정의되어 있는 행동을 할 수 있음.</li>
+<li>예) <code>.SUFFIXES : .c .o</code>
+<ul>
+<li><code>.c .o</code> 는 <code>.c</code> 를 컴파일해서 <code>.o</code> 를 만든다는 규칙이 미리 정의되어 있음</li>
+<li><code>$(CC) $(CFLAGS) -c $&lt; -o $@</code> 가 동작함</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-makefile data-lang=makefile>.SUFFIXES <span style=color:#f92672>=</span> .c.o
+OBJS <span style=color:#f92672>=</span> main.o read.o write.o
+SRCS <span style=color:#f92672>=</span> <span style=color:#66d9ef>$(</span>OBJS:.o<span style=color:#f92672>=</span>.c<span style=color:#66d9ef>)</span>
+
+<span style=color:#a6e22e>test_program</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>$(</span>OBJS<span style=color:#66d9ef>)</span>
+    gcc -o test_program <span style=color:#66d9ef>$(</span>OBJS<span style=color:#66d9ef>)</span>
+
+<span style=color:#a6e22e>.c.o </span><span style=color:#f92672>:</span>
+    gcc -c $&lt; 
+<span style=color:#a6e22e>main.o </span><span style=color:#f92672>:</span> io.h main.c
+    gcc -c main.c
+<span style=color:#a6e22e>read.o </span><span style=color:#f92672>:</span> io.h read.c
+    gcc -c read.c
+<span style=color:#a6e22e>write.o </span><span style=color:#f92672>:</span> io.h write.c
+    gcc -c write.c
+
+<span style=color:#a6e22e>clean </span><span style=color:#f92672>:</span>
+    rm <span style=color:#66d9ef>$(</span>OBJS<span style=color:#66d9ef>)</span>
+</code></pre></div>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/cli-tmux/>[명령어] tmux</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#기본-개념>기본 개념</a></li>
+<li><a href=#tip>Tip</a></li>
+<li><a href=#gcc-옵션>gcc 옵션</a></li>
+<li><a href=#간단한-예제>간단한 예제</a>
+<ul>
+<li><a href=#step-1>Step 1</a></li>
+<li><a href=#step-2>Step 2</a></li>
+<li><a href=#step-3>Step 3</a></li>
+<li><a href=#step-4>Step 4</a></li>
+<li><a href=#step-5>Step 5</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/apt/>apt</a>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/centos/>centos</a>
+<a class="tag is-dark" href=/tags/cloudfront/>cloudfront</a>
+<a class="tag is-dark" href=/tags/command/>command</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/go/>go</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux/>linux</a>
+<a class="tag is-dark" href=/tags/linux_kernel/>linux_kernel</a>
+<a class="tag is-dark" href=/tags/makefile/>makefile</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/qml/>qml</a>
+<a class="tag is-dark" href=/tags/qt5/>qt5</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/tmux/>tmux</a>
+<a class="tag is-dark" href=/tags/ubuntu/>ubuntu</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+<a class="tag is-dark" href=/tags/yum/>yum</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/makefile/>Makefile 정리</a></h1>
+<time class="has-text-grey-light is-size-7">21 June 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-tmux/>[명령어] tmux</a></h1>
+<time class="has-text-grey-light is-size-7">6 June 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-firewalld/>[명령어] firewalld</a></h1>
+<time class="has-text-grey-light is-size-7">31 May 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-dcmodify/>[명령어] dcmodify</a></h1>
+<time class="has-text-grey-light is-size-7">24 May 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-ip/>[명령어] ip</a></h1>
+<time class="has-text-grey-light is-size-7">10 May 2022</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2022 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>
