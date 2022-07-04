@@ -1,0 +1,278 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>내가 원하는 크기로 파일 생성하기 (테스트용 Dummy 파일) | 메모장</title>
+<meta name=description content="테스트 목적으로 특졍 크기의 파일이 필요한 경우, 임의 크기의 파일을 만드는 방법을 알아보자.">
+<link rel=canonical href=https://hsyang.net/posts/generate-dummy-file/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="내가 원하는 크기로 파일 생성하기 (테스트용 Dummy 파일)">
+<meta property="og:description" content="테스트 목적으로 특졍 크기의 파일이 필요한 경우, 임의 크기의 파일을 만드는 방법을 알아보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/generate-dummy-file/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-07-05T08:24:57+09:00">
+<meta property="article:modified_time" content="2022-07-05T08:36:15+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="내가 원하는 크기로 파일 생성하기 (테스트용 Dummy 파일)">
+<meta name=twitter:description content="테스트 목적으로 특졍 크기의 파일이 필요한 경우, 임의 크기의 파일을 만드는 방법을 알아보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7742242963859745" crossorigin=anonymous></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+<a class=navbar-item href=/troubleshootings>문제해결</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>July 5, 2022</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">내가 원하는 크기로 파일 생성하기 (테스트용 Dummy 파일)</h1>
+<div class="content mt-6">
+<ul>
+<li>
+<p><code>truncate</code> 라는 명령어가 있음 ( coreutils rpm package )</p>
+</li>
+<li>
+<p><code>truncate -s 24m example.file</code> 와 같은 식으로 사용</p>
+</li>
+<li>
+<p><code>example.file</code> 이 없는 경우 24m 짜리 빈 파일이 생성됨</p>
+</li>
+<li>
+<p>이 파일은 <code>sparse file</code>이라 부르며 (<a href=https://en.wikipedia.org/wiki/Sparse_file>https://en.wikipedia.org/wiki/Sparse_file</a>) disk 용량 차지를 안함</p>
+</li>
+<li>
+<p>테스트 시 유용</p>
+</li>
+<li>
+<p>centos 5 에는 truncate 유틸이 없음</p>
+</li>
+<li>
+<p>strace 로 분석해서 직접 만들어 봄</p>
+</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ strace -f truncate -s <span style=color:#ae81ff>10241024</span> testfile
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>execve(&#34;/usr/bin/truncate&#34;, [&#34;truncate&#34;, &#34;-s&#34;, &#34;10241024&#34;, &#34;testfile&#34;], [/* 24 vars */]) = 0
+brk(NULL)                               = 0x1fdc000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f731e9f4000
+access(&#34;/etc/ld.so.preload&#34;, R_OK)      = -1 ENOENT (No such file or directory)
+open(&#34;/etc/ld.so.cache&#34;, O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=18965, ...}) = 0
+mmap(NULL, 18965, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f731e9ef000
+close(3)                                = 0
+open(&#34;/lib64/libc.so.6&#34;, O_RDONLY|O_CLOEXEC) = 3
+read(3, &#34;\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0&gt;\0\1\0\0\0\20\35\2\0\0\0\0\0&#34;..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=2127336, ...}) = 0
+mmap(NULL, 3940800, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f731e411000
+mprotect(0x7f731e5c9000, 2097152, PROT_NONE) = 0
+mmap(0x7f731e7c9000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1b8000) = 0x7f731e7c9000
+mmap(0x7f731e7cf000, 16832, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f731e7cf000
+close(3)                                = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f731e9ee000
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f731e9ec000
+arch_prctl(ARCH_SET_FS, 0x7f731e9ec740) = 0
+mprotect(0x7f731e7c9000, 16384, PROT_READ) = 0
+mprotect(0x60b000, 4096, PROT_READ)     = 0
+mprotect(0x7f731e9f5000, 4096, PROT_READ) = 0
+munmap(0x7f731e9ef000, 18965)           = 0
+brk(NULL)                               = 0x1fdc000
+brk(0x1ffd000)                          = 0x1ffd000
+brk(NULL)                               = 0x1ffd000
+open(&#34;/usr/lib/locale/locale-archive&#34;, O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=106070960, ...}) = 0
+mmap(NULL, 106070960, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f7317ee8000
+close(3)                                = 0
+open(&#34;testfile&#34;, O_WRONLY|O_CREAT|O_NONBLOCK, 0666) = 3
+ftruncate(3, 10241024)                  = 0
+close(3)                                = 0
+close(1)                                = 0
+close(2)                                = 0
+exit_group(0)                           = ?
++++ exited with 0 +++
+</code></pre></div><ul>
+<li>
+<p>strace 결과를 보면 마지막 6번째 줄에 <code>ftruncate(3, 10241024)</code> 가 보임</p>
+</li>
+<li>
+<p><code>ftruncate</code> 검색</p>
+<ul>
+<li><a href=http://man7.org/linux/man-pages/man2/truncate.2.html>http://man7.org/linux/man-pages/man2/truncate.2.html</a></li>
+</ul>
+</li>
+<li>
+<p>다음과 같은 sample 코드 작성 및 테스트 성공!</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;unistd.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;sys/types.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdlib.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;fcntl.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdio.h&gt;</span><span style=color:#75715e>
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>void</span> <span style=color:#a6e22e>printUsage</span>(){
+    printf(<span style=color:#e6db74>&#34;Usage:</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+    printf(<span style=color:#e6db74>&#34;./mkdm &lt;file name&gt; &lt;file size&gt;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+}
+
+<span style=color:#66d9ef>int</span> <span style=color:#a6e22e>main</span>(<span style=color:#66d9ef>int</span> argc, <span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>argv[]){
+
+    <span style=color:#66d9ef>int</span> fd;
+
+    <span style=color:#66d9ef>if</span>(argc <span style=color:#f92672>!=</span> <span style=color:#ae81ff>3</span>){
+        printUsage();
+        <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>1</span>;
+    }
+
+    fd <span style=color:#f92672>=</span> open(argv[<span style=color:#ae81ff>1</span>], O_WRONLY<span style=color:#f92672>|</span>O_CREAT<span style=color:#f92672>|</span>O_NONBLOCK, <span style=color:#ae81ff>0666</span>);
+
+    <span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>p;
+    <span style=color:#66d9ef>long</span> fs <span style=color:#f92672>=</span> strtol(argv[<span style=color:#ae81ff>2</span>], <span style=color:#f92672>&amp;</span>p, <span style=color:#ae81ff>10</span>);
+
+    ftruncate(fd, fs);
+    close(fd);
+
+    <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>0</span>;
+}
+</code></pre></div></li>
+<li>
+<p>사용법</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ gcc trucate.c -o mkdm
+~$ ./mkdm test.file <span style=color:#ae81ff>10241024</span>
+~$ ls -l test.file
+-rw-r--r-- <span style=color:#ae81ff>1</span> root root <span style=color:#ae81ff>10241024</span> May <span style=color:#ae81ff>30</span> 07:10 test.file
+</code></pre></div></li>
+</ul>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/makefile/>Makefile 정리</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents></nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/apt/>apt</a>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/centos/>centos</a>
+<a class="tag is-dark" href=/tags/cloudfront/>cloudfront</a>
+<a class="tag is-dark" href=/tags/command/>command</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/go/>go</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux/>linux</a>
+<a class="tag is-dark" href=/tags/linux_kernel/>linux_kernel</a>
+<a class="tag is-dark" href=/tags/makefile/>makefile</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/qml/>qml</a>
+<a class="tag is-dark" href=/tags/qt5/>qt5</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/tmux/>tmux</a>
+<a class="tag is-dark" href=/tags/ubuntu/>ubuntu</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+<a class="tag is-dark" href=/tags/yum/>yum</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/vsftpd-upload-only-account/>CentOS/Redhat 7 - ftp 서버 업로드 전용 계정 생성 방법</a></h1>
+<time class="has-text-grey-light is-size-7">20 February 2022</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/generate-dummy-file/>내가 원하는 크기로 파일 생성하기 (테스트용 Dummy 파일)</a></h1>
+<time class="has-text-grey-light is-size-7">5 July 2022</time>
+<h1><a href=https://hsyang.net/posts/makefile/>Makefile 정리</a></h1>
+<time class="has-text-grey-light is-size-7">21 June 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-tmux/>[명령어] tmux</a></h1>
+<time class="has-text-grey-light is-size-7">6 June 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-firewalld/>[명령어] firewalld</a></h1>
+<time class="has-text-grey-light is-size-7">31 May 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-dcmodify/>[명령어] dcmodify</a></h1>
+<time class="has-text-grey-light is-size-7">24 May 2022</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2022 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>
