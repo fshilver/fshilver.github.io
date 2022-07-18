@@ -1,0 +1,289 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>[Django] Admin Customization | 메모장</title>
+<meta name=description content="django admin을 내 입맛에 맞게 바꿔보자.">
+<link rel=canonical href=https://hsyang.net/posts/django-admin/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="[Django] Admin Customization">
+<meta property="og:description" content="django admin을 내 입맛에 맞게 바꿔보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/django-admin/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-07-19T00:34:29+09:00">
+<meta property="article:modified_time" content="2022-07-19T01:10:32+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="[Django] Admin Customization">
+<meta name=twitter:description content="django admin을 내 입맛에 맞게 바꿔보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7742242963859745" crossorigin=anonymous></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+<a class=navbar-item href=/troubleshootings>문제해결</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>July 19, 2022</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">[Django] Admin Customization</h1>
+<div class="content mt-6">
+<h2 id=json-field-이쁘게-출력하기>JSON Field 이쁘게 출력하기</h2>
+<ul>
+<li>
+<p>Pygments 패키지 설치</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ pip install Pygments
+</code></pre></div></li>
+<li>
+<p>models.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> django.db <span style=color:#f92672>import</span> models
+
+<span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Question</span>(models<span style=color:#f92672>.</span>Model):
+    question_text <span style=color:#f92672>=</span> models<span style=color:#f92672>.</span>CharField(max_length<span style=color:#f92672>=</span><span style=color:#ae81ff>200</span>)
+    data <span style=color:#f92672>=</span> models<span style=color:#f92672>.</span>JSONField()
+    pub_date <span style=color:#f92672>=</span> models<span style=color:#f92672>.</span>DateTimeField(<span style=color:#e6db74>&#39;date published&#39;</span>)
+</code></pre></div></li>
+<li>
+<p>admin.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>import</span> json
+
+<span style=color:#f92672>from</span> django.contrib <span style=color:#f92672>import</span> admin
+<span style=color:#f92672>from</span> django.utils.safestring <span style=color:#f92672>import</span> mark_safe
+
+<span style=color:#f92672>from</span> pygments <span style=color:#f92672>import</span> highlight
+<span style=color:#f92672>from</span> pygments.lexers.data <span style=color:#f92672>import</span> JsonLexer
+<span style=color:#f92672>from</span> pygments.formatters.html <span style=color:#f92672>import</span> HtmlFormatter
+
+
+<span style=color:#f92672>from</span> .models <span style=color:#f92672>import</span> Question
+
+<span style=color:#a6e22e>@admin</span><span style=color:#f92672>.</span>register(Question)
+<span style=color:#66d9ef>class</span> <span style=color:#a6e22e>QuestionAdmin</span>(admin<span style=color:#f92672>.</span>ModelAdmin):
+    list_display <span style=color:#f92672>=</span> (<span style=color:#e6db74>&#39;id&#39;</span>, <span style=color:#e6db74>&#39;question_text&#39;</span>)
+    readonly_fields <span style=color:#f92672>=</span> (<span style=color:#e6db74>&#39;formatted_json_data&#39;</span>,)
+
+    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>formatted_json_data</span>(self, obj):
+        data <span style=color:#f92672>=</span> json<span style=color:#f92672>.</span>dumps(obj<span style=color:#f92672>.</span>data, sort_keys<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>, indent<span style=color:#f92672>=</span><span style=color:#ae81ff>2</span>)
+        formatter <span style=color:#f92672>=</span> HtmlFormatter(style<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;dracula&#39;</span>)
+        pretty_data <span style=color:#f92672>=</span> highlight(data, JsonLexer(), formatter)
+        style <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;&lt;style&gt;&#34;</span> <span style=color:#f92672>+</span> formatter<span style=color:#f92672>.</span>get_style_defs() <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;&lt;/style&gt;&lt;br&gt;&#34;</span>
+        <span style=color:#66d9ef>return</span> mark_safe(style <span style=color:#f92672>+</span> pretty_data)
+
+
+</code></pre></div></li>
+</ul>
+<p><img src=/img/django-admin/django-admin-json-field-formatted.png alt=django-admin-json-field-formatted></p>
+<h2 id=시간-포맷-변경>시간 포맷 변경</h2>
+<ul>
+<li>
+<p>settings.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>USE_L10N <span style=color:#f92672>=</span> <span style=color:#66d9ef>False</span>
+DATETIME_FORMAT <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;Y-m-d h:i:s&#34;</span>
+DATE_FORMAT <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;Y-m-d&#34;</span>
+</code></pre></div><blockquote>
+<p>DATETIME_FORMAT 포맷팅 시 사용하는 문자에 대한 정보는 공식 문서 참조 <a href=https://docs.djangoproject.com/en/4.0/ref/templates/builtins/#std:templatefilter-date>https://docs.djangoproject.com/en/4.0/ref/templates/builtins/#std:templatefilter-date</a></p>
+</blockquote>
+</li>
+<li>
+<p>변경 전
+<img src=/img/django-admin/default-datetime-format.png alt=before></p>
+</li>
+<li>
+<p>변경 후
+<img src=/img/django-admin/change-datetime-format.png alt=before></p>
+</li>
+</ul>
+<h2 id=모든-필드를-list_display에-설정하기>모든 필드를 list_display에 설정하기</h2>
+<ul>
+<li>
+<p>models.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> django.db <span style=color:#f92672>import</span> models
+
+<span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Question</span>(models<span style=color:#f92672>.</span>Model):
+    question_text <span style=color:#f92672>=</span> models<span style=color:#f92672>.</span>CharField(max_length<span style=color:#f92672>=</span><span style=color:#ae81ff>200</span>)
+    pub_date <span style=color:#f92672>=</span> models<span style=color:#f92672>.</span>DateTimeField(<span style=color:#e6db74>&#39;date published&#39;</span>)
+    is_answered <span style=color:#f92672>=</span> models<span style=color:#f92672>.</span>BooleanField(default<span style=color:#f92672>=</span><span style=color:#66d9ef>False</span>)
+</code></pre></div></li>
+<li>
+<p>admin.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> django.contrib <span style=color:#f92672>import</span> admin
+
+<span style=color:#f92672>from</span> .models <span style=color:#f92672>import</span> Question
+
+<span style=color:#a6e22e>@admin</span><span style=color:#f92672>.</span>register(Question)
+<span style=color:#66d9ef>class</span> <span style=color:#a6e22e>QuestionAdmin</span>(admin<span style=color:#f92672>.</span>ModelAdmin):
+    <span style=color:#75715e># 이렇게 필드명을 직접 하나하나 나열하는 대신</span>
+    <span style=color:#75715e># list_display = (&#39;id&#39;, &#39;question_text&#39;, &#39;pub_date&#39;, &#39;is_answered&#39;)</span>
+
+    <span style=color:#75715e># 아래와 같이 모든 필드 가져올 수 있음</span>
+    list_display <span style=color:#f92672>=</span> [field<span style=color:#f92672>.</span>name <span style=color:#66d9ef>for</span> field <span style=color:#f92672>in</span> Question<span style=color:#f92672>.</span>_meta<span style=color:#f92672>.</span>get_fields()]
+
+</code></pre></div></li>
+<li>
+<p>적용 화면
+<img src=/img/django-admin/list_display.png alt="list display"></p>
+</li>
+<li>
+<p>그러나 아래와 같이 다른 모델과 ForeignKey, ManyToMany 관계에 있다면 에러 발생!</p>
+<ul>
+<li>
+<p>models.py</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> django.db <span style=color:#f92672>import</span> models
+
+<span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Question</span>(models<span style=color:#f92672>.</span>Model):
+    question_text <span style=color:#f92672>=</span> models<span style=color:#f92672>.</span>CharField(max_length<span style=color:#f92672>=</span><span style=color:#ae81ff>200</span>)
+    pub_date <span style=color:#f92672>=</span> models<span style=color:#f92672>.</span>DateTimeField(<span style=color:#e6db74>&#39;date published&#39;</span>)
+    is_answered <span style=color:#f92672>=</span> models<span style=color:#f92672>.</span>BooleanField(default<span style=color:#f92672>=</span><span style=color:#66d9ef>False</span>)
+
+
+<span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Choice</span>(models<span style=color:#f92672>.</span>Model):
+
+    <span style=color:#75715e># Question 모델과 ForeignKey 관계를 갖음</span>
+    question <span style=color:#f92672>=</span> models<span style=color:#f92672>.</span>ForeignKey(Question, on_delete<span style=color:#f92672>=</span>models<span style=color:#f92672>.</span>CASCADE)
+
+    choice_text <span style=color:#f92672>=</span> models<span style=color:#f92672>.</span>CharField(max_length<span style=color:#f92672>=</span><span style=color:#ae81ff>200</span>)
+    votes <span style=color:#f92672>=</span> models<span style=color:#f92672>.</span>IntegerField(default<span style=color:#f92672>=</span><span style=color:#ae81ff>0</span>)
+</code></pre></div></li>
+<li>
+<p>에러</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>AttributeError: Unable to lookup &#39;choice&#39; on Question or QuestionAdmin
+</code></pre></div></li>
+</ul>
+</li>
+</ul>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/generate-dummy-file/>내가 원하는 크기로 파일 생성하기 (테스트용 Dummy 파일)</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#json-field-이쁘게-출력하기>JSON Field 이쁘게 출력하기</a></li>
+<li><a href=#시간-포맷-변경>시간 포맷 변경</a></li>
+<li><a href=#모든-필드를-list_display에-설정하기>모든 필드를 list_display에 설정하기</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/apt/>apt</a>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/centos/>centos</a>
+<a class="tag is-dark" href=/tags/cloudfront/>cloudfront</a>
+<a class="tag is-dark" href=/tags/command/>command</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/django/>django</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/go/>go</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux/>linux</a>
+<a class="tag is-dark" href=/tags/linux_kernel/>linux_kernel</a>
+<a class="tag is-dark" href=/tags/makefile/>makefile</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/qml/>qml</a>
+<a class="tag is-dark" href=/tags/qt5/>qt5</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/tmux/>tmux</a>
+<a class="tag is-dark" href=/tags/ubuntu/>ubuntu</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+<a class="tag is-dark" href=/tags/yum/>yum</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/django-admin/>[Django] Admin Customization</a></h1>
+<time class="has-text-grey-light is-size-7">19 July 2022</time>
+<h1><a href=https://hsyang.net/posts/generate-dummy-file/>내가 원하는 크기로 파일 생성하기 (테스트용 Dummy 파일)</a></h1>
+<time class="has-text-grey-light is-size-7">5 July 2022</time>
+<h1><a href=https://hsyang.net/posts/makefile/>Makefile 정리</a></h1>
+<time class="has-text-grey-light is-size-7">21 June 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-tmux/>[명령어] tmux</a></h1>
+<time class="has-text-grey-light is-size-7">6 June 2022</time>
+<h1><a href=https://hsyang.net/posts/cli-firewalld/>[명령어] firewalld</a></h1>
+<time class="has-text-grey-light is-size-7">31 May 2022</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2022 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>
