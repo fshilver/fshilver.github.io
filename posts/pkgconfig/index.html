@@ -1,0 +1,252 @@
+<!doctype html><html lang=ko><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>[명령어] pkg-config | 메모장</title>
+<meta name=description content="pkg-config 명령어를 사용하여 gcc 컴파일 옵션을 좁 더 쉽게 작성하는 방법을 알아보자.">
+<link rel=canonical href=https://hsyang.net/posts/pkgconfig/>
+<link rel=stylesheet href=/css/bulma.min.css>
+<link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
+<link rel=stylesheet href=/css/style.css>
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
+<meta property="og:title" content="[명령어] pkg-config">
+<meta property="og:description" content="pkg-config 명령어를 사용하여 gcc 컴파일 옵션을 좁 더 쉽게 작성하는 방법을 알아보자.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hsyang.net/posts/pkgconfig/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-08-29T07:02:42+09:00">
+<meta property="article:modified_time" content="2022-08-29T07:06:10+09:00"><meta property="og:site_name" content="메모장">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="[명령어] pkg-config">
+<meta name=twitter:description content="pkg-config 명령어를 사용하여 gcc 컴파일 옵션을 좁 더 쉽게 작성하는 방법을 알아보자.">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7742242963859745" crossorigin=anonymous></script>
+</head>
+<body class=has-navbar-fixed-top><header>
+<nav class="navbar is-fixed-top has-shadow" role=navigation>
+<div class=navbar-brand>
+<a href=/ title=home class=navbar-item>
+<span class=logo><h1>메모장</h1></span>
+</a>
+<a href=https://github.com/fshilver title=Github class="navbar-item is-hidden-desktop">
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+<a class=navbar-burger role=button data-target=navMenu aria-label=menu aria-expanded=false>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+<span aria-hidden=true></span>
+</a>
+</div>
+<div class=navbar-menu id=navMenu>
+<div class=navbar-start>
+<a class=navbar-item href=/posts/>포스팅</a>
+<a class=navbar-item href=/series/>시리즈</a>
+<a class=navbar-item href=/snippets>코드조각</a>
+<a class=navbar-item href=/troubleshootings>문제해결</a>
+</div>
+<div class=navbar-end>
+<a class="navbar-item is-hidden-touch" href=https://github.com/fshilver title=Github>
+<span class=icon><i class="fab fa-github"></i></span>
+</a>
+</div>
+</div>
+</nav>
+</header>
+<main>
+<div class=container>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<article>
+<div class="content has-text-centered">
+<p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
+<p class="mb-4 has-text-grey-light"><time>August 29, 2022</time></p>
+</div>
+<h1 class="title is-size-3 has-text-centered">[명령어] pkg-config</h1>
+<div class="content mt-6">
+<h2 id=용도>용도</h2>
+<ul>
+<li>
+<p>외부 라이브러리를 사용하여 컴파일 시 링크 옵션을 직접 타이핑하는 대신 라이브러리 이름으로 컴파일 옵션을 출력할 수 있는 툴</p>
+</li>
+<li>
+<p>pkg-config는 *.pc 파일을 읽어서 출력하는 명령어</p>
+</li>
+<li>
+<p>보통 <code>/usr/lib64/pkgconfig</code> 폴더 하위에 <code>*.pc</code> 파일들 존재</p>
+</li>
+<li>
+<p><code>*.pc</code> 파일 샘플 (<code>/usr/lib64/pkgconfig/openssl.pc</code>)</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib64
+includedir=${prefix}/include
+
+Name: OpenSSL
+Description: Secure Sockets Layer and cryptography libraries and tools
+Version: 1.1.1k
+Requires: libssl libcrypto
+</code></pre></div></li>
+</ul>
+<h2 id=사용-예시>사용 예시</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># openssl 라이브러리 링크 옵션</span>
+~$ pkg-config --libs openssl
+-lssl -lcrypto
+
+<span style=color:#75715e># openssl 라이브러리를 static 으로 링크할 시 openssl 이 사용하는 외부 라이브러리도 함께 출력</span>
+~$ pkg-config --libs --static openssl
+-lssl -lgssapi_krb5 -lkrb5 -lcom_err -lk5crypto -lcrypto -ldl -lz
+
+<span style=color:#75715e># 사용 가능한 라이브러리 목록</span>
+~$ pkg-config --list-all
+fontutil                       FontUtil - Font utilities dirs
+grilo-plugins-0.3              Grilo Framework Plugins - Plugins <span style=color:#66d9ef>for</span> the Grilo Framework
+libcrypt                       libxcrypt - Extended crypt library <span style=color:#66d9ef>for</span> DES, MD5, Blowfish and others
+libxcrypt                      libxcrypt - Extended crypt library <span style=color:#66d9ef>for</span> DES, MD5, Blowfish and others
+zlib                           zlib - zlib compression library
+libelf                         libelf - elfutils libelf library to read and write ELF files
+libzstd                        zstd - fast lossless compression algorithm library
+liblzma                        liblzma - General purpose data compression library
+libdw                          libdw - elfutils library <span style=color:#66d9ef>for</span> DWARF data and ELF file or process inspection
+valgrind                       Valgrind - A dynamic binary instrumentation framework
+com_err                        com_err - Common error description library
+libpcre2-16                    libpcre2-16 - PCRE2 - Perl compatible regular expressions C library <span style=color:#f92672>(</span>2nd API<span style=color:#f92672>)</span> with <span style=color:#ae81ff>16</span> bit character support
+libpcre2-32                    libpcre2-32 - PCRE2 - Perl compatible regular expressions C library <span style=color:#f92672>(</span>2nd API<span style=color:#f92672>)</span> with <span style=color:#ae81ff>32</span> bit character support
+libpcre2-8                     libpcre2-8 - PCRE2 - Perl compatible regular expressions C library <span style=color:#f92672>(</span>2nd API<span style=color:#f92672>)</span> with <span style=color:#ae81ff>8</span> bit character support
+libpcre2-posix                 libpcre2-posix - Posix compatible interface to libpcre2-8
+libsepol                       libsepol - SELinux policy library
+libselinux                     libselinux - SELinux utility library
+libverto                       libverto - Event loop abstraction interface
+gssrpc                         gssrpc - GSSAPI RPC implementation
+kadm-client                    kadm-client - Kerberos administration client library
+kadm-server                    kadm-server - Kerberos administration server library
+kdb                            kdb - Kerberos database access libraries
+krb5-gssapi                    krb5-gssapi - Kerberos implementation of the GSSAPI
+krb5                           krb5 - An implementation of Kerberos network authentication
+mit-krb5-gssapi                mit-krb5-gssapi - Kerberos implementation of the GSSAPI
+mit-krb5                       mit-krb5 - An implementation of Kerberos network authentication
+libcrypto                      OpenSSL-libcrypto - OpenSSL cryptography library
+libssl                         OpenSSL-libssl - Secure Sockets Layer and cryptography libraries
+openssl                        OpenSSL - Secure Sockets Layer and cryptography libraries and tools
+libxml-2.0                     libXML - libXML library version2.
+libpng                         libpng - Loads and saves PNG files
+libpng16                       libpng - Loads and saves PNG files
+libquvi-scripts-0.9            libquvi-scripts - Scripts <span style=color:#66d9ef>for</span> libquvi
+mallard-rng                    mallard-rng - Mallard RELAX NG Schemas
+dracut                         dracut - dracut
+shared-mime-info               shared-mime-info - Freedesktop common MIME database
+systemd                        systemd - systemd System and Service Manager
+udev                           udev - udev
+gnome-video-effects            gnome-video-effects - A collection of GStreamer effects to be used in different GNOME Modules
+gnome-keybindings              gnome-keybindings - Keybindings configuration <span style=color:#66d9ef>for</span> GNOME applications
+bash-completion                bash-completion - programmable completion <span style=color:#66d9ef>for</span> the bash shell
+</code></pre></div>
+</div>
+<section class=section>
+<div class="columns is-mobile">
+<div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/pytest-tip/>[Python] pytest 팁</a>
+</div>
+<div class="column has-text-right">
+</div>
+</div>
+</section>
+</article>
+</div>
+<div class="column is-hidden-touch">
+<div class="menu sticky">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">목차</h1>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#용도>용도</a></li>
+<li><a href=#사용-예시>사용 예시</a></li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class=section>
+<div class=columns>
+<div class="column is-three-quarters">
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">태그</h1>
+<div class=tags>
+<a class="tag is-dark" href=/tags/apt/>apt</a>
+<a class="tag is-dark" href=/tags/aws/>aws</a>
+<a class="tag is-dark" href=/tags/bash/>bash</a>
+<a class="tag is-dark" href=/tags/c/>c</a>
+<a class="tag is-dark" href=/tags/centos/>centos</a>
+<a class="tag is-dark" href=/tags/cloudfront/>cloudfront</a>
+<a class="tag is-dark" href=/tags/command/>command</a>
+<a class="tag is-dark" href=/tags/dicom/>dicom</a>
+<a class="tag is-dark" href=/tags/django/>django</a>
+<a class="tag is-dark" href=/tags/docker/>docker</a>
+<a class="tag is-dark" href=/tags/git/>git</a>
+<a class="tag is-dark" href=/tags/go/>go</a>
+<a class="tag is-dark" href=/tags/google_sheets/>google_sheets</a>
+<a class="tag is-dark" href=/tags/hugo/>hugo</a>
+<a class="tag is-dark" href=/tags/linux/>linux</a>
+<a class="tag is-dark" href=/tags/linux_kernel/>linux_kernel</a>
+<a class="tag is-dark" href=/tags/makefile/>makefile</a>
+<a class="tag is-dark" href=/tags/network/>network</a>
+<a class="tag is-dark" href=/tags/pytest/>pytest</a>
+<a class="tag is-dark" href=/tags/python/>python</a>
+<a class="tag is-dark" href=/tags/qml/>qml</a>
+<a class="tag is-dark" href=/tags/qt5/>qt5</a>
+<a class="tag is-dark" href=/tags/shell/>shell</a>
+<a class="tag is-dark" href=/tags/tmux/>tmux</a>
+<a class="tag is-dark" href=/tags/ubuntu/>ubuntu</a>
+<a class="tag is-dark" href=/tags/vim/>vim</a>
+<a class="tag is-dark" href=/tags/yum/>yum</a>
+</div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/generate-dummy-file/>내가 원하는 크기로 파일 생성하기 (테스트용 Dummy 파일)</a></h1>
+<time class="has-text-grey-light is-size-7">5 July 2022</time>
+<h1><a href=https://hsyang.net/posts/vsftpd-upload-only-account/>CentOS/Redhat 7 - ftp 서버 업로드 전용 계정 생성 방법</a></h1>
+<time class="has-text-grey-light is-size-7">20 February 2022</time>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/pkgconfig/>[명령어] pkg-config</a></h1>
+<time class="has-text-grey-light is-size-7">29 August 2022</time>
+<h1><a href=https://hsyang.net/posts/pytest-tip/>[Python] pytest 팁</a></h1>
+<time class="has-text-grey-light is-size-7">8 August 2022</time>
+<h1><a href=https://hsyang.net/posts/django-admin/>[Django] Admin Customization</a></h1>
+<time class="has-text-grey-light is-size-7">19 July 2022</time>
+<h1><a href=https://hsyang.net/posts/generate-dummy-file/>내가 원하는 크기로 파일 생성하기 (테스트용 Dummy 파일)</a></h1>
+<time class="has-text-grey-light is-size-7">5 July 2022</time>
+<h1><a href=https://hsyang.net/posts/makefile/>Makefile 정리</a></h1>
+<time class="has-text-grey-light is-size-7">21 June 2022</time>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main><footer class="footer has-background-grey-darker has-text-white">
+<div class=container>
+<div class="is-vcentered has-text-centered">
+<a href=/about/ class=footer-text>About me</a>
+<br><br>
+<p> Copyright &copy; 메모장 2022 - Theme by Heesung Yang</a> </p>
+</div>
+</div>
+</footer>
+<script>document.addEventListener('DOMContentLoaded',()=>{const a=Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'),0);a.length>0&&a.forEach(a=>{a.addEventListener('click',()=>{const b=a.dataset.target,c=document.getElementById(b);a.classList.toggle('is-active'),c.classList.toggle('is-active')})})})</script>
+</body>
+</html>
