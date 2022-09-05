@@ -1,24 +1,24 @@
 <!doctype html><html lang=ko><head>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
-<title>About me | 메모장</title>
-<meta name=description content="2021년 08월 직장 생활 만 11년 이전 직장 : 9년 현재 직장 : 2년 System engineer로 시작. 현재는 제품 Deployment 전반을 담당하는 팀에서 일하는 중. 터미널 화면을">
-<link rel=canonical href=https://hsyang.net/about/>
+<title>[명령어] git log | 메모장</title>
+<meta name=description content="git log 기본 활용법에 대해 알아보자.">
+<link rel=canonical href=https://hsyang.net/posts/git-log/>
 <link rel=stylesheet href=/css/bulma.min.css>
 <link rel=stylesheet href=https://use.fontawesome.com/releases/v5.7.2/css/all.css integrity=sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr crossorigin=anonymous>
 <link rel=stylesheet href=/css/style.css>
 <link rel=preconnect href=https://fonts.googleapis.com>
 <link rel=preconnect href=https://fonts.gstatic.com crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel=stylesheet>
-<meta property="og:title" content="About me">
-<meta property="og:description" content="2021년 08월 직장 생활 만 11년 이전 직장 : 9년 현재 직장 : 2년 System engineer로 시작. 현재는 제품 Deployment 전반을 담당하는 팀에서 일하는 중. 터미널 화면을">
+<meta property="og:title" content="[명령어] git log">
+<meta property="og:description" content="git log 기본 활용법에 대해 알아보자.">
 <meta property="og:type" content="article">
-<meta property="og:url" content="https://hsyang.net/about/"><meta property="article:section" content>
-<meta property="article:published_time" content="2020-11-14T15:53:21+09:00">
-<meta property="article:modified_time" content="2021-08-07T10:54:38+09:00"><meta property="og:site_name" content="메모장">
+<meta property="og:url" content="https://hsyang.net/posts/git-log/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-09-06T07:25:08+09:00">
+<meta property="article:modified_time" content="2022-09-06T07:44:55+09:00"><meta property="og:site_name" content="메모장">
 <meta name=twitter:card content="summary">
-<meta name=twitter:title content="About me">
-<meta name=twitter:description content="2021년 08월 직장 생활 만 11년 이전 직장 : 9년 현재 직장 : 2년 System engineer로 시작. 현재는 제품 Deployment 전반을 담당하는 팀에서 일하는 중. 터미널 화면을">
+<meta name=twitter:title content="[명령어] git log">
+<meta name=twitter:description content="git log 기본 활용법에 대해 알아보자.">
 <script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-112829438-1','auto'),ga('send','pageview'))</script>
 <script async src=https://www.google-analytics.com/analytics.js></script>
 <script data-ad-client=ca-pub-7742242963859745 async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js></script>
@@ -62,28 +62,50 @@
 <article>
 <div class="content has-text-centered">
 <p class="is-size-5 has-text-weight-medium mb-2">Heesung Yang</p>
-<p class="mb-4 has-text-grey-light"><time>November 14, 2020</time></p>
+<p class="mb-4 has-text-grey-light"><time>September 6, 2022</time></p>
 </div>
-<h1 class="title is-size-3 has-text-centered">About me</h1>
+<h1 class="title is-size-3 has-text-centered">[명령어] git log</h1>
 <div class="content mt-6">
-<ul>
-<li>2021년 08월
-<ul>
-<li>직장 생활 만 11년
-<ul>
-<li>이전 직장 : 9년</li>
-<li>현재 직장 : 2년</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>System engineer로 시작. 현재는 제품 Deployment 전반을 담당하는 팀에서 일하는 중.</li>
-<li>터미널 화면을 보면 마음이 편해지는 괴짜.</li>
-</ul>
+<h2 id=기본-출력>기본 출력</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git log
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>commit c383dc417bef1166fea07c0c7c2dfac183e2f2a3 (HEAD -&gt; main, origin/main)
+Author: Heesung Yang &lt;example@gmail.com&gt;
+Date:   Mon Aug 29 07:06:14 2022 +0900
+
+    Updated at 2022-08-29 07:06:14
+
+commit 9833341e9349eabf3f17c2ba628de43fdf784d4f
+Author: Heesung Yang &lt;example@gmail.com&gt;
+Date:   Tue Aug 9 00:01:37 2022 +0900
+
+    Updated at 2022-08-09 00:01:37
+
+commit 738004cbf82952c6ac8a64353d4f07052f68fc9f
+Author: Heesung Yang &lt;example@gmail.com&gt;
+Date:   Tue Jul 19 01:10:42 2022 +0900
+
+    Updated at 2022-07-19 01:10:42
+</code></pre></div><h2 id=한-줄로-출력>한 줄로 출력</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git log --pretty<span style=color:#f92672>=</span>format:<span style=color:#e6db74>&#34;%h%x09%an%x09%ad%x09%s&#34;</span>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>c383dc4    Heesung Yang    Mon Aug 29 07:06:14 2022 +0900    Updated at 2022-08-29 07:06:14
+9833341    Heesung Yang    Tue Aug 9 00:01:37 2022 +0900    Updated at 2022-08-09 00:01:37
+738004c    Heesung Yang    Tue Jul 19 01:10:42 2022 +0900    Updated at 2022-07-19 01:10:42
+</code></pre></div><h2 id=색깔-입히기>색깔 입히기</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git log --pretty<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;format:%h %Cblue%ad%Creset %an &lt;%ae&gt; %Cgreen%s%Creset&#34;</span>
+</code></pre></div><p><img src=/img/git-log/git-log-2.png alt=img></p>
+<h2 id=소스-변경-사항-같이-출력>소스 변경 사항 같이 출력</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># git log -p 2 : 최근 2개의 커밋만 출력</span>
+~$ git log -p
+</code></pre></div><p><img src=/img/git-log/git-log-1.png alt=img></p>
+<h2 id=소스-변경-사항-요약-출력>소스 변경 사항 요약 출력</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ git log --stat
+</code></pre></div><p><img src=/img/git-log/git-log-3.png alt=img></p>
 </div>
 <section class=section>
 <div class="columns is-mobile">
 <div class="column has-text-left">
+<p>Previous post</p>
+<a href=/posts/pkgconfig/>[명령어] pkg-config</a>
 </div>
 <div class="column has-text-right">
 </div>
@@ -96,7 +118,15 @@
 <div class="card mb-3">
 <div class=card-content>
 <h1 class="title is-5">목차</h1>
-<nav id=TableOfContents></nav>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#기본-출력>기본 출력</a></li>
+<li><a href=#한-줄로-출력>한 줄로 출력</a></li>
+<li><a href=#색깔-입히기>색깔 입히기</a></li>
+<li><a href=#소스-변경-사항-같이-출력>소스 변경 사항 같이 출력</a></li>
+<li><a href=#소스-변경-사항-요약-출력>소스 변경 사항 요약 출력</a></li>
+</ul>
+</nav>
 </div>
 </div>
 </div>
@@ -138,6 +168,19 @@
 <a class="tag is-dark" href=/tags/vim/>vim</a>
 <a class="tag is-dark" href=/tags/yum/>yum</a>
 </div>
+</div>
+</div>
+<div class="card mb-3">
+<div class=card-content>
+<h1 class="title is-5">관련 글</h1>
+<h1><a href=https://hsyang.net/posts/git-branch/>[명령어] git branch</a></h1>
+<time class="has-text-grey-light is-size-7">29 November 2021</time>
+<h1><a href=https://hsyang.net/posts/git-commit/>[명령어] git commit</a></h1>
+<time class="has-text-grey-light is-size-7">15 November 2020</time>
+<h1><a href=https://hsyang.net/posts/git-tag/>[명령어] git tag</a></h1>
+<time class="has-text-grey-light is-size-7">14 November 2020</time>
+<h1><a href=https://hsyang.net/posts/git-submodule/>[명령어] git submodule</a></h1>
+<time class="has-text-grey-light is-size-7">14 November 2020</time>
 </div>
 </div>
 <div class="card mb-3">

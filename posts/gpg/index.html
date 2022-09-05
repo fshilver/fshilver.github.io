@@ -15,7 +15,7 @@
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://hsyang.net/posts/gpg/"><meta property="article:section" content="posts">
 <meta property="article:published_time" content="2022-02-27T12:30:50+09:00">
-<meta property="article:modified_time" content="2022-02-28T00:40:07+09:00"><meta property="og:site_name" content="메모장">
+<meta property="article:modified_time" content="2022-09-06T07:44:55+09:00"><meta property="og:site_name" content="메모장">
 <meta name=twitter:card content="summary">
 <meta name=twitter:title content="GPG 공개키/개인키 쌍 만들기">
 <meta name=twitter:description content="GPG 명령어를 이용하여 공개키/비공개키 쌍을 만들고 활용해보자.">
@@ -107,10 +107,10 @@ Key does not expire at all
 <li>
 <p>사용자 정보 입력</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>Real name: mykey
-Email address: fshilver@gmail.com
+Email address: example@gmail.com
 Comment: Testing key
 You selected this USER-ID:
-&#34;mykey (Testing key) &lt;fshilver@gmail.com&gt;&#34;
+&#34;mykey (Testing key) &lt;example@gmail.com&gt;&#34;
 
 Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? O
 </code></pre></div></li>
@@ -141,19 +141,19 @@ generator a better chance to gain enough entropy.
 -------------------------------
 pub   rsa4096 2022-02-27 [SC]
       25A589880AD39D49015EE112E65F5A3B08E14BC5
-uid           [ultimate] mykey (Testing key) &lt;fshilver@gmail.com&gt;
+uid           [ultimate] mykey (Testing key) &lt;example@gmail.com&gt;
 sub   rsa4096 2022-02-27 [E]
 </code></pre></div><h2 id=공개키비공개키-파일-생성>공개키/비공개키 파일 생성</h2>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e># public 키 파일 생성</span>
 <span style=color:#75715e># key 생성 시 입력한 Real name 또는 email 주소를 사용할 수 있음</span>
 ~$ gpg --armor --export mykey &gt; pub.key
 <span style=color:#75715e># 또는</span>
-~$ gpg --armor --export fshilver@gmail.com &gt; pub.key
+~$ gpg --armor --export example@gmail.com &gt; pub.key
 
 <span style=color:#75715e># private 키 파일 생성</span>
 ~$ gpg --armor --export-secret-keys mykey &gt; pri.key
 <span style=color:#75715e># 또는</span>
-~$ gpg --armor --export-secret-keys fshilver@gmail.com &gt; pri.key
+~$ gpg --armor --export-secret-keys example@gmail.com &gt; pri.key
 </code></pre></div><h2 id=key-pair-삭제>Key Pair 삭제</h2>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>~$ gpg --delete-secret-and-public-keys mykey
 </code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>gpg (GnuPG) 2.2.19; Copyright (C) 2019 Free Software Foundation, Inc.
@@ -161,12 +161,12 @@ This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 
 
-sec  rsa4096/E65F5A3B08E14BC5 2022-02-27 mykey (Testing key) &lt;fshilver@gmail.com&gt;
+sec  rsa4096/E65F5A3B08E14BC5 2022-02-27 mykey (Testing key) &lt;example@gmail.com&gt;
 
 Delete this key from the keyring? (y/N) y
 This is a secret key! - really delete? (y/N) y
 
-pub  rsa4096/E65F5A3B08E14BC5 2022-02-27 mykey (Testing key) &lt;fshilver@gmail.com&gt;
+pub  rsa4096/E65F5A3B08E14BC5 2022-02-27 mykey (Testing key) &lt;example@gmail.com&gt;
 
 Delete this key from the keyring? (y/N) y
 </code></pre></div><h2 id=key-pair-가져오기>Key Pair 가져오기</h2>
@@ -247,6 +247,8 @@ Delete this key from the keyring? (y/N) y
 <div class="card mb-3">
 <div class=card-content>
 <h1 class="title is-5">최근 글</h1>
+<h1><a href=https://hsyang.net/posts/git-log/>[명령어] git log</a></h1>
+<time class="has-text-grey-light is-size-7">6 September 2022</time>
 <h1><a href=https://hsyang.net/posts/pkgconfig/>[명령어] pkg-config</a></h1>
 <time class="has-text-grey-light is-size-7">29 August 2022</time>
 <h1><a href=https://hsyang.net/posts/pytest-tip/>[Python] pytest 팁</a></h1>
@@ -255,8 +257,6 @@ Delete this key from the keyring? (y/N) y
 <time class="has-text-grey-light is-size-7">19 July 2022</time>
 <h1><a href=https://hsyang.net/posts/generate-dummy-file/>내가 원하는 크기로 파일 생성하기 (테스트용 Dummy 파일)</a></h1>
 <time class="has-text-grey-light is-size-7">5 July 2022</time>
-<h1><a href=https://hsyang.net/posts/makefile/>Makefile 정리</a></h1>
-<time class="has-text-grey-light is-size-7">21 June 2022</time>
 </div>
 </div>
 </div>
